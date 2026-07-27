@@ -5,6 +5,22 @@ domain kit, a third category alongside lexicons and product adoption kits
 like loomster. There is no upstream product to pin. The upstream is a pattern
 that is known to work.
 
+## The big three
+
+1. **Centralized core infra.** One type per file, a hierarchy that makes
+   every resource findable by path guess, anyone PRs their way in.
+2. **Team monorepos with context.** A team creates an infra project with
+   nothing but a resource defined. In the Terraform world this took
+   Terragrunt, because Terraform buries every module in backend, provider,
+   and state wiring. chant carries far less config, so the goal is nearer —
+   what remains is packaging the org's context, not inventing an include
+   system. See the satellite section.
+3. **Pull request automation.** The full design is in
+   [pr-automation.md](pr-automation.md). chant grows a compiled, per-CI PR
+   story; water park is its first implementation.
+
+Everything else in this plan serves one of the three.
+
 ## The pattern being productized
 
 The best version of centralized security config observed in the wild:
@@ -104,37 +120,61 @@ In the original org, app teams had their own monorepos leaning on the
 central one-type-per-file repo. Terragrunt supplied context and cross-stack
 references. Atlantis ran plan on PRs and applied on approval.
 
-The chant version, mapped piece by piece:
+First, why Terragrunt existed at all. Terraform makes every module carry
+backend config, provider config, state wiring, and per-env var plumbing.
+Terragrunt is an include system that DRYs that overhead away. chant has
+almost none of that overhead — a project is `package.json`,
+`chant.config.ts`, and source files. So the chant version of "context" is
+not a hierarchy of includes. It is one npm package.
 
-**Context and references.** Terragrunt reads remote state at plan time,
-which needs credentials and a live backend. water park's naming scheme is
-deterministic (the loomster `{project}-{env}-{instance}-{component}-
-{resource}` convention), so references are computable at build time. The
-central repo publishes a small typed refs module — getters for boundary
-ARNs, SG ids, role ARNs — that satellite repos import as a normal npm
-dependency. Typed, versioned, no credentials at build. A validate step can
+**The org context package.** The central repo publishes (or the org forks)
+a single package bundling everything a satellite needs: a `chant.config.ts`
+preset (lexicons, ownership convention, buildParams, lint config — spread
+into a three-line local config, no chant feature needed since the config is
+TS), the naming/tagging helper, the org guardrail lint rules, and the typed
+refs module. The target developer experience for a new satellite:
+
+```
+package.json      one dependency: @org/waterpark-context
+chant.config.ts   three lines extending the preset
+src/queue.ts      the resource — the only file with content
+```
+
+That is "an infra project with nothing but a resource defined." Terragrunt
+needed a folder hierarchy and an include DSL to fake this. A typed language
+gets it with an import.
+
+One chant gap stands in the way: lint rules load only from a walked-up
+`.chant/rules/` directory (`packages/core/src/lint/rule-loader.ts`), not
+from a dependency. A satellite can shim it with one-line re-export files,
+but first-class rule packages (config-declared rule sources) is the right
+fix and goes on the chant epic. This also settles open question 1 harder
+than "when a second consumer exists" — satellites are consumers from day
+one, so the rule catalog and context move to a package early.
+
+**References.** Terragrunt reads remote state at plan time, which needs
+credentials and a live backend. water park's naming scheme is deterministic
+(the loomster `{project}-{env}-{instance}-{component}-{resource}`
+convention), so references are computable at build time. The refs module in
+the context package exposes typed getters — boundary ARNs, SG ids, role
+ARNs. Typed, versioned, no credentials at build. A validate step can
 optionally live-check that referenced resources exist. `stackOutput()` is
-intra-repo in chant today, so this refs package is the cross-repo answer.
-Whether it is hand-written, generated from the central build, or points at a
-future chant feature (typed export artifact of component outputs) is an
+intra-repo in chant today, so the refs module is the cross-repo answer.
+Whether it is hand-written, generated from the central build, or points at
+a future chant feature (typed export artifact of component outputs) is an
 open question below.
 
-**PR context.** Generated CI already runs lint and synth on every PR. The
-gitlab lexicon carries the MR plan widget and build provenance from the
-orbit work (chant#327), which is most of what Atlantis comments gave. The
-github-side equivalent surface should be checked and gaps filed on chant.
+**PR automation.** The Atlantis role. Designed in full in
+[pr-automation.md](pr-automation.md): plan-on-PR compiled into the
+generated pipelines of all three CI lexicons, per-platform present adapters
+(GitLab's MR widget already ships), gates mapped to native primitives,
+concurrency plus a plan-digest freshness check replacing Atlantis locks,
+and a standing runner explicitly deferred.
 
-**Apply on approval.** Covered by the gated deploy jobs in generated CI.
-A true Atlantis equivalent — a standing runner that comments plans and
-applies on approval for any repo — is a chant-side product and out of scope
-here. water park captures the requirements as it goes and files them on
-chant when they are concrete. Not designing a chant runner yet.
-
-**What ships in Track C now.** A satellite example repo (or `examples/`
-subtree) showing an app-team monorepo that imports the refs module,
-declares its own app-scoped resources inside the central guardrails, and
-runs the generated PR pipeline. Plus a doc naming the pattern so orgs can
-replicate it.
+**What ships in Track C now.** The context package, a satellite example
+repo showing an app-team monorepo that imports it and declares app-scoped
+resources inside the central guardrails, the generated PR pipeline running
+against it, and a doc naming the pattern so orgs can replicate it.
 
 ## Scope line
 
@@ -145,11 +185,11 @@ remediation.
 
 ## Open questions to settle before filing issues
 
-1. **Rule catalog packaging.** In-repo `.chant/rules/` keeps the loomster
-   zero-new-surface property but each adopting org copy-owns the rules,
-   weakening "central team upgrades the baseline, everyone inherits."
-   Leaning: start in-repo, extract to a package when a second consumer
-   exists.
+1. **Rule catalog packaging.** Largely settled by the context-package
+   design: satellites are consumers from day one, so rules and config
+   presets live in `@org/waterpark-context` early. Remaining sub-question
+   is the chant-side mechanism — `.chant/rules/` re-export shims now vs
+   first-class rule packages (filed on chant).
 2. **Persona set.** Which archetypes are actually universal. Needs a pass
    over a few real org models (startup, centralized enterprise, cell-based).
    If the archetypes are wrong, orgs fork the composites and the kit
