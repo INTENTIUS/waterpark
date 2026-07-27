@@ -1,0 +1,153 @@
+# water park — draft issue breakdown
+
+Draft only. Not filed yet. Each issue is meant to be independently shippable
+with acceptance criteria, loomster-style (chant#885 precedent). Issues marked
+**needs-design** are blocked on an open question in [plan.md](plan.md) and
+must not be filed until it is settled.
+
+## Epic
+
+**water park — cross-cloud IAM/security kit on chant.** Central
+one-type-per-file repo, PR-driven, drift-watched, gated Ops, satellite-repo
+enablement. Tracks A (AWS core), B (cross-cloud fan-out), C (satellites).
+
+## Track A — central repo, AWS first
+
+**A1. Repo skeleton.**
+`chant.config.ts` (aws + temporal lexicons, ownership marker, buildParams),
+`src/` layout per plan, justfile, vitest, npm consuming published chant.
+AC: fresh clone installs, `just check` green, `chant build` synthesizes an
+empty-but-valid baseline stack.
+
+**A2. Layout lint rules.**
+`.chant/rules/one-type-per-file.ts` and `path-matches-name.ts`.
+AC: a file with two declarables fails lint; a principal file whose path
+disagrees with its logical name fails; both with fix-it messages pointing at
+the convention doc. (Packaging decision — open question 1 — does not block
+this; rules land in-repo first.)
+
+**A3. Security lint pack.**
+no-wildcard-action, no-open-ingress (0.0.0.0/0 outside an allowlist),
+boundary-required, no-inline-policy, tag-owner-required,
+sg-reference-not-cidr.
+AC: each rule has a failing and passing fixture; rules fire in editor via
+LSP, not only in CI.
+
+**A4. Persona composites. needs-design (open question 2)**
+developer / deployer / auditor / break-glass as composites over aws IAM.
+AC: each persona instantiates from params only; permission boundary applied
+to every role; snapshot tests over synthesized policy JSON.
+
+**A5. OrgPrincipal composite + leaf-file shape.**
+One principal per file under `src/principals/<team>/`. AWS leg only.
+AC: a new principal is addable by copying a sibling file and editing typed
+fields; wrong persona name is a type error; synth emits role + boundary +
+group memberships.
+
+**A6. Baseline component. needs-design (open question 4)**
+Permission boundaries, SCP set, account password/MFA policy, default-deny
+SGs.
+AC: deploys to Floci and a real account; every other stack references the
+boundary by deterministic name, no hardcoded ARNs.
+
+**A7. Typed network layer.**
+SG composites with intent-level API (allowFrom(otherSg, port)), leaf files
+one SG per file.
+AC: raw CIDR ingress fails lint unless allowlisted; cross-SG references
+resolve by deterministic name.
+
+**A8. Drift watch + reconcile Ops.**
+`wp-watch` (diff --live on cron, every resource the repo owns) and
+`wp-reconcile` (owned-only cloud-to-code PRs). Direct port of the loomster
+pair, scoped to security resources.
+AC: hand-edit an owned SG in a live account (or Floci), watch flags it
+within one cycle, reconcile opens a PR containing only the owned change.
+
+**A9. Break-glass Op. needs-design (open question 5)**
+Gated Temporal Op: approval gate, timed elevated grant, revocation as saga
+compensation, plus a hard TTL on the grant itself.
+AC: approve path grants and auto-revokes on schedule; kill the worker
+mid-grant and revocation still occurs (compensation or TTL); every
+transition lands in the audit trail.
+
+**A10. Offboard Op (AWS leg).**
+Remove a principal from every stack that references it, as one gated run.
+AC: offboarding a demo principal removes role, group memberships, and SG
+references in a single PR + apply; graph shows zero remaining references.
+
+**A11. Access-review Op.**
+Quarterly report artifact: every principal, its personas, its reachable
+resources, last-changed from git.
+AC: runs on the local executor with no Temporal; output is a single
+reviewable artifact; scheduled CI workflow, opt-in gated like loomster's.
+
+**A12. Generated CI.**
+github/gitlab/forgejo pipelines from the component graph, gated deploy,
+scheduled watch/reconcile/access-review workflows, validate-on-drift jobs.
+AC: `just github-validate` (and gitlab/forgejo) pass; runtime E2E via act /
+gitlab-ci-local against Floci.
+
+**A13. Local path.**
+Full kit deploys to Floci with no AWS account, `just local-up`.
+AC: baseline + personas + a demo principal reach CREATE_COMPLETE locally;
+drift demo (A8) runnable locally.
+
+**A14. Adoption seams + carve path. needs-design (open question 6)**
+reference-existing on boundaries, zones, and pre-existing roles; documented
+`chant carve` path from Terraform-managed IAM.
+AC: a demo adopting a pre-existing role and SG deploys with zero composite
+edits; carve walkthrough doc validated against a sample TF state.
+
+**A15. SKILL.md + docs site.**
+Agent capability map, docs site (Astro Starlight like loomster), the
+pattern doc that names the central-repo shape, and the no-write-GUI
+principle written down (open question 8 resolved in prose).
+AC: from a bare checkout an agent can answer "add read access to bucket X
+for team Y" with the correct file path and PR flow.
+
+## Track B — cross-cloud fan-out
+
+**B1. GCP leg.** OrgPrincipal grows a gcp service-account + IAM-binding leg;
+gcpApply local path.
+**B2. Azure leg.** Azure RBAC assignment leg; azApply local path.
+**B3. K8s + code-host legs.** K8s RBAC plus github/gitlab/forgejo team and
+repo access as principal legs.
+**B4. Cross-cloud offboard demo.** A10 extended across every leg; the
+flagship demo and docs page.
+
+AC pattern for all four: one leaf file, N clouds; the persona archetype maps
+to an equivalent grant on each leg; offboard removes all legs in one run.
+
+## Track C — satellite repos
+
+**C1. Refs module spike. needs-design (open question 3)**
+Decide hand-written vs generated vs chant feature. Output is a decision doc
+plus, if warranted, a chant issue for typed component-output export.
+
+**C2. Refs module.**
+Typed getters for boundary ARNs, SG ids, role ARNs, derived from the
+deterministic naming scheme. Published or vendored per C1.
+AC: a satellite repo imports it and references central resources with no
+credentials at build; optional validate step live-checks existence.
+
+**C3. Satellite example repo.**
+An app-team monorepo consuming the refs module, declaring app-scoped
+resources inside the guardrails, running generated PR CI.
+AC: PR in the satellite fails on a guardrail violation (e.g. open ingress)
+without any central-team involvement; deploys against Floci end to end.
+
+**C4. PR plan surface audit.**
+Verify the gitlab MR plan widget + provenance path works from a satellite;
+identify the github-side gap; file chant issues for what's missing.
+AC: a satellite MR shows the synthesized diff inline on gitlab; a written
+gap list for github/forgejo filed upstream.
+
+**C5. Runner requirements doc.**
+Not a runner. A requirements capture for an Atlantis-equivalent chant
+runner, accumulated from C1–C4 friction, to be filed on chant when concrete.
+
+## Filing order
+
+Settle open questions 2, 4, and 5 (personas, multi-account, break-glass)
+before filing Track A. Question 3 blocks only C1/C2. Everything else can
+file as written.
