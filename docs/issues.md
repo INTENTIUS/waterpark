@@ -118,33 +118,42 @@ flagship demo and docs page.
 AC pattern for all four: one leaf file, N clouds; the persona archetype maps
 to an equivalent grant on each leg; offboard removes all legs in one run.
 
-## Track C — satellite repos
+## Track C — satellite repos + PR automation
+
+Design source: [pr-automation.md](pr-automation.md) (the five primitives,
+the compiled-runner position, the chant-side epic).
 
 **C1. Refs module spike. needs-design (open question 3)**
 Decide hand-written vs generated vs chant feature. Output is a decision doc
 plus, if warranted, a chant issue for typed component-output export.
 
-**C2. Refs module.**
-Typed getters for boundary ARNs, SG ids, role ARNs, derived from the
-deterministic naming scheme. Published or vendored per C1.
-AC: a satellite repo imports it and references central resources with no
-credentials at build; optional validate step live-checks existence.
+**C2. Org context package.**
+`@org/waterpark-context` bundling the chant.config preset, naming/tagging
+helper, guardrail lint rules (re-export shims into `.chant/rules/` until
+chant has rule packages), and the typed refs module per C1.
+AC: a new satellite is `package.json` (one dep) + a three-line
+`chant.config.ts` + one resource file, and `chant lint`/`build` enforce
+the full org guardrail set.
 
 **C3. Satellite example repo.**
-An app-team monorepo consuming the refs module, declaring app-scoped
+An app-team monorepo consuming the context package, declaring app-scoped
 resources inside the guardrails, running generated PR CI.
 AC: PR in the satellite fails on a guardrail violation (e.g. open ingress)
 without any central-team involvement; deploys against Floci end to end.
 
-**C4. PR plan surface audit.**
-Verify the gitlab MR plan widget + provenance path works from a satellite;
-identify the github-side gap; file chant issues for what's missing.
-AC: a satellite MR shows the synthesized diff inline on gitlab; a written
-gap list for github/forgejo filed upstream.
+**C4. PR automation adoption.**
+As the chant-side PR epic lands (renderers, PrPlanComment, `pullRequests`
+generator option, freshness digest), wire it through central and satellite:
+plan presented per platform, gates on the native primitive, applies
+serialized, semantic access-delta rendering for IAM change sets.
+AC: the pr-automation.md water-park flow works end to end on all three CI
+providers against Floci; a security-relevant PR shows "grants X on Y to
+team Z" rather than a JSON diff.
 
 **C5. Runner requirements doc.**
-Not a runner. A requirements capture for an Atlantis-equivalent chant
-runner, accumulated from C1–C4 friction, to be filed on chant when concrete.
+Not a runner. A requirements capture for whatever the compiled story cannot
+do (cross-repo orchestration, richer interactivity), accumulated from C1–C4
+friction, filed on chant when concrete.
 
 ## Filing order
 
