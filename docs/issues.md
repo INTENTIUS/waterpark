@@ -145,10 +145,13 @@ without any central-team involvement; deploys against Floci end to end.
 As the chant-side PR epic lands (renderers, PrPlanComment, `pullRequests`
 generator option, freshness digest), wire it through central and satellite:
 plan presented per platform, gates on the native primitive, applies
-serialized, semantic access-delta rendering for IAM change sets.
+serialized, semantic access-delta rendering for IAM change sets, and
+Op-manifest diffs on PRs touching `ops/` (a weakened break-glass gate or
+TTL renders high-severity).
 AC: the pr-automation.md water-park flow works end to end on all three CI
 providers against Floci; a security-relevant PR shows "grants X on Y to
-team Z" rather than a JSON diff.
+team Z" rather than a JSON diff; a PR removing an Op approval gate is
+flagged loudly on the PR.
 
 **C5. Runner requirements doc.**
 Not a runner. A requirements capture for whatever the compiled story cannot
