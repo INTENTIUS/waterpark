@@ -106,6 +106,51 @@ one capability neither prior art has: emulator-backed PR validation. A PR
 pipeline can take every stack to CREATE_COMPLETE against Floci with zero
 cloud credentials in the PR context.
 
+## Ops and lifecycle in the PR loop
+
+Synthesis-first is the right frame, but chant is not only synthesis. Ops
+and lifecycles are part of the PR story in four places, and this is where
+chant leaves both prior arts behind — Atlantis and Pulumi automate a
+stateless plan/apply; chant can put a durable workflow behind the merge
+button.
+
+**PRs that change Ops.** A PR editing `ops/*.op.ts` needs a plan too. Diff
+the compiled Op manifest between base and head and present it as steps,
+gates, schedules, and compensations added or removed. This is
+security-critical rendering in water park: a PR that removes an approval
+gate from the break-glass Op or lengthens its TTL must render loudly, not
+as a TypeScript diff. Gate and compensation removals are high-severity by
+default.
+
+**Apply as a durable Op.** The generated apply job doesn't have to run the
+apply in the CI runner. It can start (or attach to) an ApplyOp and stream
+status back to the PR check. That gives the apply what a CI job can't:
+survival across runner death, saga compensation on partial failure, and a
+durable approval gate. Which raises the gate-ownership question — CI
+environment approval or Temporal signal? For security-grade applies the
+gate belongs in the Op, because it survives infrastructure failure and
+leaves a workflow-history audit trail; the CI approval is then a forwarder
+that sends the signal. For routine applies the CI gate alone is fine. One
+declaration, `gate: 'ci' | 'op'`, compiled accordingly.
+
+**Reconcile PRs are participants, not noise.** water park's reconcile Op
+authors cloud-to-code PRs. The PR automation must treat them as first-class:
+auto-plan them like any PR, and render their expected shape — a reconcile
+PR should plan to noop-after-merge (it adopts live reality). The flip side
+is drift-awareness on human PRs. The plan is a three-way comparison chant
+already computes (declared-in-PR / declared-on-main / live), so a feature
+PR's plan can say "2 changes from this PR, 1 pre-existing drift item,
+reconcile PR #12 pending" instead of silently folding drift into the diff.
+Atlantis cannot do this — it has a state file, chant has live truth. When
+the estate moves, open plans go stale together; the freshness digest
+catches it at apply, and a re-plan refreshes both kinds of PR.
+
+**Ledger and provenance close the loop.** Merge + apply writes the
+build/release ledger keyed by PR and sha, and the PR gets the applied
+confirmation with provenance. The PR is then not just reviewed intent but
+a traceable release record — the audit trail waterpark's access reviews
+read from.
+
 ## What lands where
 
 **chant core.** Renderer family over the change set (`markdown`,
@@ -150,6 +195,18 @@ requirements accumulate in C5 and get filed on chant when concrete.
    ship guardrail rules; today only a walked-up `.chant/rules/` dir loads
    (`packages/core/src/lint/rule-loader.ts`). Unblocks the org context
    package without re-export shims.
+9. Op-manifest diff — compare compiled Op definitions base vs head, render
+   steps/gates/schedules/compensations changed; gate and compensation
+   removals flagged high-severity.
+10. Op-backed apply — generated apply job starts/attaches to an ApplyOp,
+    streams status to the PR check; `gate: 'ci' | 'op'` compiled per
+    component, CI approval forwarding the Temporal signal in `'op'` mode.
+11. Drift-aware PR plan — surface the three-way split (this PR / main /
+    live) with pre-existing drift and pending reconcile PRs annotated
+    separately from the PR's own changes.
+12. Apply provenance on the PR — merge + apply records to the release
+    ledger keyed by PR/sha and posts the applied confirmation back.
 
-Ordering: 1–2 unblock everything; 3–5 are the visible story; 6–7 are
-follow-ons. water park adopts each as it lands (Track C).
+Ordering: 1–2 unblock everything; 3–5 are the visible story; 6–12 are
+follow-ons, with 9 pulled early for water park (Op diffs are security
+review). water park adopts each as it lands (Track C).
