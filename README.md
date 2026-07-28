@@ -9,4 +9,7 @@ watched, break-glass is gated and self-revoking, and app-team repos reference
 the central layer with typed imports instead of remote-state reads.
 
 This repo is in the planning phase. See [docs/plan.md](docs/plan.md) for the
-design and [docs/issues.md](docs/issues.md) for the draft issue breakdown.
+design, [docs/positioning.md](docs/positioning.md) for positioning and
+audience, [docs/landscape.md](docs/landscape.md) for the survey it rests on,
+[docs/pr-automation.md](docs/pr-automation.md) for the PR story, and
+[docs/issues.md](docs/issues.md) for the draft issue breakdown.
