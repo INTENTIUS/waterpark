@@ -8,8 +8,15 @@ the guardrails and anyone can PR their way to the access they need. Drift is
 watched, break-glass is gated and self-revoking, and app-team repos reference
 the central layer with typed imports instead of remote-state reads.
 
-This repo is in the planning phase. See [docs/plan.md](docs/plan.md) for the
-design, [docs/positioning.md](docs/positioning.md) for positioning and
-audience, [docs/landscape.md](docs/landscape.md) for the survey it rests on,
-[docs/pr-automation.md](docs/pr-automation.md) for the PR story, and
-[docs/issues.md](docs/issues.md) for the draft issue breakdown.
+This repo is in the planning phase.
+
+- [docs/plan.md](docs/plan.md) — the design, open questions, terms
+- [docs/positioning.md](docs/positioning.md) — positioning and audience
+- [docs/landscape.md](docs/landscape.md) — the survey it rests on
+- [docs/pr-automation.md](docs/pr-automation.md) — the PR automation story
+- [docs/threat-model.md](docs/threat-model.md) — threat and credential model
+- [docs/decisions.md](docs/decisions.md) — pinned decisions
+- [docs/demo-org.md](docs/demo-org.md) — flume, the canonical demo org
+- [docs/design/](docs/design/) — in-progress designs for the gating
+  questions (personas, multi-account, break-glass, guardrail rollout)
+- [docs/issues.md](docs/issues.md) — draft issue breakdown, not yet filed

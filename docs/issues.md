@@ -55,10 +55,13 @@ to every role; an expired grant surfaces as drift in the watch Op; snapshot
 tests over synthesized policy JSON.
 
 **A5. OrgPrincipal composite + leaf-file shape.**
-One principal per file under `src/principals/<team>/`. AWS leg only.
+One principal per file under `src/principals/<team>/`. AWS leg only. A
+human principal (e.g. `payments`) emits Identity Center permission-set
+assignments; a workload principal (e.g. `payments-api`) emits a role with
+the boundary. No IAM users or groups (decision 5).
 AC: a new principal is addable by copying a sibling file and editing typed
-fields; wrong persona name is a type error; synth emits role + boundary +
-group memberships.
+fields; wrong persona name is a type error; human synth emits assignments,
+workload synth emits role + boundary; demo-org.md names used throughout.
 
 **A6. Baseline component. needs-design (open question 4)**
 Permission boundaries, org policy set (SCPs + RCPs + declarative policies),
@@ -97,9 +100,27 @@ references in a single PR + apply; graph shows zero remaining references.
 
 **A11. Access-review Op.**
 Quarterly report artifact: every principal, its personas, its reachable
-resources, last-changed from git.
+resources, last-changed from git, expired/expiring grants, satellite
+context-package versions. Shaped as SOC 2 access-review evidence (the
+spreadsheet this replaces).
 AC: runs on the local executor with no Temporal; output is a single
-reviewable artifact; scheduled CI workflow, opt-in gated like loomster's.
+reviewable artifact a compliance reviewer accepts; scheduled CI workflow,
+opt-in gated like loomster's.
+
+**A16. Rotation Op.**
+Rotate any static credentials the estate declares (the break-glass
+signing material, any unavoidable access keys, KMS where relevant).
+Loomster's rotate pattern scoped to the security estate.
+AC: gated run rotates and verifies; nothing static in the estate is
+older than the policy window without a finding.
+
+**A17. Threat-model hardening.**
+Implement threat-model.md's settled items: apply-role permission boundary
+(with A6), OIDC credential wiring per tier, guardrail-path CODEOWNERS +
+high-severity rendering, branch-protection-as-code for the repo itself.
+AC: the apply role cannot detach its own boundary (proven by A3b's
+CheckAccessNotGranted); a PR touching `.chant/rules/` renders
+high-severity; repo branch protection is declared and drift-watched.
 
 **A12. Generated CI.**
 github/gitlab/forgejo pipelines from the component graph, gated deploy,
@@ -127,6 +148,10 @@ for team Y" with the correct file path and PR flow.
 
 ## Track B — cross-cloud fan-out
 
+**needs-design (open question 9)** — all of Track B is gated on
+cross-cloud persona equivalence ([design/personas.md](design/personas.md)
+item 4).
+
 **B1. GCP leg.** OrgPrincipal grows a gcp service-account + IAM-binding leg;
 gcpApply local path.
 **B2. Azure leg.** Azure RBAC assignment leg; azApply local path.
@@ -153,7 +178,8 @@ helper, guardrail lint rules (re-export shims into `.chant/rules/` until
 chant has rule packages), and the typed refs module per C1.
 AC: a new satellite is `package.json` (one dep) + a three-line
 `chant.config.ts` + one resource file, and `chant lint`/`build` enforce
-the full org guardrail set.
+the full org guardrail set; a package upgrade adding a rule cannot break a
+satellite without a warn cycle (design/guardrail-rollout.md).
 
 **C3. Satellite example repo.**
 An app-team monorepo consuming the context package, declaring app-scoped
@@ -178,8 +204,18 @@ Not a runner. A requirements capture for whatever the compiled story cannot
 do (cross-repo orchestration, richer interactivity), accumulated from C1–C4
 friction, filed on chant when concrete.
 
+## Chant-epic dependencies (Track C ↔ pr-automation.md epic)
+
+| water park issue | needs chant epic items |
+|---|---|
+| C2 (context package) | 8 (rule packages — shims until then) |
+| C4 plan/present/gate | 1–5 |
+| C4 Op-manifest + semantic | 9; 11–12 for drift-aware plan + provenance |
+| A17 high-severity rendering | 9 (or interim path-based rendering) |
+| C5 | none — accumulates from friction |
+
 ## Filing order
 
-Settle open questions 2, 4, and 5 (personas, multi-account, break-glass)
-before filing Track A. Question 3 blocks only C1/C2. Everything else can
-file as written.
+Settle open questions 2, 4, and 5 (personas, multi-account, break-glass —
+skeletons in docs/design/) before filing Track A. Question 3 blocks only
+C1/C2; question 9 blocks Track B. Everything else can file as written.

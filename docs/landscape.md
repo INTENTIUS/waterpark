@@ -32,6 +32,25 @@ with org-formation for orgs already on it. Leaning: cover them — they are
 plain CloudFormation-adjacent org resources and the aws lexicon types them
 — and document the coexistence seam anyway.
 
+**The real incumbent is a pile of Terraform.** Most orgs doing IAM-as-code
+at all do it with hand-rolled Terraform modules and Terragrunt hierarchies
+— per-cloud, state-taxed, convention-by-review. That, not any product, is
+what water park displaces, and `chant carve` is the migration path (A14).
+The field-lesson org in plan.md is the best case of the incumbent; water
+park's pitch to those shops is the same pattern without the state mutex
+and with the conventions compiled in.
+
+**Scope line: Cedar / Amazon Verified Permissions** is application-level
+authorization (can this user perform this action in your app), not
+infrastructure IAM. Out of scope; worth one docs sentence because readers
+conflate them.
+
+**The code host is part of the estate.** Merge rights on the water park
+repo are grant rights on everything it manages, and team/repo permissions
+on the code host are themselves access. The github/gitlab/forgejo lexicons
+can declare them, which both closes the loop on the repo's own protection
+(threat-model.md) and is the B3 leg.
+
 ## Verification — the biggest design impact
 
 **IAM Access Analyzer custom policy checks** are API-callable automated
