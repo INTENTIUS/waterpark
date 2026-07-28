@@ -74,19 +74,22 @@ consolidation problem.
 ## Repo shape
 
 ```
-src/baseline/        org guardrails — permission boundaries, SCPs,
-                     account password/MFA policy, default-deny SGs
-src/personas/        typed role archetypes as composites —
-                     developer, deployer, auditor, break-glass
-src/principals/      the PR surface — one file per team/service;
-                     OrgPrincipal composite fans out per cloud
+src/baseline/        org guardrails — permission boundaries, org policies
+                     (SCP + RCP + declarative), account password/MFA
+                     policy, default-deny SGs, the forbidden-actions list
+src/personas/        typed archetypes as composites — human personas
+                     compile to Identity Center permission sets, workload
+                     personas to IAM roles; grants as typed access levels
+src/principals/      the PR surface — one file per human team or workload;
+                     OrgPrincipal fans out to permission-set assignments
+                     (humans) or roles (workloads), later per cloud
 src/network/         security groups / firewall rules with typed
                      intent — SG references, not raw CIDRs
 .chant/rules/        one-type-per-file, path-matches-name,
                      no-wildcard-action, no-open-ingress,
                      boundary-required, no-inline-policy, tag-owner
 ops/                 watch, reconcile, break-glass, offboard,
-                     access-review, key-rotation
+                     access-review, rotation
 ```
 
 Leaf files under `src/principals/` and `src/network/` must be boring enough
@@ -113,6 +116,15 @@ editor.
 github/gitlab team-access legs. The offboard Op becomes the demo that lands.
 
 **Track C — satellite repos.** See below.
+
+On the AWS/cross-cloud tension: the title promise is cross-cloud, the
+positioning and landscape are AWS-only. Both are intentional. AWS is the
+wedge — it is where orgs centralize, where the verification APIs exist, and
+where the ideal customer lives. Cross-cloud is act two, it is what the
+OrgPrincipal shape is designed for, and it is genuinely unsolved: persona
+equivalence across clouds (what "developer" compiles to in Azure RBAC or
+GCP IAM terms) is a design problem nobody in the landscape has solved
+either, which is why Track B is needs-design (open question 9).
 
 ## Satellite repos (the terragrunt/atlantis dimension)
 
@@ -217,9 +229,36 @@ remediation.
 6. **Adoption entry point.** Greenfield init vs `chant carve` from existing
    Terraform IAM vs import from live. Probably all three, but which is the
    documented first path?
-7. **Demo org.** Docs and examples need a fictional org with two or three
-   app teams and one satellite monorepo, threaded through every doc the way
-   loomster's tiers were.
-8. **GUI stance in docs.** Write the "no write GUI" principle down early —
-   browsing goes to behold over the graph — because every org with the bad
-   GUIs will be tempted to rebuild them.
+7. **Demo org.** Resolved — [demo-org.md](demo-org.md) defines flume, the
+   fictional org threaded through docs and acceptance criteria.
+8. **GUI stance in docs.** Resolved — written down in
+   [positioning.md](positioning.md) and pinned in
+   [decisions.md](decisions.md).
+9. **Cross-cloud persona equivalence.** What each persona archetype
+   compiles to on the gcp / azure / k8s / code-host legs, and where
+   equivalence is honest vs forced. Blocks Track B. Skeleton in
+   [design/personas.md](design/personas.md).
+
+Design-in-progress docs for the gating questions live under
+[design/](design/): [personas](design/personas.md),
+[multi-account](design/multi-account.md),
+[break-glass](design/break-glass.md),
+[guardrail-rollout](design/guardrail-rollout.md). The threat and credential
+model is [threat-model.md](threat-model.md). Pinned decisions are in
+[decisions.md](decisions.md).
+
+## Terms
+
+- **principal** — an identity water park manages: a human team or a
+  workload. One leaf file each.
+- **persona** — a typed archetype (developer, deployer, auditor,
+  break-glass) a principal instantiates. Human personas compile to Identity
+  Center permission sets, workload personas to IAM roles.
+- **grant** — one typed access statement inside a principal file: access
+  level × resource, optional `expires`.
+- **leg** — one cloud/provider projection of a principal (aws leg, gcp
+  leg, code-host leg).
+- **estate** — everything live that water park owns or watches.
+- **satellite** — an app-team repo consuming the org context package.
+- **context package** — `@org/waterpark-context`: config preset, naming
+  helper, guardrail rules, typed refs.
