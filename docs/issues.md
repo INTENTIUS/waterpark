@@ -29,14 +29,30 @@ this; rules land in-repo first.)
 **A3. Security lint pack.**
 no-wildcard-action, no-open-ingress (0.0.0.0/0 outside an allowlist),
 boundary-required, no-inline-policy, tag-owner-required,
-sg-reference-not-cidr.
+sg-reference-not-cidr. Rule IDs mapped to established finding taxonomies
+(parliament / cloudsplaining) per landscape.md, the GHA0xx/WGL0xx catalog
+pattern.
 AC: each rule has a failing and passing fixture; rules fire in editor via
-LSP, not only in CI.
+LSP, not only in CI; catalog doc cross-references the upstream finding ids.
+
+**A3b. Access Analyzer proof checks.**
+Live post-synth checks calling IAM Access Analyzer custom policy checks:
+CheckNoNewAccess against the base branch's synthesized policies,
+CheckAccessNotGranted for a declared forbidden-actions list, public-access
+checks. Runs in the PR pipeline with credentials (same wiring as the plan
+job); skipped without credentials.
+AC: a PR widening a policy fails with the automated-reasoning verdict
+rendered on the PR; the forbidden-actions list is a typed config in the
+baseline.
 
 **A4. Persona composites. needs-design (open question 2)**
-developer / deployer / auditor / break-glass as composites over aws IAM.
+developer / deployer / auditor / break-glass as composites, split human vs
+workload: human personas compile to Identity Center permission sets,
+workload personas to IAM roles. Grants as typed access levels (Policy
+Sentry model) expanded at synth; optional first-class `expires` per grant.
 AC: each persona instantiates from params only; permission boundary applied
-to every role; snapshot tests over synthesized policy JSON.
+to every role; an expired grant surfaces as drift in the watch Op; snapshot
+tests over synthesized policy JSON.
 
 **A5. OrgPrincipal composite + leaf-file shape.**
 One principal per file under `src/principals/<team>/`. AWS leg only.
@@ -45,8 +61,9 @@ fields; wrong persona name is a type error; synth emits role + boundary +
 group memberships.
 
 **A6. Baseline component. needs-design (open question 4)**
-Permission boundaries, SCP set, account password/MFA policy, default-deny
-SGs.
+Permission boundaries, org policy set (SCPs + RCPs + declarative policies),
+account password/MFA policy, default-deny SGs, forbidden-actions list
+consumed by A3b. Coexistence seam documented for org-formation shops.
 AC: deploys to Floci and a real account; every other stack references the
 boundary by deterministic name, no hardcoded ARNs.
 
@@ -64,8 +81,11 @@ AC: hand-edit an owned SG in a live account (or Floci), watch flags it
 within one cycle, reconcile opens a PR containing only the owned change.
 
 **A9. Break-glass Op. needs-design (open question 5)**
-Gated Temporal Op: approval gate, timed elevated grant, revocation as saga
-compensation, plus a hard TTL on the grant itself.
+Gated Temporal Op: approval gate (pluggable signal source — CLI, CI, or a
+Slack webhook forwarding the signal), timed elevated grant, revocation as
+saga compensation, plus a hard TTL on the grant itself. Scoped per
+landscape.md: no JIT-catalog UX; Identity Center shops get a documented
+TEAM interop note instead of a replacement.
 AC: approve path grants and auto-revokes on schedule; kill the worker
 mid-grant and revocation still occurs (compensation or TTL); every
 transition lands in the audit trail.
