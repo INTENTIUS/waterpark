@@ -194,12 +194,22 @@ remediation.
    over a few real org models (startup, centralized enterprise, cell-based).
    If the archetypes are wrong, orgs fork the composites and the kit
    collapses into a starter template. This is the main design risk.
+   Landscape constraint ([landscape.md](landscape.md)): personas must split
+   human vs workload — human personas compile to Identity Center permission
+   sets, workload personas to IAM roles. Grant vocabulary should be typed
+   access levels (the Policy Sentry model), expanded at synth. Every grant
+   carries an optional first-class `expires` (IAMbic's good idea) — an
+   expired grant is drift the watch flags and reconcile removes.
 3. **Cross-repo refs mechanism.** Hand-written module vs generated from the
    central build vs a new chant feature (typed component-output export).
    Needs a spike. May produce a chant issue.
 4. **Multi-account AWS.** Real orgs centralize IAM across many accounts, and
-   SCPs live at the org level. Accounts as environments, components, or
-   instances? Needs design before the baseline component is real.
+   the org layer now has three policy types (SCP, RCP, declarative) plus
+   Identity Center permission sets, all org-scoped. Multi-account via
+   Organizations is the default shape, single-account the degenerate case.
+   Accounts as environments, components, or instances? Coexistence seam
+   with org-formation for orgs already on it? Needs design before the
+   baseline component is real.
 5. **Break-glass guarantees.** What happens when Temporal is down mid-grant.
    Is saga compensation a sufficient guarantee for a security control?
    Document failure modes honestly; consider a belt-and-suspenders TTL on
