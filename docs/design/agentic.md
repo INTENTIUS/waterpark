@@ -103,10 +103,71 @@ want to surface as MCP tools from the repo/context package (a
 `.chant/tools/` analog to `.chant/rules/`) so any MCP-speaking agent gets
 `wp-request`/lens/projection verbs without a lexicon.
 
+## Executors and the HITL fallback
+
+The temporal lexicon is involved **optionally**, exactly as chant Ops
+already work (loomster precedent: `chant run <op>` on the local executor,
+`--temporal` where durability and gates are wanted). water park's
+human-in-the-loop is a three-tier ladder, and Temporal is the top tier,
+not a requirement:
+
+1. **The PR merge is the universal gate.** Everything that flows through
+   code — including every agent-authored change — gets durable HITL from
+   the code host itself: review, approval, merge. No Temporal anywhere.
+   `wp-request` runs on the local executor and *ends* at a PR, so the
+   intent Op needs no gate of its own.
+2. **CI-native gates** (`gate: 'ci'` in pr-automation.md): GitHub
+   environment required-reviewers, GitLab manual jobs. Covers gated
+   applies for orgs with no Temporal deployment.
+3. **Temporal signal gates** (`gate: 'op'`): for the operations that need
+   a gate *outside* any one CI run — break-glass, restore-class applies —
+   where durability across runner death and a workflow-history audit
+   trail matter.
+
+Break-glass keeps a documented no-Temporal path (local executor, CLI
+confirmation by a second human — also the code-host-down story,
+break-glass item 5), and it stays safe with a weak gate because
+revocation never depends on the gate: cloud-side expiry (layer 1) holds
+regardless of executor. The rule of thumb: gates degrade gracefully down
+the ladder; revocation guarantees never degrade because they live in the
+cloud, not the workflow.
+
+## Git and ticketing integration
+
+Git is already the core, not an integration: the PR is the write path,
+blame is the audit trail, CODEOWNERS is the routing, and apply provenance
+keys to PR/sha (pr-automation item 12). The one addition worth a
+convention: a commit/PR trailer (`Access-Request: JIRA-123`) joining
+changes to their originating request, indexed by the access-review Op so
+compliance queries walk ticket → PR → apply provenance as one chain.
+
+Ticketing (Jira, Linear, ServiceNow) is where most orgs' access requests
+live today, and the stance mirrors the GUI decision: **tickets are intake
+and notification surfaces; the repo is the system of record.** Never sync
+state bidirectionally into a ticket — that's the write-GUI trap in new
+clothes.
+
+- **Inbound**: a labeled ticket starts a concierge conversation (Fountain
+  API webhook glue); the concierge extracts intent, runs `wp-request`,
+  links the PR back, and the ticket tracks the PR's lifecycle
+  (opened/approved/applied) as comments. Orgs with ServiceNow-style
+  access-request processes keep their intake and their evidence chain —
+  the chain just terminates in a PR and a provenance record instead of a
+  screenshot.
+- **Outbound**: water park events that need a human decision but not a PR
+  (drift on a foreign resource, review-campaign assignments, hygiene
+  findings exceeding the PR volume cap) can file tickets.
+- **Mechanism**: this lives at the agent layer, not the deterministic
+  core. The concierge's Fountain Environment includes the org's ticketing
+  MCP server; chant needs no Jira lexicon. The code hosts' own issue
+  systems are already covered by the github/gitlab/forgejo lexicons and
+  the orbit MCP tools.
+
 ## To decide
 
-1. Front-end: Slack vs CLI vs both; where the conversation → Fountain API
-   glue lives.
+1. Front-ends: Slack, CLI, and/or ticket-webhook intake; where the
+   glue that starts Fountain conversations lives. Ticket-lifecycle
+   comment format.
 2. Which CloudTrail access the explain agent needs and whether that
    stretches the plan tier (read-only but sensitive — may be its own
    credential scope).
