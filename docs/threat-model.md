@@ -72,6 +72,14 @@ Floci needs none of these — every PR validates locally first, which keeps
 the read tier out of most pipeline runs entirely (*open*: which checks
 genuinely need live credentials on PR vs merge).
 
+All three tiers are instances of the same mechanism: federated short-lived
+credentials whose trust config is code. The `src/trust/` layer
+([design/workload-identity.md](design/workload-identity.md)) declares that
+config for workloads generally — CI OIDC, k8s service-account, SPIFFE —
+and the tiers above are its first consumers. A loose subject condition on
+any federation trust is a standing backdoor; those resources get the
+strictest lint and drift severity in the estate.
+
 ## What water park does not defend against
 
 Root/management-account compromise. A malicious security-team insider with

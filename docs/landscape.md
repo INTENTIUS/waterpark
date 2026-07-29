@@ -97,6 +97,25 @@ pack should map its rule IDs to the established finding taxonomies
 security rules used (GHA0xx/WGL0xx). Prowler is the funnel companion to
 chant-audit (#350), not competition — water park manages what it declares.
 
+## Workload identity — SPIFFE/SPIRE (surveyed 2026-07-28)
+
+**SPIFFE** (CNCF standard: `spiffe://` workload identities, short-lived
+X.509/JWT SVIDs via attestation) and **SPIRE** (reference implementation)
+are healthy and consolidating: both repos active, hardened helm chart
+maintained, IETF WIMSE formalizing federation, Istio identity is SPIFFE
+underneath, and a real commercial layer (SPIRL/Defakto, Teleport Workload
+Identity, Tetrate, HPE, Aembit). Impact: complementary, not competing —
+SPIFFE does authentication, water park does authorization, and the seam is
+**federation trust config** (AWS OIDC providers + trust policies / IAM
+Roles Anywhere, GCP WIF pools, Azure federated credentials), which is
+declarable estate and security-critical. SPIFFE IDs are also the universal
+workload principal name for cross-cloud (open question 9's workload half).
+water park never operates the issuer — BYO-issuer; k8s SA tokens and CI
+OIDC are the same mechanism class and the zero-infra default. Full design
+in [design/workload-identity.md](design/workload-identity.md). Scope line:
+**Athenz** bundles authn + RBAC/policy and is the one adjacent tool that
+overlaps water park's territory — a docs sentence, not an integration.
+
 ## Access graphs / CIEM
 
 PMapper (1.6k, stale since 2024) answered "who can reach what" via privilege

@@ -35,3 +35,8 @@ it. Reversing one requires editing this file in the same PR.
 12. **The apply credential is bounded.** water park must not be able to
     escalate water park; the apply role carries its own permission
     boundary. ([threat-model](threat-model.md))
+13. **Federation trust is estate; the issuer is not.** water park declares
+    OIDC/SPIFFE/Roles-Anywhere trust anchors as code with the strictest
+    lint and drift severity, and never operates an identity issuer —
+    BYO-issuer (k8s SA tokens, CI OIDC, SPIRE, or a commercial SPIFFE
+    vendor). ([design/workload-identity](design/workload-identity.md))

@@ -122,6 +122,17 @@ AC: the apply role cannot detach its own boundary (proven by A3b's
 CheckAccessNotGranted); a PR touching `.chant/rules/` renders
 high-severity; repo branch protection is declared and drift-watched.
 
+**A18. Trust layer. needs-design (design/workload-identity.md)**
+`src/trust/` — federation trust as estate: one typed form for CI OIDC,
+k8s service-account, and SPIFFE issuers, serialized to AWS OIDC providers
++ role trust policies (Roles Anywhere documented as the X.509 variant).
+Strictest lint (pinned issuer/audience, no wildcard subject or SPIFFE
+path) and top drift severity. BYO-issuer per decision 13.
+AC: a workload principal declares a SPIFFE ID or k8s/CI subject and its
+AWS leg synthesizes the federation trust; a wildcard subject condition
+fails lint; a hand-edited trust policy is flagged by the watch within one
+cycle.
+
 **A12. Generated CI.**
 github/gitlab/forgejo pipelines from the component graph, gated deploy,
 scheduled watch/reconcile/access-review workflows, validate-on-drift jobs.

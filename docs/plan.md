@@ -85,6 +85,9 @@ src/principals/      the PR surface — one file per human team or workload;
                      (humans) or roles (workloads), later per cloud
 src/network/         security groups / firewall rules with typed
                      intent — SG references, not raw CIDRs
+src/trust/           federation trust as estate — CI OIDC, k8s
+                     service-account, and SPIFFE issuers in one typed
+                     form (design/workload-identity.md)
 .chant/rules/        one-type-per-file, path-matches-name,
                      no-wildcard-action, no-open-ingress,
                      boundary-required, no-inline-policy, tag-owner
@@ -243,7 +246,8 @@ Design-in-progress docs for the gating questions live under
 [design/](design/): [personas](design/personas.md),
 [multi-account](design/multi-account.md),
 [break-glass](design/break-glass.md),
-[guardrail-rollout](design/guardrail-rollout.md). The threat and credential
+[guardrail-rollout](design/guardrail-rollout.md),
+[workload-identity](design/workload-identity.md). The threat and credential
 model is [threat-model.md](threat-model.md). Pinned decisions are in
 [decisions.md](decisions.md).
 
