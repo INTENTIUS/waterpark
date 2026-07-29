@@ -1,9 +1,9 @@
-# water park — draft issue breakdown
+# water park — issue breakdown
 
-Draft only. Not filed yet. Each issue is meant to be independently shippable
-with acceptance criteria, loomster-style (chant#885 precedent). Issues marked
-**needs-design** are blocked on an open question in [plan.md](plan.md) and
-must not be filed until it is settled.
+Filed 2026-07-28 (gating leans confirmed — plan.md open questions 2/4/5
+settled by lean). This doc remains the design source; the GitHub epic
+issue carries the live checklist. Issues marked **needs-design** carry
+open sub-items in their linked design doc.
 
 ## Epic
 
@@ -270,6 +270,6 @@ finding cited; PR volume respects the cap; no PR for foreign resources.
 
 ## Filing order
 
-Settle open questions 2, 4, and 5 (personas, multi-account, break-glass —
-skeletons in docs/design/) before filing Track A. Question 3 blocks only
-C1/C2; question 9 blocks Track B. Everything else can file as written.
+Gate cleared 2026-07-28: leans in docs/design/ adopted for questions 2, 4,
+and 5. Question 3's spike is C1 itself; question 9 keeps Track B
+needs-design until design/personas.md item 4 settles the human half.

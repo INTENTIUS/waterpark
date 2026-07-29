@@ -206,30 +206,24 @@ remediation.
    presets live in `@org/waterpark-context` early. Remaining sub-question
    is the chant-side mechanism — `.chant/rules/` re-export shims now vs
    first-class rule packages (filed on chant).
-2. **Persona set.** Which archetypes are actually universal. Needs a pass
-   over a few real org models (startup, centralized enterprise, cell-based).
-   If the archetypes are wrong, orgs fork the composites and the kit
-   collapses into a starter template. This is the main design risk.
-   Landscape constraint ([landscape.md](landscape.md)): personas must split
-   human vs workload — human personas compile to Identity Center permission
-   sets, workload personas to IAM roles. Grant vocabulary should be typed
-   access levels (the Policy Sentry model), expanded at synth. Every grant
-   carries an optional first-class `expires` (IAMbic's good idea) — an
-   expired grant is drift the watch flags and reconcile removes.
+2. **Persona set.** Settled by lean 2026-07-28: the
+   [design/personas.md](design/personas.md) strawman is adopted as the
+   working design (human/workload split, access-level grants, first-class
+   `expires`, no standing admin). The org-model survey remains as A4's
+   first task and can amend the set before it ships.
 3. **Cross-repo refs mechanism.** Hand-written module vs generated from the
    central build vs a new chant feature (typed component-output export).
    Needs a spike. May produce a chant issue.
-4. **Multi-account AWS.** Real orgs centralize IAM across many accounts, and
-   the org layer now has three policy types (SCP, RCP, declarative) plus
-   Identity Center permission sets, all org-scoped. Multi-account via
-   Organizations is the default shape, single-account the degenerate case.
-   Accounts as environments, components, or instances? Coexistence seam
-   with org-formation for orgs already on it? Needs design before the
-   baseline component is real.
-5. **Break-glass guarantees.** What happens when Temporal is down mid-grant.
-   Is saga compensation a sufficient guarantee for a security control?
-   Document failure modes honestly; consider a belt-and-suspenders TTL on
-   the grant itself (e.g. IAM session duration or a conditional expiry).
+4. **Multi-account AWS.** Settled by lean 2026-07-28: the
+   [design/multi-account.md](design/multi-account.md) hybrid is adopted
+   (org layer as one gated component, registry-driven account-stamp
+   fan-out, account vending out of scope). The fan-out mechanics spike is
+   A6's first task.
+5. **Break-glass guarantees.** Settled by lean 2026-07-28: the
+   [design/break-glass.md](design/break-glass.md) three-layer answer is
+   adopted — cloud-side expiry on the grant itself, compensation as
+   cleanup, watch as backstop. Temporal down can delay cleanup, never
+   extend access. Grant mechanism and signal auth remain A9 sub-items.
 6. **Adoption entry point.** Greenfield init vs `chant carve` from existing
    Terraform IAM vs import from live. Probably all three, but which is the
    documented first path?
