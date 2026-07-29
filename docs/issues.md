@@ -9,7 +9,8 @@ must not be filed until it is settled.
 
 **water park — cross-cloud IAM/security kit on chant.** Central
 one-type-per-file repo, PR-driven, drift-watched, gated Ops, satellite-repo
-enablement. Tracks A (AWS core), B (cross-cloud fan-out), C (satellites).
+enablement, agent concierge. Tracks A (AWS core), B (cross-cloud fan-out),
+C (satellites), D (agentic).
 
 ## Track A — central repo, AWS first
 
@@ -214,6 +215,48 @@ flagged loudly on the PR.
 Not a runner. A requirements capture for whatever the compiled story cannot
 do (cross-repo orchestration, richer interactivity), accumulated from C1–C4
 friction, filed on chant when concrete.
+
+## Track D — agentic
+
+Design source: [design/agentic.md](design/agentic.md). Depends on A15
+(SKILL.md) and the threat-model agent boundary; D1 unblocks the rest.
+
+**D0. Domain verbs.**
+`wp-request` intent Op (structured intent → deterministic leaf-file edit
+→ local lint + proof → PR), access lens + lifecycle projections
+(reachability, expiring, offboard-preview), and the A11 index artifact as
+the Q&A source. File the chant gap: project-local MCP tools
+(`.chant/tools/` analog of `.chant/rules/`).
+AC: `chant run wp-request` with typed args produces the same PR the
+agent flow produces; the reachability question is answered by a
+projection, not a graph walk; verbs are callable without any agent.
+
+**D1. Concierge environment + Q&A/request flows.**
+The reference Fountain Environment manifest in-repo (water park checkout,
+SKILL.md, chant MCP, plan-tier read-only creds, `egress_only`), plus
+SKILL.md hardening for ladder levels 1–2. Flows terminate in D0's verbs —
+the agent extracts intent, the Op authors.
+AC: `fountain apply` stands up the concierge; "who can reach the invoices
+bucket?" answers from the D0 projection; "payments-api needs read on the
+invoices bucket" yields a correct one-file PR via `wp-request` that
+passes lint and CheckNoNewAccess with no human edit (flume scenario 1 and
+the Q&A variants); a boundary-exception request gets a directed refusal
+with the escalation path.
+
+**D2. Explain agents.**
+Drift/reconcile PR annotation (CloudTrail: who, when) and reviewer-side
+commentary on human PRs, layered on the deterministic rendering, labeled
+as commentary. needs-design: CloudTrail credential scope (agentic.md
+item 2).
+AC: flume scenario 2's reconcile PR carries an accurate who/when
+annotation; commentary is visually distinct from the deterministic plan.
+
+**D3. Hygiene agent.**
+Scheduled: Access Analyzer unused-access findings + expiring grants →
+burndown PRs, volume-capped. needs-design: cadence/volume (agentic.md
+item 3).
+AC: an unused grant in the demo estate becomes a removal PR with the
+finding cited; PR volume respects the cap; no PR for foreign resources.
 
 ## Chant-epic dependencies (Track C ↔ pr-automation.md epic)
 

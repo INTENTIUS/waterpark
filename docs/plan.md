@@ -92,7 +92,8 @@ src/trust/           federation trust as estate — CI OIDC, k8s
                      no-wildcard-action, no-open-ingress,
                      boundary-required, no-inline-policy, tag-owner
 ops/                 watch, reconcile, break-glass, offboard,
-                     access-review, rotation
+                     access-review, rotation, request (agent-callable
+                     intent Op — design/agentic.md)
 ```
 
 Leaf files under `src/principals/` and `src/network/` must be boring enough
@@ -247,7 +248,8 @@ Design-in-progress docs for the gating questions live under
 [multi-account](design/multi-account.md),
 [break-glass](design/break-glass.md),
 [guardrail-rollout](design/guardrail-rollout.md),
-[workload-identity](design/workload-identity.md). The threat and credential
+[workload-identity](design/workload-identity.md),
+[agentic](design/agentic.md). The threat and credential
 model is [threat-model.md](threat-model.md). Pinned decisions are in
 [decisions.md](decisions.md).
 

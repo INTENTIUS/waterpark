@@ -34,6 +34,14 @@ and tickets, have the same power with less audit), but it must be stated.
 4. **The context package registry.** Satellites inherit rules from a
    package; a poisoned release weakens every satellite's guardrails.
    Registry account security, provenance/signing *open*.
+5. **The concierge agent.** An agent (Fountain-hosted or ad hoc) authors
+   PRs from plain-language requests ([design/agentic.md](design/agentic.md)).
+   It is an untrusted author by design: plan-tier read-only credentials
+   only, its identity is a water park principal via the trust layer, and
+   it can never approve, apply, or signal a gate. Request text is a
+   prompt-injection surface — tolerable because the verification stack
+   (lint, proofs, CODEOWNERS, gates) treats agent PRs exactly like human
+   PRs.
 
 ## Attack paths and mitigations
 
@@ -45,6 +53,7 @@ and tickets, have the same power with less audit), but it must be stated.
 | Stale plan applied after estate moved | plan-digest freshness check; apply refuses and re-plans |
 | Apply-credential theft from runner | OIDC short-lived creds, protected-branch-only apply, credential permission boundary (below) |
 | Forged Temporal approval signal | *open* — signal auth design in [design/break-glass.md](design/break-glass.md) |
+| Prompt-injected agent opens a malicious PR | agent PRs verified identically to human PRs (lint, proofs, CODEOWNERS); agent creds read-only; agent cannot approve/apply/signal |
 | Orphaned/stale access accumulating | first-class `expires` on grants → drift; access-review Op; offboard Op |
 | water park escalating itself | the apply role carries its own permission boundary (below) |
 
