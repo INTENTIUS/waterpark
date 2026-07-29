@@ -40,7 +40,11 @@ Gates A4/A5 and Track B. Not settled. This doc accumulates the design.
    each archetype compile to on gcp (roles/bindings), azure (RBAC role
    assignments, PIM interplay), k8s (RBAC), code hosts (team/repo perms)?
    Where equivalence is forced, prefer per-leg explicitness over a false
-   common denominator.
+   common denominator. For the workload half, a SPIFFE ID on the
+   principal is the candidate universal name — each cloud leg compiles to
+   that cloud's federation trust for the same ID
+   ([design/workload-identity.md](workload-identity.md)). The human half
+   remains the hard part.
 
 ## Current lean
 
