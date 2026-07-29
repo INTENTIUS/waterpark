@@ -40,3 +40,8 @@ it. Reversing one requires editing this file in the same PR.
     lint and drift severity, and never operates an identity issuer —
     BYO-issuer (k8s SA tokens, CI OIDC, SPIRE, or a commercial SPIFFE
     vendor). ([design/workload-identity](design/workload-identity.md))
+14. **Agents propose; they never approve, apply, or signal.** The agent
+    is an untrusted author with read-only credentials whose PRs are
+    verified identically to human PRs. Trust attaches to the compiled
+    checks, never to the author. Chat authors the PR; the PR remains the
+    only write path. ([design/agentic](design/agentic.md))
