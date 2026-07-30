@@ -17,10 +17,13 @@ path.
 Hard lines (decision 14):
 
 - The agent never approves, never applies, never signals a Temporal gate.
-- The agent holds plan-tier (read-only) credentials only, and its
-  identity is itself a water park workload principal via the trust layer
-  (A18) — water park manages the access of the agents that author water
-  park changes.
+- The sandbox holds no cloud credentials and is never a federation
+  subject (decision 15). The plan-tier credential belongs to the verb
+  service outside the sandbox boundary, which is itself a water park
+  workload principal via the trust layer (A18) — water park manages the
+  access of the services that serve the agents that author water park
+  changes. The sandbox gets a conversation-scoped verb-API token and
+  nothing else.
 - Agent output is untrusted input like any contributor's. The request
   text it consumes is a prompt-injection surface, tolerable precisely
   because the verification stack doesn't care who authored the PR.
@@ -32,11 +35,23 @@ Hard lines (decision 14):
 [Fountain](https://github.com/BinaryBourbon) (multi-tenant sandboxed
 coding-agent platform; Environment/Vault/Agent/Conversation primitives,
 REST conversations API, manifest-driven apply) is the standing runtime.
-The org defines one Environment: water park checkout, SKILL.md, chant MCP
-server, plan-tier credentials, `egress_only` networking. Teams get
-conversations against it via the API — the hook for a Slack front-end or
-CLI. The reference Environment manifest ships in this repo (D1) so
-adopting the concierge is `fountain apply`.
+The org defines one Environment: water park checkout, SKILL.md, the A11
+index artifact, a conversation-scoped token for the domain-verb API,
+`networking_type: limited` with a pinned `networking_config` (fountain's
+actual API surface — the enum is `unrestricted | limited`, not the
+`egress_only` its docs describe) — and no cloud credentials
+(decision 15). The chant MCP verb service runs outside the sandbox
+boundary, holds the plan-tier credential behind a network-bound trust
+anchor ([workload-identity.md](workload-identity.md)), and is the only
+thing the sandbox can call. Restricted networking limits inbound, not
+exfiltration — the credential design assumes exfiltration and makes it
+worthless.
+Fountain enforces this boundary (isolation, token plumbing, egress);
+water park declares its policy (the verb service's trust anchor and
+role, lint on both). Teams get conversations against the Environment
+via the API — the hook for a Slack front-end or CLI. The reference
+Environment manifest ships in this repo (D1) so adopting the concierge
+is `fountain apply`.
 
 Without Fountain the same works ad hoc: clone the repo, ask your agent —
 SKILL.md carries the capability map (A15). Fountain turns that into an
@@ -170,8 +185,16 @@ clothes.
    comment format.
 2. Which CloudTrail access the explain agent needs and whether that
    stretches the plan tier (read-only but sensitive — may be its own
-   credential scope).
+   credential scope). Wherever it lands, it lives in a verb service,
+   never in the sandbox (decision 15) — likely a dedicated
+   `who-changed-this` projection rather than raw CloudTrail reach.
 3. Hygiene-agent cadence and PR volume limits (a burndown that opens 40
    PRs on day one is noise, not hygiene).
 4. Whether level-1 Q&A ships inside behold instead of (or as well as) the
    concierge.
+5. Fountain gap to track: conversation-time `vault_id` can override the
+   declared Environment's env vars (vault wins on key collision), with no
+   agent-side allowlist — a caller can inject env into the concierge
+   sandbox at spawn. Upstream ask filed (chant#1217, ask 4); until it
+   lands, D1 mitigates by restricting who may open conversations against
+   the concierge Environment.

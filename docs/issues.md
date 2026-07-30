@@ -128,11 +128,14 @@ high-severity; repo branch protection is declared and drift-watched.
 k8s service-account, and SPIFFE issuers, serialized to AWS OIDC providers
 + role trust policies (Roles Anywhere documented as the X.509 variant).
 Strictest lint (pinned issuer/audience, no wildcard subject or SPIFFE
-path) and top drift severity. BYO-issuer per decision 13.
+path; network conditions mandatory on anchors serving
+untrusted-sandbox-adjacent consumers per decision 15) and top drift
+severity. BYO-issuer per decision 13.
 AC: a workload principal declares a SPIFFE ID or k8s/CI subject and its
 AWS leg synthesizes the federation trust; a wildcard subject condition
-fails lint; a hand-edited trust policy is flagged by the watch within one
-cycle.
+fails lint; an agent-adjacent anchor without a source-IP/VPC-endpoint
+condition fails lint; a hand-edited trust policy is flagged by the watch
+within one cycle.
 
 **A12. Generated CI.**
 github/gitlab/forgejo pipelines from the component graph, gated deploy,
@@ -233,9 +236,12 @@ projection, not a graph walk; verbs are callable without any agent.
 
 **D1. Concierge environment + Q&A/request flows.**
 The reference Fountain Environment manifest in-repo (water park checkout,
-SKILL.md, chant MCP, plan-tier read-only creds, `egress_only`), plus
-SKILL.md hardening for ladder levels 1–2. Flows terminate in D0's verbs —
-the agent extracts intent, the Op authors.
+SKILL.md, the A11 index artifact, conversation-scoped verb-API token,
+`networking_type: limited` with pinned `networking_config` — no cloud
+credentials per decision 15; the chant MCP verb service runs outside the
+sandbox holding plan-tier creds behind a network-bound trust anchor),
+plus SKILL.md hardening for ladder levels 1–2. Flows terminate in D0's verbs — the agent extracts intent, the Op
+authors.
 AC: `fountain apply` stands up the concierge; "who can reach the invoices
 bucket?" answers from the D0 projection; "payments-api needs read on the
 invoices bucket" yields a correct one-file PR via `wp-request` that

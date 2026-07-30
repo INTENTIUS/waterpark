@@ -41,7 +41,14 @@ it. Reversing one requires editing this file in the same PR.
     BYO-issuer (k8s SA tokens, CI OIDC, SPIRE, or a commercial SPIFFE
     vendor). ([design/workload-identity](design/workload-identity.md))
 14. **Agents propose; they never approve, apply, or signal.** The agent
-    is an untrusted author with read-only credentials whose PRs are
-    verified identically to human PRs. Trust attaches to the compiled
-    checks, never to the author. Chat authors the PR; the PR remains the
-    only write path. ([design/agentic](design/agentic.md))
+    is an untrusted author whose PRs are verified identically to human
+    PRs. Trust attaches to the compiled checks, never to the author.
+    Chat authors the PR; the PR remains the only write path.
+    ([design/agentic](design/agentic.md))
+15. **The sandbox is never a principal.** An untrusted agent sandbox
+    holds no cloud credentials and is never a federation subject.
+    Identity attaches to the verb service outside the sandbox boundary,
+    whose trust anchor is network-bound; the sandbox receives only a
+    conversation-scoped verb-API token.
+    ([design/agentic](design/agentic.md),
+    [design/workload-identity](design/workload-identity.md))

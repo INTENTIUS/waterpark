@@ -36,12 +36,19 @@ and tickets, have the same power with less audit), but it must be stated.
    Registry account security, provenance/signing *open*.
 5. **The concierge agent.** An agent (Fountain-hosted or ad hoc) authors
    PRs from plain-language requests ([design/agentic.md](design/agentic.md)).
-   It is an untrusted author by design: plan-tier read-only credentials
-   only, its identity is a water park principal via the trust layer, and
-   it can never approve, apply, or signal a gate. Request text is a
-   prompt-injection surface — tolerable because the verification stack
-   (lint, proofs, CODEOWNERS, gates) treats agent PRs exactly like human
-   PRs.
+   It is an untrusted author by design, and its sandbox is untrusted
+   compute: assume everything readable inside it is exfiltrated the
+   moment the agent process starts. So the sandbox holds no cloud
+   credentials and is never a federation subject (decision 15). Its
+   verbs are served by a chant MCP process outside the sandbox boundary;
+   that service is trusted code, holds the plan-tier credential behind a
+   network-bound trust anchor, and is itself a water park principal via
+   the trust layer. The sandbox receives only a conversation-scoped
+   verb-API token — exfiltrating it yields the access the conversation
+   already had. The agent can never approve, apply, or signal a gate.
+   Request text is a prompt-injection surface — tolerable because the
+   verification stack (lint, proofs, CODEOWNERS, gates) treats agent PRs
+   exactly like human PRs.
 
 ## Attack paths and mitigations
 
@@ -53,7 +60,8 @@ and tickets, have the same power with less audit), but it must be stated.
 | Stale plan applied after estate moved | plan-digest freshness check; apply refuses and re-plans |
 | Apply-credential theft from runner | OIDC short-lived creds, protected-branch-only apply, credential permission boundary (below) |
 | Forged Temporal approval signal | *open* — signal auth design in [design/break-glass.md](design/break-glass.md) |
-| Prompt-injected agent opens a malicious PR | agent PRs verified identically to human PRs (lint, proofs, CODEOWNERS); agent creds read-only; agent cannot approve/apply/signal |
+| Prompt-injected agent opens a malicious PR | agent PRs verified identically to human PRs (lint, proofs, CODEOWNERS); no cloud creds in the sandbox; agent cannot approve/apply/signal |
+| Credential exfiltration from the agent sandbox | nothing to steal in the sandbox (decision 15); verb-service trust anchor pinned to cluster egress (`aws:SourceIp`/`aws:SourceVpce`) so a replayed token fails at STS; `sts:SourceIdentity` stamped per conversation; role use from an unexpected origin is page-worthy |
 | Orphaned/stale access accumulating | first-class `expires` on grants → drift; access-review Op; offboard Op |
 | water park escalating itself | the apply role carries its own permission boundary (below) |
 
