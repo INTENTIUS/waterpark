@@ -5,12 +5,15 @@ it. Reversing one requires editing this file in the same PR.
 
 1. **The write path is always the PR.** No write GUI, ever. Browsing goes
    to behold over the graph. ([plan](plan.md), [positioning](positioning.md))
-2. **No new format.** TypeScript in, CloudFormation out, export bundle so
-   artifacts outlive the toolchain. The anti-IAMbic clause.
-   ([landscape](landscape.md))
+2. **No new format.** Typed source in, native artifacts out, export bundle
+   so the estate outlives the toolchain. The anti-IAMbic clause. Applies
+   to both backends: chant emits CloudFormation, Terraform keeps its own
+   plan/state. ([landscape](landscape.md))
 3. **Manages what it declares, audits what it owns.** Not a CSPM, not a
-   CIEM, no JIT catalog UX. Estate-wide scanning is the chant-audit
-   funnel. ([positioning](positioning.md), [landscape](landscape.md))
+   CIEM. Estate-wide scanning is the chant-audit funnel. Chat intake is
+   not a JIT catalog: a JIT product grants on approval, water park's
+   concierge produces a diff a human merges (decision 18).
+   ([positioning](positioning.md), [landscape](landscape.md))
 4. **AWS is the wedge; cross-cloud is act two.** Track B is needs-design
    until persona equivalence is solved. ([plan](plan.md))
 5. **Humans get permission sets, workloads get roles.** No IAM users, no
@@ -37,18 +40,66 @@ it. Reversing one requires editing this file in the same PR.
     boundary. ([threat-model](threat-model.md))
 13. **Federation trust is estate; the issuer is not.** water park declares
     OIDC/SPIFFE/Roles-Anywhere trust anchors as code with the strictest
-    lint and drift severity, and never operates an identity issuer —
-    BYO-issuer (k8s SA tokens, CI OIDC, SPIRE, or a commercial SPIFFE
-    vendor). ([design/workload-identity](design/workload-identity.md))
+    lint and drift severity, and never operates an identity issuer.
+    ([design/workload-identity](design/workload-identity.md))
 14. **Agents propose; they never approve, apply, or signal.** The agent
     is an untrusted author whose PRs are verified identically to human
     PRs. Trust attaches to the compiled checks, never to the author.
-    Chat authors the PR; the PR remains the only write path.
     ([design/agentic](design/agentic.md))
 15. **The sandbox is never a principal.** An untrusted agent sandbox
     holds no cloud credentials and is never a federation subject.
-    Identity attaches to the verb service outside the sandbox boundary,
-    whose trust anchor is network-bound; the sandbox receives only a
-    conversation-scoped verb-API token.
+    Identity attaches to the verb service outside the sandbox boundary;
+    the sandbox receives only a conversation-scoped verb-API token.
     ([design/agentic](design/agentic.md),
     [design/workload-identity](design/workload-identity.md))
+16. **water park owns the AWS governance reconcile, or nobody does.**
+    chant's archived `aws-warden` — OU tree, SCPs, Identity Center,
+    org trail, protected break-glass — is adopted on water park's terms:
+    typed source instead of a YAML tree, the PR as the write path, the
+    cycle design and guardrail set taken verbatim.
+    ([upstream.md](upstream.md))
+17. **The requester's identity is declared, never asserted.** A chat or
+    intake identity earns standing only by appearing in a principal's
+    leaf file under the repo's own review. An unmapped identity gets a
+    refusal carrying the enrollment path, never a PR. Until the intake
+    runtime attests the requesting author, the requester is rendered on
+    the PR as an unverified claim, in those words.
+    ([design/agentic](design/agentic.md))
+18. **Chat is intake and notification; it is never an approval surface.**
+    No approve button in a channel, no gate a message can satisfy, no Op
+    a reply can signal. Decision 14's corollary, pinned separately
+    because a chat front-end is exactly where someone will later propose
+    one. ([design/agentic](design/agentic.md))
+19. **One estate: AWS IAM.** Application-level authorization is out of
+    scope for now. The pattern could govern further estates later, and
+    the repo shape leaves room, but nothing ships toward one.
+    ([plan](plan.md))
+20. **Satellites create roles; the boundary is what makes that safe.** A
+    satellite declares its own workload roles inside a permission boundary
+    the central repo owns, enforced by lint at build and by the
+    `iam:PermissionsBoundary` condition at apply. Central keeps personas,
+    the boundary, and the guardrails.
+    ([design/delegation](design/delegation.md))
+21. **CODEOWNERS is generated, not authored.** The routing is derived from
+    the principal files it routes, emitted, and drift-watched. Rerouting
+    review of a team's access is a visible diff, never a quiet dotfile
+    edit. ([threat-model](threat-model.md))
+22. **A live proof never runs in a job an untrusted author can trigger.**
+    PR-time validation is credential-free — Floci plus the full lint pack.
+    Access Analyzer proofs run post-merge-queue or behind a
+    maintainer-applied label. Applies to fork PRs and agent-authored PRs
+    identically. ([threat-model](threat-model.md))
+23. **Two backends, one manifest.** water park supports chant and
+    Terraform/OpenTofu as authoring backends. The normalized change
+    manifest — chant's typed change set, Terraform's plan JSON reduced
+    to the same schema — is the common review, evidence, and
+    access-review object; everything backend-specific stays behind it.
+    `chant carve` remains the migration for orgs that move; backend
+    support is for orgs that stay. ([plan](plan.md),
+    [pr-automation](pr-automation.md))
+24. **Approval binds to the manifest; the PR is the envelope.** A
+    reviewer approves the rendered change manifest, identified by its
+    digest; apply refuses when the recompiled manifest or the live
+    estate diverges. The manifest is never the system of record —
+    declared source in git is (decision 2). Extends decision 6.
+    ([pr-automation](pr-automation.md))

@@ -1,264 +1,207 @@
 # water park — plan
 
-A drop-in kit for cross-cloud IAM and security, built on chant. This is a
-domain kit, a third category alongside lexicons and product adoption kits
-like loomster. There is no upstream product to pin. The upstream is a pattern
-that is known to work.
+A drop-in kit for org IAM and security: a domain kit, with no upstream
+product to pin — the upstream is a pattern known to work. chant is the
+reference backend; Terraform/OpenTofu is a supported backend
+(decision 23, Track F).
 
 ## The big three
 
-1. **Centralized core infra.** One type per file, a hierarchy that makes
-   every resource findable by path guess, anyone PRs their way in.
-2. **Team monorepos with context.** A team creates an infra project with
-   nothing but a resource defined. In the Terraform world this took
-   Terragrunt, because Terraform buries every module in backend, provider,
-   and state wiring. chant carries far less config, so the goal is nearer —
-   what remains is packaging the org's context, not inventing an include
-   system. See the satellite section.
-3. **Pull request automation.** The full design is in
-   [pr-automation.md](pr-automation.md). chant grows a compiled, per-CI PR
-   story; water park is its first implementation.
+1. **Centralized core infra.** One type per file, every resource
+   findable by path guess, anyone PRs their way in.
+2. **Team monorepos with context.** A team creates an infra project
+   with nothing but a resource defined.
+3. **Pull request automation.** [pr-automation.md](pr-automation.md).
+   The PR is the authorization envelope; the reviewer approves the
+   normalized change manifest, bound by digest (decision 24).
 
 Everything else in this plan serves one of the three.
 
 ## The pattern being productized
 
-The best version of centralized security config observed in the wild:
-
-- A fully centralized repo owned by the security/platform team.
-- Exactly one Terraform resource type per file.
-- Folder structure that makes every resource findable by path guess.
-- Anyone in the org can PR their way to the access they need.
-
-It worked because finding a resource was a path lookup, the PR diff was
+The best version of centralized security config observed in the wild: a
+fully centralized repo owned by the security/platform team, one resource
+type per file, folder structure that makes every resource findable by
+path guess, anyone able to PR their way to the access they need. It
+worked because finding a resource was a path lookup, the PR diff was
 exactly the blast radius, and git blame was a per-resource audit trail.
+The worst version: internal GUIs over IAM — no diff, no review, no
+history, drift invisible. The lessons are the spec: config wins, GUIs
+lose, the write path is always the PR, browsing belongs in a read-only
+viewer (behold).
 
-The worst version: internal GUIs over security groups and IAM. No diff, no
-review, no history, no way to propose a change to something you don't own,
-and drift invisible. Two separate GUIs meant no unified view.
+## Two backends
 
-The lessons are the spec. Config wins, GUIs lose. The write path is always
-the PR. Browsing belongs in a read-only viewer (behold), never a write GUI.
+The pattern is tool-agnostic; the enforcement machinery is not.
 
-## What chant adds over the Terraform original
+**Carries to any backend:** the repo shape and one-type-per-file
+convention; the PR as the only write path; drift watch and reconcile
+PRs; generated CODEOWNERS; boundary delegation (pure AWS mechanics);
+Access Analyzer proofs and the semantic access delta (they operate on
+policy documents, not authoring language); cloud-side break-glass
+expiry; the manifest.
 
-The one-type-per-file convention was social in the Terraform shop. Someone
-enforced it in review. chant makes it structural — a project-local lint rule
-enforces one declarable per file and path-matches-name, failing in the
-editor. The pattern survives the hundredth contributor.
+**chant-only amplifiers:** no state file, so no apply mutex; typed lint
+in the editor rather than in CI; Floci for credential-free PR
+validation; the three-file satellite.
 
-Centralized Terraform also pays a state tax. Shared state means a global
-mutex on apply and eventual forced workspace sharding. chant has no state
-file to contend on, so the centralized layout scales without eroding.
+**Terraform backend (Track F, needs-design).** Same repo shape in HCL,
+guardrails as CI policy checks instead of editor lint, drift via plan,
+the manifest normalized from plan JSON. `chant carve` remains the
+migration for orgs that move (A14); the backend is for the majority that
+has the pain without the TypeScript comfort and won't.
 
-Beyond parity, chant's treatment is unusually strong for this domain:
+## The manifest
 
-- Drift on IAM/SGs is an incident, not noise. `chant lifecycle diff --live`
-  on a cron plus owned-only reconcile PRs is a security control.
-- Break-glass access is a gated Temporal Op: approval gate, timed grant,
-  revocation as the saga compensation. If the workflow dies, revocation
-  still runs.
-- Ownership markers plus reference-existing seams mean the kit sits beside a
-  decade of existing IAM and only touches what it declares. Adoption without
-  re-homing.
-- Policy is typed lint at build, left of the platform. A wildcard action or
-  open ingress fails in the editor, before review.
-- One principal definition fans out across clouds via existing lexicons
-  (aws, gcp, azure, k8s, github, gitlab, forgejo). Offboarding a principal
-  everywhere at once is the cross-cloud killer demo.
-
-This kit is the living proof of three published arguments: policy belongs
-left of the platform, governance without the state file, and the
-consolidation problem.
+Intent compiles to source deterministically (`wp-request` proves it), so
+the source diff is a build artifact and the wrong altitude for review.
+The typed change set — the manifest — is what the reviewer actually
+approves: the semantic access delta, proof verdicts, Op-manifest diff.
+Approval binds to its digest; apply refuses on divergence. The PR
+supplies what the manifest cannot: authority and the durable record. The
+manifest is never the system of record — that would be the IAMbic
+failure (decision 2). It is also what makes two backends one product:
+chant emits it natively, Terraform's plan JSON normalizes into it.
 
 ## Repo shape
 
 ```
-src/baseline/        org guardrails — permission boundaries, org policies
-                     (SCP + RCP + declarative), account password/MFA
-                     policy, default-deny SGs, the forbidden-actions list
-src/personas/        typed archetypes as composites — human personas
-                     compile to Identity Center permission sets, workload
-                     personas to IAM roles; grants as typed access levels
-src/principals/      the PR surface — one file per human team or workload;
-                     OrgPrincipal fans out to permission-set assignments
-                     (humans) or roles (workloads), later per cloud
-src/network/         security groups / firewall rules with typed
-                     intent — SG references, not raw CIDRs
-src/trust/           federation trust as estate — CI OIDC, k8s
-                     service-account, and SPIFFE issuers in one typed
-                     form (design/workload-identity.md)
+src/baseline/        org guardrails — boundaries, org policies
+                     (SCP + RCP + declarative), default-deny SGs,
+                     the forbidden-actions list
+src/personas/        typed archetypes — human → permission sets,
+                     workload → IAM roles
+src/principals/      the PR surface — one file per team or workload
+src/network/         SGs with typed intent — references, not raw CIDRs
+src/trust/           federation trust as estate — CI OIDC, k8s SA,
+                     SPIFFE issuers in one typed form
 .chant/rules/        one-type-per-file, path-matches-name,
                      no-wildcard-action, no-open-ingress,
                      boundary-required, no-inline-policy, tag-owner
 ops/                 watch, reconcile, break-glass, offboard,
-                     access-review, rotation, request (agent-callable
-                     intent Op — design/agentic.md)
+                     access-review, rotation, request
+CODEOWNERS           generated, never hand-authored, drift-watched
 ```
 
-Leaf files under `src/principals/` and `src/network/` must be boring enough
-that a first-time contributor copies a sibling file and gets it right. The
-composites carry the complexity. Leaves are close to data. CODEOWNERS routes
-`src/principals/<team>/**` to that team plus security, so central review
-shrinks to exceptions.
-
-Standard treatment from loomster: generated CI for github/gitlab/forgejo
-with a gated deploy, a Floci/azApply/gcpApply local path so changes are
-testable with no cloud account, SKILL.md agent map, docs site, export
-bundle. Consumes published `@intentius/chant` from npm, adds zero chant
-surface.
+Leaf files must be boring enough that a first-time contributor copies a
+sibling file and gets it right; composites carry the complexity.
+CODEOWNERS routes `src/principals/<team>/**` to that team plus security,
+so central review shrinks to exceptions. Standard loomster treatment:
+generated CI for the three code hosts, a Floci local path, SKILL.md,
+docs site, export bundle. Consumes published `@intentius/chant`, adds
+zero chant surface.
 
 ## Tracks
 
-**Track A — central repo, AWS first.** The org scenario starts with AWS
-centralization, so the kit does too. First milestone is three demos: the
-drift watch catching a hand-edited SG and opening a PR, the break-glass Op
-granting and auto-revoking, and lint failing a wildcard policy in the
-editor.
+**Track A — central repo, AWS first.** First milestone is three demos:
+the drift watch catching a hand-edited SG and opening a PR, the
+break-glass Op granting and auto-revoking, and lint failing a wildcard
+policy in the editor.
 
-**Track B — cross-cloud fan-out.** OrgPrincipal grows gcp, azure, k8s, and
-github/gitlab team-access legs. The offboard Op becomes the demo that lands.
+**Track B — cross-cloud fan-out.** OrgPrincipal grows gcp, azure, k8s,
+and code-host legs; the offboard Op becomes the demo that lands.
+needs-design until persona equivalence is solved (open question 9) — the
+title promise is cross-cloud, and it is genuinely unsolved by anyone in
+the landscape.
 
 **Track C — satellite repos.** See below.
 
-On the AWS/cross-cloud tension: the title promise is cross-cloud, the
-positioning and landscape are AWS-only. Both are intentional. AWS is the
-wedge — it is where orgs centralize, where the verification APIs exist, and
-where the ideal customer lives. Cross-cloud is act two, it is what the
-OrgPrincipal shape is designed for, and it is genuinely unsolved: persona
-equivalence across clouds (what "developer" compiles to in Azure RBAC or
-GCP IAM terms) is a design problem nobody in the landscape has solved
-either, which is why Track B is needs-design (open question 9).
+**Track D — agentic.** [design/agentic.md](design/agentic.md). Intake is
+CLI, ticket-webhook, and Fountain conversations; a chat front-end is
+deferred, with decisions 17 and 18 pinning the rules for when it
+returns. The demo: an engineer asks the concierge for access and a
+reviewable PR appears, the whole verification stack between the sentence
+and the grant. Sequenced demo-first against a fixed flume estate
+fixture, with real Track A backfilling behind it; a fixture proves the
+intake/verb/PR seams and nothing about the estate underneath, and every
+AC a fixture cannot honestly satisfy says so.
 
-## Satellite repos (the terragrunt/atlantis dimension)
+**Track F — Terraform backend.** The manifest normalization and the
+guardrail/drift parity described above. needs-design; nothing in Tracks
+A–D depends on it.
 
-In the original org, app teams had their own monorepos leaning on the
-central one-type-per-file repo. Terragrunt supplied context and cross-stack
-references. Atlantis ran plan on PRs and applied on approval.
+## Satellite repos
 
-First, why Terragrunt existed at all. Terraform makes every module carry
-backend config, provider config, state wiring, and per-env var plumbing.
-Terragrunt is an include system that DRYs that overhead away. chant has
-almost none of that overhead — a project is `package.json`,
-`chant.config.ts`, and source files. So the chant version of "context" is
-not a hierarchy of includes. It is one npm package.
+App teams keep their own monorepos leaning on the central repo.
+Terragrunt existed because Terraform buries every module in backend,
+provider, and state wiring; chant's version of "context" is one npm
+package. `@org/waterpark-context` bundles a config preset, the
+naming/tagging helper, the guardrail rules, and the typed refs module. A
+new satellite is one dependency, a three-line config, and one resource
+file.
 
-**The org context package.** The central repo publishes (or the org forks)
-a single package bundling everything a satellite needs: a `chant.config.ts`
-preset (lexicons, ownership convention, buildParams, lint config — spread
-into a three-line local config, no chant feature needed since the config is
-TS), the naming/tagging helper, the org guardrail lint rules, and the typed
-refs module. The target developer experience for a new satellite:
+**References.** The deterministic naming scheme makes cross-repo
+references computable at build time: typed getters (boundary ARNs, SG
+ids, role ARNs), no credentials, no remote-state read. Mechanism open
+(question 3).
 
-```
-package.json      one dependency: @org/waterpark-context
-chant.config.ts   three lines extending the preset
-src/queue.ts      the resource — the only file with content
-```
+**Roles, not just resources.** The interesting satellite case is the
+role that reads the queue. Under decision 20 a satellite declares its
+own workload roles inside a boundary the central repo owns — enforced by
+lint at build and by the `iam:PermissionsBoundary` condition at apply. A
+satellite may create identities that act on its own resources; it may
+never change what an identity is allowed to be
+([design/delegation.md](design/delegation.md)).
 
-That is "an infra project with nothing but a resource defined." Terragrunt
-needed a folder hierarchy and an include DSL to fake this. A typed language
-gets it with an import.
-
-One chant gap stands in the way: lint rules load only from a walked-up
-`.chant/rules/` directory (`packages/core/src/lint/rule-loader.ts`), not
-from a dependency. A satellite can shim it with one-line re-export files,
-but first-class rule packages (config-declared rule sources) is the right
-fix and goes on the chant epic. This also settles open question 1 harder
-than "when a second consumer exists" — satellites are consumers from day
-one, so the rule catalog and context move to a package early.
-
-**References.** Terragrunt reads remote state at plan time, which needs
-credentials and a live backend. water park's naming scheme is deterministic
-(the loomster `{project}-{env}-{instance}-{component}-{resource}`
-convention), so references are computable at build time. The refs module in
-the context package exposes typed getters — boundary ARNs, SG ids, role
-ARNs. Typed, versioned, no credentials at build. A validate step can
-optionally live-check that referenced resources exist. `stackOutput()` is
-intra-repo in chant today, so the refs module is the cross-repo answer.
-Whether it is hand-written, generated from the central build, or points at
-a future chant feature (typed export artifact of component outputs) is an
-open question below.
-
-**PR automation.** The Atlantis role. Designed in full in
-[pr-automation.md](pr-automation.md): plan-on-PR compiled into the
-generated pipelines of all three CI lexicons, per-platform present adapters
-(GitLab's MR widget already ships), gates mapped to native primitives,
-concurrency plus a plan-digest freshness check replacing Atlantis locks,
-and a standing runner explicitly deferred.
-
-**What ships in Track C now.** The context package, a satellite example
-repo showing an app-team monorepo that imports it and declares app-scoped
-resources inside the central guardrails, the generated PR pipeline running
-against it, and a doc naming the pattern so orgs can replicate it.
+**Ships in Track C:** the context package, a satellite example repo
+declaring resources and their roles inside the guardrails, the generated
+PR pipeline, and a doc naming the pattern. One chant gap: lint rules
+load only from a walked-up `.chant/rules/`, so satellites shim with
+re-exports until rule packages land (filed on chant).
 
 ## Scope line
 
-water park manages what it declares and audits what it owns. It is not a
-CSPM. Scanning the rest of the estate is chant-audit's job (chant#350), and
-the two form a funnel — the auditor finds the mess, water park is the
+water park manages what it declares and audits what it owns. Not a CSPM:
+scanning the rest of the estate is chant-audit's job (chant#350), and the
+two form a funnel — the auditor finds the mess, water park is the
 remediation.
 
-## Open questions to settle before filing issues
+## Open questions
 
-1. **Rule catalog packaging.** Largely settled by the context-package
-   design: satellites are consumers from day one, so rules and config
-   presets live in `@org/waterpark-context` early. Remaining sub-question
-   is the chant-side mechanism — `.chant/rules/` re-export shims now vs
-   first-class rule packages (filed on chant).
-2. **Persona set.** Settled by lean 2026-07-28: the
-   [design/personas.md](design/personas.md) strawman is adopted as the
-   working design (human/workload split, access-level grants, first-class
-   `expires`, no standing admin). The org-model survey remains as A4's
-   first task and can amend the set before it ships.
-3. **Cross-repo refs mechanism.** Hand-written module vs generated from the
-   central build vs a new chant feature (typed component-output export).
-   Needs a spike. May produce a chant issue.
-4. **Multi-account AWS.** Settled by lean 2026-07-28: the
-   [design/multi-account.md](design/multi-account.md) hybrid is adopted
-   (org layer as one gated component, registry-driven account-stamp
-   fan-out, account vending out of scope). The fan-out mechanics spike is
-   A6's first task.
-5. **Break-glass guarantees.** Settled by lean 2026-07-28: the
-   [design/break-glass.md](design/break-glass.md) three-layer answer is
-   adopted — cloud-side expiry on the grant itself, compensation as
-   cleanup, watch as backstop. Temporal down can delay cleanup, never
-   extend access. Grant mechanism and signal auth remain A9 sub-items.
-6. **Adoption entry point.** Greenfield init vs `chant carve` from existing
-   Terraform IAM vs import from live. Probably all three, but which is the
-   documented first path?
-7. **Demo org.** Resolved — [demo-org.md](demo-org.md) defines flume, the
-   fictional org threaded through docs and acceptance criteria.
-8. **GUI stance in docs.** Resolved — written down in
-   [positioning.md](positioning.md) and pinned in
-   [decisions.md](decisions.md).
-9. **Cross-cloud persona equivalence.** What each persona archetype
-   compiles to on the gcp / azure / k8s / code-host legs, and where
-   equivalence is honest vs forced. Blocks Track B. Skeleton in
-   [design/personas.md](design/personas.md).
+Settled: personas (design/personas.md strawman adopted), multi-account
+(design/multi-account.md hybrid adopted), break-glass (three-layer answer
+adopted), demo org (flume, demo-org.md), GUI stance (decision 1).
 
-Design-in-progress docs for the gating questions live under
-[design/](design/): [personas](design/personas.md),
-[multi-account](design/multi-account.md),
-[break-glass](design/break-glass.md),
-[guardrail-rollout](design/guardrail-rollout.md),
-[workload-identity](design/workload-identity.md),
-[agentic](design/agentic.md). The threat and credential
-model is [threat-model.md](threat-model.md). Pinned decisions are in
-[decisions.md](decisions.md).
+1. **Rule catalog packaging.** Settled in shape — rules live in the
+   context package from day one; open sub-question: re-export shims now
+   vs first-class rule packages (filed on chant).
+3. **Cross-repo refs mechanism.** Hand-written vs generated vs a chant
+   feature (typed component-output export). Needs a spike.
+6. **Adoption entry point.** Greenfield init vs `chant carve` vs import
+   from live. Probably all three; carve is the strongest documented
+   first path because it prices the move first. Confirm in A14.
+9. **Cross-cloud persona equivalence.** What each archetype compiles to
+   per leg, and where equivalence is honest vs forced. Blocks Track B.
+10. **How much of aws-warden to take.** Decision 16 adopts the
+    reconcile; the shape is open — Ops over typed source, keeping the
+    cycle decomposition and guardrail set. Belongs to A6.
+11. **The access-review artifact format.** OKF is a candidate with a
+    spec and validator; A11's first task.
+12. **The delegated boundary's contents.** The most-revised object in
+    the baseline. Belongs to A6 with the apply-role boundary.
+13. **Cross-repo reachability.** Once satellites create roles, "who can
+    reach X" spans repos: satellites publish a graph artifact, or A11
+    scopes to the central estate and states the gap.
+14. **Manifest schema and Terraform normalization.** The common schema
+    and the plan-JSON reduction. Gates Track F; the chant half is
+    pr-automation epic items 1–2.
 
 ## Terms
 
 - **principal** — an identity water park manages: a human team or a
   workload. One leaf file each.
 - **persona** — a typed archetype (developer, deployer, auditor,
-  break-glass) a principal instantiates. Human personas compile to Identity
-  Center permission sets, workload personas to IAM roles.
+  break-glass) a principal instantiates.
 - **grant** — one typed access statement inside a principal file: access
   level × resource, optional `expires`.
-- **leg** — one cloud/provider projection of a principal (aws leg, gcp
-  leg, code-host leg).
+- **leg** — one cloud/provider projection of a principal.
 - **estate** — everything live that water park owns or watches.
 - **satellite** — an app-team repo consuming the org context package.
 - **context package** — `@org/waterpark-context`: config preset, naming
   helper, guardrail rules, typed refs.
+- **manifest** — the normalized change set a reviewer approves, bound
+  by digest (decisions 23, 24). Backend-blind.
+- **backend** — the authoring toolchain behind the manifest: chant or
+  Terraform/OpenTofu.
+- **delegated boundary** — the permission boundary a satellite's roles
+  are created inside (decision 20).

@@ -1,57 +1,41 @@
-# Design: multi-account AWS (open question 4)
+# Design: multi-account AWS
 
-Gates A6. Not settled. Multi-account via Organizations is the default
-shape; single-account is the degenerate case.
+Gates A6. Multi-account via Organizations is the default shape;
+single-account is the degenerate case.
 
 ## What has to be modeled
 
 - **The org layer**: SCPs, RCPs, declarative policies, OUs. Applied from
-  the management account (or a delegated admin). Org-scoped, not
-  account-scoped.
-- **Identity Center**: one instance per org, in the management or
-  delegated-admin account. Permission sets are org resources; access is a
-  three-way assignment (principal × permission set × account).
-- **Per-account resources**: boundaries, workload roles, SGs — stamped
-  into many accounts, same definition.
+  the management account (or delegated admin). Org-scoped.
+- **Identity Center**: one instance per org. Permission sets are org
+  resources; access is a three-way assignment (principal × permission
+  set × account).
+- **Per-account resources**: boundaries, workload roles, SGs — the same
+  definition stamped into many accounts.
 
-## The modeling question
+## The adopted hybrid
 
-Accounts as environments, components, or instances?
+The org layer is one gated component on the management-account
+credential tier, applied rarely. Account stamps are one component
+definition fanned out over a typed account registry
+(`src/baseline/accounts.ts` — itself reference-existing for Control
+Tower / org-formation shops). Identity Center assignments are generated
+from principals × registry. Account vending is out of scope
+(decision 11): water park references accounts, it does not create them.
 
-- *Environments* (`chant build --env prod-payments`) — fits per-account
-  param sets, but accounts aren't lifecycle stages; smells wrong.
-- *Components* — one component per account gives dependency ordering
-  (org layer → accounts) and per-account apply jobs from generated CI.
-  Doesn't scale to dozens of accounts as hand-written component files.
-- *Instances* — the loomster multi-instance convention; fits "same stamp,
-  many accounts."
+Rejected shapes: accounts as environments (accounts aren't lifecycle
+stages) and hand-written per-account components (doesn't scale to
+dozens).
 
-Lean: **hybrid.** The org layer is one component (management-account
-credential tier). Account stamps are one component definition fanned out
-over an account list (a typed account registry in `src/baseline/accounts.ts`
-— which may itself be reference-existing for Control Tower / org-formation
-shops). Whether chant's component model fans a component over a list today
-or needs a seam is a spike — may produce a chant issue.
+## To decide (A6's first spike)
 
-## To decide
-
-1. The account registry shape, and adopting existing accounts vs vending
-   new ones (account vending is org-formation / Control Tower territory —
-   coexist, don't compete; water park references accounts, it does not
-   create them. Confirm this scope line.)
-2. Credential mechanics for the org tier (delegated admin account,
-   separate OIDC role, separate gate) — threads into threat-model.md
-   tier 3.
-3. What Floci can emulate here. Organizations/Identity Center emulation
-   likely doesn't exist — check; if absent, the local path covers account
-   stamps only and the org layer validates by synth + proof checks, not
-   local apply. May produce a Floci issue.
-4. Region: Identity Center and org policies are global-ish; SG/network
-   stamps are regional. Where region enters the naming scheme.
-
-## Current lean
-
-Org layer = one gated component, management credentials, applied rarely.
-Accounts = registry-driven fan-out of a stamp component. Identity Center
-assignments generated from principals × registry. Account vending out of
-scope.
+1. Fan-out mechanics: does chant's component model fan a definition over
+   a list today, or is a seam needed? May produce a chant issue.
+2. Credential mechanics for the org tier (delegated-admin account,
+   separate OIDC role, separate gate) — threat-model tier 3.
+3. What Floci can emulate: Organizations/Identity Center emulation
+   likely doesn't exist. If absent, the local path covers account stamps
+   only and the org layer validates by synth + proof checks. May produce
+   a Floci issue.
+4. Where region enters the naming scheme (org resources are global-ish,
+   network stamps regional).

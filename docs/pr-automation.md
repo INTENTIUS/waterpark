@@ -1,212 +1,154 @@
 # Pull request automation
 
-chant needs a first-class PR automation story. water park is its proving
-ground. This doc studies the two prior arts, names the primitives, and maps
-them onto what chant already has.
+chant needs a first-class PR automation story; water park is its proving
+ground. This doc studies the prior art, names the primitives, and pins
+what the reviewer actually approves.
 
 ## Prior art
 
-### Atlantis
+**Atlantis:** a standing credential-holding server wired to VCS
+webhooks — plan as comments, apply from the PR, a lock table because
+plans go stale against shared state. Got right: plan output where review
+happens. **Pulumi:** CI-native previews with sticky comments, apply on
+merge, ephemeral Review Stacks. Got right: no server for the common
+path. Costs both share: GitHub-first with everything else second-class,
+and a preview that is text, not typed data, so nothing downstream can
+act on it.
 
-A standing server wired to VCS webhooks. On PR open or push it locates the
-changed Terraform projects, runs plan per project, and posts the output as
-comments. `atlantis apply` in a comment applies from the PR, and merge
-follows a successful apply. A lock table serializes PRs touching the same
-project, because plans go stale against shared mutable state.
-
-What it got right. Plan output on the PR where review happens. A uniform UX
-across VCS providers. Autoplan scoped to what changed.
-
-What it costs. You run and secure a credential-holding server. Locking
-exists because Terraform state forced it. Scoping is file-path heuristics.
-The comment-as-CLI is uniform only because the server abstracts every
-platform down to its lowest common denominator.
-
-### Pulumi
-
-Two modes. CI-native: `pulumi/actions` runs preview inside the PR workflow
-and maintains a sticky PR comment with the diff; apply runs on merge.
-SaaS: Pulumi Deployments' Review Stacks spin up an ephemeral stack per PR
-and destroy it on close. Gating leans on the CI's own primitives or Pulumi
-Cloud approvals.
-
-What it got right. No server for the common path — the CI's compute and
-secret store do the work. Ephemeral per-PR environments. Sticky comments
-that update per push instead of piling up.
-
-What it costs. The GitHub action is first-class and everything else is
-second-class. The preview is a text artifact, not typed data, so nothing
-downstream can act on it.
-
-### The per-CI reality
-
-There is no uniform substrate. Each platform has different native
-primitives, and a good story uses them instead of flattening them.
+**The per-CI reality.** No uniform substrate; a good story uses each
+platform's native primitives:
 
 | Primitive | GitHub | GitLab | Forgejo |
 |---|---|---|---|
-| PR pipeline trigger | `pull_request` | MR pipelines | `pull_request` (Actions-compatible) |
-| Present the plan | sticky comment + Check summary | native terraform MR widget | comment via API |
-| Apply gate | environment + required reviewers | manual job + protected environment | protected branch + manual dispatch |
-| Serialize applies | `concurrency:` group | `resource_group` | limited — freshness digest carries it |
-| Comment commands | `issue_comment` workflow trigger | not idiomatic — the manual-job button is | `issue_comment`-style trigger |
+| PR pipeline trigger | `pull_request` | MR pipelines | `pull_request` |
+| Present the plan | sticky comment + Check | native MR widget | comment via API |
+| Apply gate | environment + required reviewers | manual job + protected env | protected branch + dispatch |
+| Serialize applies | `concurrency:` group | `resource_group` | freshness digest carries it |
 
 ## chant's position: compile the runner away
 
 Atlantis is a server because Terraform pipelines were hand-written and
-shared state needed a lock coordinator. chant compiles pipelines from the
-component graph and has no state file. So PR automation should be a compile
-target of the same generator, not a standing service. The per-CI differences
-stop being a porting burden and become the serializer's job — one
-declaration, three dialects, which is exactly what the CI lexicons are for.
+shared state needed a lock coordinator. chant compiles pipelines from
+the component graph and has no state file, so PR automation is a compile
+target of the same generator, not a standing service. The per-CI
+differences become the serializer's job — one declaration, three
+dialects.
 
 ## The five primitives
 
-Every PR automation story reduces to five things. chant has most of them.
+1. **Scope** — which components does this PR touch? `affected.ts` diffs
+   deterministic build artifacts and walks dependents; a comment-only
+   edit produces no plan.
+2. **Plan** — the typed change set (create/update/delete/adopt/noop,
+   ownership-aware). Typed data, not text.
+3. **Present** — show it on the PR, per-CI adapters (GitLab's
+   `MrPlanReport` ships today).
+4. **Gate** — who may apply, when; compiled to each platform's native
+   primitive.
+5. **Serialize and freshness** — compiled concurrency groups so applies
+   never interleave, and a change-set digest recorded at plan that
+   apply re-checks, refusing if the estate moved. The digest is the
+   lock; no lock server.
 
-1. **Scope** — which components does this PR touch?
-   `packages/core/src/lifecycle/affected.ts` diffs deterministic build
-   artifacts between base and head, walks dependents, and reports
-   deploy-time-input stacks as indeterminate. Better than Atlantis's path
-   heuristics: a comment-only edit produces no artifact change and no plan.
-2. **Plan** — what would change? `chant lifecycle plan` and the typed
-   change set (create/update/delete/adopt/noop, ownership-aware). Typed
-   data, not text, so everything downstream can act on it.
-3. **Present** — show it on the PR. Per-CI adapters. GitLab ships today
-   (`MrPlanReport` → the native MR widget via `--report gitlab-mr`).
-   GitHub needs a sticky-comment + Check-summary composite and a
-   `--report markdown` / `--report github-pr` renderer beside the gitlab
-   one. Forgejo needs the comment adapter.
-4. **Gate** — who may apply, when. Compiled to each platform's native
-   primitive from one declaration. GitHub environments with required
-   reviewers, GitLab manual jobs on protected environments, Forgejo
-   protected branches plus dispatch.
-5. **Serialize and freshness** — the Atlantis-lock analog, split in two.
-   Concurrency: compile `concurrency:` groups / `resource_group` per
-   component so applies never interleave. Staleness: record the change-set
-   digest at plan time as an artifact; apply re-diffs and refuses if the
-   live estate moved since. No lock server. The digest is the lock.
+## The manifest is what gets approved (decisions 23, 24)
 
-## Semantics chant can choose
+Intent compiles to source deterministically, so the source diff is a
+build artifact and the wrong altitude for security review. The reviewable
+object is the **manifest**: the typed change set, rendered as the
+semantic access delta ("grants `s3:GetObject` on `flume-invoices` to
+`payments-api`, expires 2026-11-01"), with proof verdicts and Op-manifest
+diffs beside it.
 
-**Merge-then-apply is the default.** It fits the gated deploy jobs the
-generators already emit, and it keeps the audit trail on main. Atlantis's
-apply-from-PR-then-merge can be an option later for orgs that want it — the
-freshness digest is what makes it safe — but it is not the first target.
+Approval binds to the manifest's digest, not the source sha. Apply
+recompiles, re-diffs against live, and refuses if either diverges from
+what was approved — the freshness check from primitive 5, promoted from
+staleness guard to the definition of consent. The PR remains the
+envelope: it supplies authority (code-host review, CODEOWNERS, branch
+protection) and the durable record, which no manifest ledger should try
+to rebuild. The manifest is never the system of record (decision 2).
 
-**Comment commands are per-platform idiom, not policy.** GitHub and Forgejo
-get `/chant apply` via comment-triggered workflows, no server needed.
-GitLab's idiom is the manual-job button on the MR pipeline. Don't force
-uniformity; each dialect should feel native.
+The manifest is also the cross-backend layer. chant emits it natively;
+Terraform's plan JSON normalizes into the same schema (open question 14),
+so review, evidence, and the access-review artifact are backend-blind
+while lint, synthesis, and drift mechanics stay per-backend.
 
-**Ephemeral PR instances come free.** The `{project}-{env}-{instance}-…`
-naming scheme means `instance=pr-123` deploys alongside everything and
-tears down on close — the Review Stacks analog with no SaaS. And chant has
-one capability neither prior art has: emulator-backed PR validation. A PR
-pipeline can take every stack to CREATE_COMPLETE against Floci with zero
-cloud credentials in the PR context.
+## Semantics
+
+**Merge-then-apply is the default** (decision 6); apply-from-PR is a
+later option the freshness digest makes safe. **Comment commands are
+per-platform idiom, not policy** — GitHub/Forgejo get comment-triggered
+workflows, GitLab's idiom is the manual-job button. **Ephemeral PR
+instances come free**: `instance=pr-123` deploys alongside everything
+and tears down on close, and Floci-backed validation takes every stack
+to CREATE_COMPLETE with zero cloud credentials in the PR context.
 
 ## Ops and lifecycle in the PR loop
 
-Synthesis-first is the right frame, but chant is not only synthesis. Ops
-and lifecycles are part of the PR story in four places, and this is where
-chant leaves both prior arts behind — Atlantis and Pulumi automate a
-stateless plan/apply; chant can put a durable workflow behind the merge
-button.
+**PRs that change Ops.** Diff the compiled Op manifest between base and
+head; a PR removing an approval gate from the break-glass Op must render
+loudly, never as a TypeScript diff. Gate and compensation removals are
+high-severity by default.
 
-**PRs that change Ops.** A PR editing `ops/*.op.ts` needs a plan too. Diff
-the compiled Op manifest between base and head and present it as steps,
-gates, schedules, and compensations added or removed. This is
-security-critical rendering in water park: a PR that removes an approval
-gate from the break-glass Op or lengthens its TTL must render loudly, not
-as a TypeScript diff. Gate and compensation removals are high-severity by
-default.
+**Apply as a durable Op.** The generated apply job can attach to an
+ApplyOp and stream status to the PR check: survival across runner death,
+saga compensation, a durable gate. One declaration, `gate: 'ci' | 'op'` —
+security-grade applies gate in the Op, with CI approval forwarding the
+signal.
 
-**Apply as a durable Op.** The generated apply job doesn't have to run the
-apply in the CI runner. It can start (or attach to) an ApplyOp and stream
-status back to the PR check. That gives the apply what a CI job can't:
-survival across runner death, saga compensation on partial failure, and a
-durable approval gate. Which raises the gate-ownership question — CI
-environment approval or Temporal signal? For security-grade applies the
-gate belongs in the Op, because it survives infrastructure failure and
-leaves a workflow-history audit trail; the CI approval is then a forwarder
-that sends the signal. For routine applies the CI gate alone is fine. One
-declaration, `gate: 'ci' | 'op'`, compiled accordingly.
+**Reconcile PRs are participants.** Auto-plan them (they should plan to
+noop-after-merge), and make human PRs drift-aware: the three-way
+comparison (declared-in-PR / declared-on-main / live) lets a plan say
+"2 changes from this PR, 1 pre-existing drift item" instead of silently
+folding drift in.
 
-**Reconcile PRs are participants, not noise.** water park's reconcile Op
-authors cloud-to-code PRs. The PR automation must treat them as first-class:
-auto-plan them like any PR, and render their expected shape — a reconcile
-PR should plan to noop-after-merge (it adopts live reality). The flip side
-is drift-awareness on human PRs. The plan is a three-way comparison chant
-already computes (declared-in-PR / declared-on-main / live), so a feature
-PR's plan can say "2 changes from this PR, 1 pre-existing drift item,
-reconcile PR #12 pending" instead of silently folding drift into the diff.
-Atlantis cannot do this — it has a state file, chant has live truth. When
-the estate moves, open plans go stale together; the freshness digest
-catches it at apply, and a re-plan refreshes both kinds of PR.
-
-**Ledger and provenance close the loop.** Merge + apply writes the
-build/release ledger keyed by PR and sha, and the PR gets the applied
-confirmation with provenance. The PR is then not just reviewed intent but
-a traceable release record — the audit trail waterpark's access reviews
-read from.
+**Ledger and provenance.** Merge + apply writes the release ledger keyed
+by PR and sha — the audit trail the access reviews read from.
 
 ## What lands where
 
-**chant core.** Renderer family over the change set (`markdown`,
-`github-pr` beside `gitlab-mr`). Plan-digest record + `--require-fresh`
-verification on apply. `affected` wired into the generated PR jobs.
+**chant core:** change-set renderers (`markdown`, `github-pr`);
+plan-digest record + `--require-fresh`; `affected` in generated PR
+jobs. **CI lexicons:** a `pullRequests` generator option per platform.
+**water park:** the implementation — PR opens → affected scoping →
+credential-free Floci validation → lint → manifest presented →
+CODEOWNERS → gate → merge → gated apply with the digest → drift watch.
+Plus the layer only water park can add: the semantic access delta, the
+difference between a rubber stamp and an informed approval.
 
-**CI lexicons.** A `pullRequests` option on `generateComponentPipeline`
-in all three, emitting the plan-on-PR jobs, the present adapter, the gate,
-and the concurrency primitive for that platform. A GitHub `PrPlanComment`
-composite (peer of gitlab's `MrPlanReport`) and a Forgejo equivalent.
+## Draft chant-side epic
 
-**water park.** The implementation. PR opens → affected scoping →
-credential-free Floci validation → lint (guardrails fail before review) →
-plan presented per platform → CODEOWNERS routes → approval gate → merge →
-gated apply from main with the freshness digest → the drift watch keeps it
-true afterward.
-
-Plus the one layer only water park can add: **semantic rendering.** An IAM
-change set rendered as access deltas — "grants s3:GetObject on bucket X to
-team payments" — instead of a JSON diff. Generic tools can't do this; a
-typed graph can. For security review this is the difference between a
-rubber stamp and an informed approval.
-
-**Explicitly deferred.** A standing chant runner. If the compiled story
-leaves gaps (cross-repo orchestration, richer interactivity), the
-requirements accumulate in C5 and get filed on chant when concrete.
-
-## Draft chant-side epic (to file on chant, not here)
-
-1. Change-set renderers: `markdown`, `github-pr` (peer of `gitlab-mr`).
+1. Change-set renderers: `markdown`, `github-pr`.
 2. Plan-digest record at plan, `--require-fresh` refusal at apply.
-3. github lexicon: `PrPlanComment` composite (sticky comment + Check).
-4. forgejo lexicon: PR comment adapter composite.
-5. `pullRequests` option in all three `generateComponentPipeline`s —
-   plan jobs scoped by `affected`, present adapter, native gate,
-   concurrency primitive.
-6. Comment-command recipe (github/forgejo) — generated
-   `issue_comment` workflow calling `chant run`, gated.
-7. Ephemeral instance recipe — `instance=pr-<n>` up on open, down on
-   close, documented against Floci and real accounts.
-8. Lint rule packages — config-declared rule sources so a dependency can
-   ship guardrail rules; today only a walked-up `.chant/rules/` dir loads
-   (`packages/core/src/lint/rule-loader.ts`). Unblocks the org context
-   package without re-export shims.
-9. Op-manifest diff — compare compiled Op definitions base vs head, render
-   steps/gates/schedules/compensations changed; gate and compensation
-   removals flagged high-severity.
-10. Op-backed apply — generated apply job starts/attaches to an ApplyOp,
-    streams status to the PR check; `gate: 'ci' | 'op'` compiled per
-    component, CI approval forwarding the Temporal signal in `'op'` mode.
-11. Drift-aware PR plan — surface the three-way split (this PR / main /
-    live) with pre-existing drift and pending reconcile PRs annotated
-    separately from the PR's own changes.
-12. Apply provenance on the PR — merge + apply records to the release
-    ledger keyed by PR/sha and posts the applied confirmation back.
+3. github `PrPlanComment` composite. 4. forgejo comment adapter.
+5. `pullRequests` option in the three CI generators.
+6. ~~Comment-command recipe~~ (dropped — see below).
+7. Ephemeral instance recipe. 8. Lint rule packages.
+9. Op-manifest diff (gate/compensation removals high-severity).
+10. Op-backed apply (`gate: 'ci' | 'op'`).
+11. Drift-aware PR plan (three-way split).
+12. Apply provenance on the PR.
 
-Ordering: 1–2 unblock everything; 3–5 are the visible story; 6–12 are
-follow-ons, with 9 pulled early for water park (Op diffs are security
-review). water park adopts each as it lands (Track C).
+**Status, 2026-08-19.** None has landed except GitLab's `MrPlanReport`.
+`plan --json` improvements and lexicon-version stamping make items 1–2
+cheaper than when drafted.
+
+## What the agent changes, and what it cannot
+
+Scope is determinism, plan is evidence, gate is authority, freshness is
+correctness — an agent substitutes for none of them. Present is where
+substitution is real: items 3–5 exist to render one plan into three
+comment dialects, and an agent holding the host's API is a universal
+present adapter, so they are opportunistic and item 6 is obsoleted
+outright. The exception is the one rendering that is a fact: the
+semantic access delta is what a reviewer approves a grant on, so
+decision 14 forbids it being model output — the renderer stays
+deterministic and the agent layers English, context, and Q&A on top.
+
+One counterweight: an agent degrades to nothing when the inference
+provider is down; a deterministic renderer degrades to plain text. For
+the write path to org IAM, the floor cannot be "the model was
+available."
+
+Revised priority: items 1, 2, and 9 are the spine — evidence,
+correctness, and security rendering, together the manifest of decision
+24. Everything else is opportunistic or accumulates in C5.
