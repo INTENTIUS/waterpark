@@ -3,8 +3,9 @@
 water park's upstream is two codebases:
 [chant](https://intentius.io/chant) (compiler, lifecycle, Ops) and
 [Fountain](https://github.com/BinaryBourbon/fountain) (agent runtime).
-This doc records what landed since 2026-07-29 and what each change does
-to the plan.
+This doc records what landed since 2026-07-29. Its job under
+decision 25: what exists today that the demo can use, and what the
+parked kit would inherit.
 
 ## chant — 0.33 → 0.44.14
 
@@ -18,8 +19,10 @@ to compliance evidence.
 **`chant carve`.** The whole chain exists: `advise` ranks a Terraform
 estate by peelability, `emit` adopts from `.tfstate` offline, `bridge`
 patches the surviving Terraform, `apply` graduates. ~50 AWS types
-including the IAM surface. Carve is the strongest adoption entry point
-because it prices the move first (A14).
+including the IAM surface. A chant feature water park documents for
+orgs that choose to move to the chant backend (A14) — not a path water
+park pushes; the Terraform backend is a first-class end state
+(decision 23).
 
 **AWS landing-zone governance authoring.** The landing-zone composites
 plus `landingZoneConfig()` emitting an OU/account/SCP tree. A6 no longer
@@ -46,7 +49,7 @@ builds record their lexicon version. Both make the manifest digest
 (decision 24) cheaper to build.
 
 **OKF knowledge bundles.** `chant explain --format okf` emits a spec'd,
-validated bundle — a candidate for A11's artifact (open question 11).
+validated bundle — the candidate format A11 evaluates first.
 
 ### The aws-warden problem
 

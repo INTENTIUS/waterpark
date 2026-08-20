@@ -1,34 +1,32 @@
 # water park
 
-AWS IAM and security your whole org manages by PR. Built on
-[chant](https://intentius.io/chant), with Terraform/OpenTofu as a
-supported authoring backend behind a common change manifest.
+A seed for a live demo: what [Fountain](https://github.com/BinaryBourbon/fountain)
+can do, shown to an ops crowd, with the scariest payload available —
+org IAM. An agent holding zero cloud credentials is handed the
+principles and prescriptions in this repo and builds a working AWS
+access repo on stage: one resource type per file, PR-only writes,
+guardrails failing in the editor, drift caught and reverted,
+delegation bounded by IAM itself. Built with
+[chant](https://intentius.io/chant); nothing the agent does is
+trusted, everything it does is verified.
 
-AWS first, deliberately: it is where orgs centralize and where the
-verification APIs live. GCP, Azure and Kubernetes are act two, gated on
-persona equivalence.
-
-One resource type per file. Folder structure is the index. A central repo
-owns the guardrails and anyone can PR their way to the access they need.
-The reviewer approves a rendered change manifest, not a text diff. Drift
-is watched, break-glass is gated and self-revoking, and app-team repos
-reference the central layer with typed imports instead of remote-state
-reads.
-
-This repo is in the planning phase.
-
-- [docs/plan.md](docs/plan.md) — the design, open questions, terms
-- [docs/positioning.md](docs/positioning.md) — positioning and audience
-- [docs/landscape.md](docs/landscape.md) — the survey it rests on
-- [docs/upstream.md](docs/upstream.md) — what it consumes from chant and
-  Fountain
-- [docs/pr-automation.md](docs/pr-automation.md) — the PR and manifest
-  story
-- [docs/threat-model.md](docs/threat-model.md) — threat and credential
-  model
-- [docs/decisions.md](docs/decisions.md) — pinned decisions
-- [docs/demo-org.md](docs/demo-org.md) — flume, the canonical demo org
-- [docs/design/](docs/design/) — in-progress designs (personas,
-  multi-account, break-glass, guardrail rollout, workload identity, the
-  agentic layer, [delegation](docs/design/delegation.md))
-- [docs/issues.md](docs/issues.md) — issue breakdown
+- [docs/principles.md](docs/principles.md) — the ten invariants
+- [docs/prescriptions.md](docs/prescriptions.md) — the checkable
+  pattern the agent is handed
+- [docs/demo.md](docs/demo.md) — the runbook: beats, checkpoints,
+  honesty lines
+- [docs/demo-org.md](docs/demo-org.md) — flume, the org the demo
+  builds
+- [docs/plan.md](docs/plan.md) — the seed strategy
+- [docs/decisions.md](docs/decisions.md) — pinned decisions, the
+  ledger of why
+- [docs/positioning.md](docs/positioning.md) /
+  [docs/landscape.md](docs/landscape.md) — why the pattern, and the
+  survey it rests on
+- [docs/threat-model.md](docs/threat-model.md) — the failure-mode
+  story the ops room will ask about
+- [docs/upstream.md](docs/upstream.md) — what chant and Fountain ship
+  that the demo uses
+- [docs/issues.md](docs/issues.md) — the parked kit backlog
+  (decision 25)
+- [docs/design/](docs/design/) — depth behind the prescriptions

@@ -1,15 +1,22 @@
-# water park — issue breakdown
+# water park — the parked kit backlog
 
-Filed 2026-07-28; amended 2026-08-19 ([upstream.md](upstream.md)). This
-doc is the design source; the GitHub epic carries the live checklist.
-A19–A21, C6, and Track F are not yet filed.
+**Parked (decision 25).** water park is currently a seed for the live
+demo ([demo.md](demo.md)); the kit below is retained as the parking
+lot and as depth behind the prescriptions — cross-references from the
+other docs land here. Nothing below gates the demo; demo prep lives in
+demo.md. The kit's open unknowns ride with it: cross-repo refs (C1),
+cross-cloud persona equivalence (Track B), cross-repo reachability
+(A11/C6), the manifest schema (E1). Un-parking is a decision-25 edit.
+
+Filed 2026-07-28; amended 2026-08-19 ([upstream.md](upstream.md)).
+A19–A21, C6, and Track E were never filed on GitHub.
 
 ## Epic
 
 **water park — org IAM/security kit.** Central one-type-per-file repo,
 PR-driven, drift-watched, gated Ops, satellites, agent concierge, dual
 backend. Tracks A (AWS core), B (cross-cloud), C (satellites), D
-(agentic), F (Terraform backend).
+(agentic), E (Terraform backend).
 
 ## Track A — central repo, AWS first
 
@@ -49,11 +56,11 @@ groups (decision 5).
 AC: a new principal is addable by copying a sibling file; wrong persona
 name is a type error; demo-org names throughout.
 
-**A6. Baseline component. needs-design (open questions 10, 12)**
-Permission boundaries, org policy set (SCP + RCP + declarative),
-password/MFA policy, default-deny SGs, forbidden-actions list. Start
-from the aws lexicon's landing-zone composites; org-formation
-coexistence seam documented.
+**A6. Baseline component. needs-design (boundary contents, warden
+cycle shape)** Permission boundaries, org policy set (SCP + RCP +
+declarative), password/MFA policy, default-deny SGs, forbidden-actions
+list. Start from the aws lexicon's landing-zone composites;
+org-formation coexistence seam documented.
 AC: deploys to Floci and a real account; every other stack references
 the boundary by deterministic name.
 
@@ -93,9 +100,10 @@ AC: `just github-validate` (and peers) pass; runtime E2E against Floci.
 AC: baseline + personas + a demo principal reach CREATE_COMPLETE
 locally; the A8 drift demo runs locally.
 
-**A14. Adoption seams + carve path. needs-design (open question 6)**
-reference-existing on boundaries, zones, pre-existing roles; the
-documented `chant carve` chain.
+**A14. Adoption seams.** reference-existing on boundaries, zones,
+pre-existing roles — day one touches nothing. A carve walkthrough is
+documented for orgs that choose the chant backend; it is optional and
+never pushed (decision 23).
 AC: adopting a pre-existing role and SG deploys with zero composite
 edits; carve walkthrough validated against a sample TF state.
 
@@ -105,17 +113,16 @@ principle.
 AC: from a bare checkout an agent answers "add read access to bucket X
 for team Y" with the correct file path and PR flow.
 
-**A16. Rotation Op.** Rotate any static credentials the estate
-declares.
-AC: gated run rotates and verifies; nothing static outlives the policy
-window without a finding.
-
 **A17. Threat-model hardening.** Apply-role boundary (with A6), OIDC
 wiring per tier, guardrail-path CODEOWNERS + high-severity rendering,
-branch-protection-as-code.
+branch-protection-as-code. Includes rotating the few static secrets the
+estate cannot avoid (break-glass signing material) — an estate of
+federated short-lived credentials has nothing else to rotate, so the
+old standalone rotation issue folds in here.
 AC: the apply role cannot detach its own boundary (proven by A3b); a PR
 touching `.chant/rules/` renders high-severity; branch protection is
-declared and drift-watched.
+declared and drift-watched; no static credential outlives the policy
+window without a finding.
 
 **A18. Trust layer. needs-design (design/workload-identity.md)**
 `src/trust/`: one typed form for CI OIDC, k8s service-account, and
@@ -202,9 +209,12 @@ and the threat-model agent boundary; D1 unblocks the rest.
 
 **Sequencing: demo-first against a fixture.** The request→PR loop is
 built end to end against a fixed flume estate checked into the repo,
-real Track A backfilling behind it. A fixture proves the intake/verb/PR
-seams and nothing about the estate underneath; no D-series AC may claim
-otherwise.
+real Track A backfilling behind it. The rationale, re-derived after the
+chat front-end was deferred: the loop is the earliest end-to-end
+exercise of the verb layer and the manifest rendering, and scenario 6
+is the demo that sells the pattern. A fixture proves the
+intake/verb/PR seams and nothing about the estate underneath; no
+D-series AC may claim otherwise.
 
 **D0. Domain verbs.** `wp-request` intent Op (structured intent →
 deterministic leaf edit → lint + proof → PR), lifecycle projections
@@ -219,10 +229,16 @@ Fountain Environment manifest in-repo: checkout, SKILL.md,
 conversation-scoped verb-API token, default-deny egress allowlist
 naming the verb service and code host, no cloud credentials
 (decision 15). Restricting who may open conversations stays as depth.
+Includes intake-identity enrollment (decision 17): an identity field on
+a human principal's leaf file, lint (well-formed, unique across the
+estate, never on a workload principal), and the refusal path for
+unmapped identities — enrollment is access-relevant and gets CODEOWNERS
+routing.
 AC: `fountain apply` stands up the concierge; "who can reach the
 invoices bucket?" answers from the D0 projection; flume scenario 6
 yields a correct one-file PR passing lint and CheckNoNewAccess with no
-human edit; a boundary-exception request gets a directed refusal.
+human edit; an unmapped identity gets a refusal naming the enrollment
+path and no PR; a boundary-exception request gets a directed refusal.
 
 **D2. Explain agents.** Drift/reconcile PR annotation (CloudTrail: who,
 when) and reviewer-side commentary, labeled. needs-design: CloudTrail
@@ -235,29 +251,33 @@ grants → burndown PRs. needs-design: cadence/volume caps.
 AC: an unused grant becomes a removal PR citing the finding; volume
 respects the cap; no PR for foreign resources.
 
-## Track F — Terraform backend (decision 23)
+## Track E — Terraform backend (decision 23)
 
 **needs-design (open question 14)** — nothing in Tracks A–D depends on
 it.
 
-**F1. Manifest schema + normalization.** The common change-manifest
+**E1. Manifest schema + normalization.** The common change-manifest
 schema and the reduction of Terraform plan JSON into it; the chant half
 is pr-automation epic items 1–2.
 AC: the same access-delta rendering and digest-bound approval (decision
 24) produced from a chant change set and from a Terraform plan of the
 equivalent change.
 
-**F2. Terraform authoring path.** The repo shape in HCL, guardrails as
+**E2. Terraform authoring path.** The repo shape in HCL, guardrails as
 CI policy checks (tflint/conftest-class), drift via plan; generated
 CODEOWNERS and the delegation boundary unchanged (AWS mechanics, not
-backend mechanics).
+backend mechanics). Honest scope: reconcile *authoring* is chant-only —
+cloud-to-code needs an emit path Terraform lacks, so this backend
+detects and reports drift and a human authors the fix.
 AC: the flume central repo in Terraform passes the same guardrail
 intent; scenario 5's double refusal holds with the Terraform deploy
-credential.
+credential; drift on an owned resource is detected and reported within
+one cycle, and the docs state the no-auto-reconcile boundary.
 
-**F3. Coexistence and migration stance.** One doc: backend support for
-orgs that stay, carve for orgs that move, and what a mixed estate means
-for the watch and access review.
+**E3. Coexistence doc.** What a mixed estate (components per backend)
+means for the watch, the manifest, and the access review. Backend
+choice is the org's; carve is referenced as an available chant feature,
+not recommended as a path.
 
 ## Chant-epic dependencies
 
@@ -267,7 +287,7 @@ for the watch and access review.
 | C4 plan/gate/freshness | 1, 2 |
 | C4 Op-manifest + semantic | 9; 11–12 for drift-aware plan + provenance |
 | A17 high-severity rendering | 9 (or interim path-based rendering) |
-| F1 | 1, 2 (the manifest schema is the renderer's input) |
+| E1 | 1, 2 (the manifest schema is the renderer's input) |
 
 Status 2026-08-19: none of items 1–12 has landed except gitlab's
 `MrPlanReport`. The epic shrank: an agent with the host's API is a
@@ -282,5 +302,5 @@ dropped, and C4's real dependency is 1, 2, and 9.
   decision 2 is proven or softened.
 - **A19** after A6 and A8. **C6** with A6 — one mechanism, two tiers.
 - **D0–D1** do not wait for Track A (demo-first).
-- **F1** can start as a schema spike alongside pr-automation items 1–2;
-  F2–F3 wait for it.
+- **E1** can start as a schema spike alongside pr-automation items 1–2;
+  E2–E3 wait for it.

@@ -34,7 +34,7 @@ survey (item 1) can amend the set before it ships.
    permission sets. Identity Center caps matter here.
 3. Is `admin` real or a trap? Maybe permissions-management never gets a
    standing persona and always goes through the repo.
-4. Cross-cloud equivalence (open question 9, blocks Track B): what each
+4. Cross-cloud equivalence (blocks parked Track B): what each
    archetype compiles to on gcp / azure / k8s / code-host legs. Where
    equivalence is forced, prefer per-leg explicitness over a false
    common denominator. For workloads, a SPIFFE ID on the principal is

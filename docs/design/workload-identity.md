@@ -46,7 +46,7 @@ Division of labor: the runtime (Fountain) enforces the boundary —
 isolation, token plumbing, egress; water park declares the policy — the
 verb service's trust anchor, its role, and the lint on both.
 
-## The open-question-9 upside
+## The cross-cloud upside
 
 For workloads, SPIFFE offers the universal principal name cross-cloud
 personas otherwise lack: `spiffe://flume.io/payments/api` is one
@@ -54,7 +54,7 @@ identity every cloud's federation config can reference. A workload leaf
 file carries an optional SPIFFE ID; each leg compiles to that cloud's
 trust for the same ID. The workload half of OrgPrincipal goes
 cross-cloud without inventing an equivalence; the human half remains the
-hard part of question 9.
+hard part of the equivalence unknown.
 
 ## Boundary: never operate the issuer
 

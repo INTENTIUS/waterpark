@@ -75,11 +75,14 @@ ownership markers mean day one touches nothing; the security team
 learns the tool, the org just uses its verbs; and the Terraform backend
 (decision 23) meets the majority where their IaC already is.
 
-## Strategic role for chant
+## Strategic role, revised (decision 25)
 
-IAM is close to the ideal first chant workload: small estates, no
-data-plane risk, incremental by nature, high organizational visibility.
-water park is a beachhead — an org's first contact with chant is the repo
-their whole engineering staff PRs into. The Terraform backend widens the
-funnel without moving the ceiling: chant stays the realization where the
-pattern is cheapest.
+water park is currently a seed for the live demo: the wedge is showing
+what Fountain can do for an ops crowd, with IAM as the
+credibility-maximizing payload. The pattern is the takeaway; chant and
+Fountain are what the audience watches working. IAM remains close to
+the ideal first chant workload — small estates, no data-plane risk,
+high organizational visibility — and if the kit un-parks, this doc's
+audience section is where it re-starts. The Terraform backend widens
+the funnel without moving the ceiling: chant stays the realization
+where the pattern is cheapest.

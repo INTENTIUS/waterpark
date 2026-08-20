@@ -67,8 +67,18 @@ envelope: it supplies authority (code-host review, CODEOWNERS, branch
 protection) and the durable record, which no manifest ledger should try
 to rebuild. The manifest is never the system of record (decision 2).
 
+The binding mechanics: the plan job records the manifest digest beside
+the rendering it posts at a given sha; the code host's stale-approval
+dismissal is the native guard for push-after-approval; and apply
+recomputes the manifest and compares digests, which catches both estate
+movement and a synth-output change between approval and apply (a
+lexicon bump on unchanged source — the exact case decision 24 exists
+for). chant epic item 2 carries the record/refuse half; C4 wires the
+comparison into the pipelines.
+
 The manifest is also the cross-backend layer. chant emits it natively;
-Terraform's plan JSON normalizes into the same schema (open question 14),
+Terraform's plan JSON normalizes into the same schema (the parked
+manifest-schema unknown, issues.md E1),
 so review, evidence, and the access-review artifact are backend-blind
 while lint, synthesis, and drift mechanics stay per-backend.
 
@@ -119,8 +129,8 @@ difference between a rubber stamp and an informed approval.
 
 1. Change-set renderers: `markdown`, `github-pr`.
 2. Plan-digest record at plan, `--require-fresh` refusal at apply.
-3. github `PrPlanComment` composite. 4. forgejo comment adapter.
-5. `pullRequests` option in the three CI generators.
+3–5. Per-platform present composites + `pullRequests` generator option
+   (*opportunistic* — the agent is a universal present adapter).
 6. ~~Comment-command recipe~~ (dropped — see below).
 7. Ephemeral instance recipe. 8. Lint rule packages.
 9. Op-manifest diff (gate/compensation removals high-severity).

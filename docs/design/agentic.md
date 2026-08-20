@@ -61,8 +61,9 @@ SKILL.md carries the capability map (A15).
 5. **Concierge for the Ops.** Break-glass requested conversationally
    (the gate stays where it is), offboard drafted from a departure
    notice, satellite scaffolding.
-6. **Migration.** A carve-driven conversation walking Terraform IAM
-   into leaf files (A14).
+6. **Migration** (optional). A carve-driven conversation walking
+   Terraform IAM into chant leaf files, for orgs that choose that
+   backend (A14).
 
 Outbound, crossing all six: the Ops can notify into the org's intake
 surfaces. Notification only — each terminates in a PR or an existing

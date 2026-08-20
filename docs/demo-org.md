@@ -1,7 +1,9 @@
 # Demo org: flume
 
 The fictional org threaded through docs, examples, and acceptance
-criteria. All names are canonical — use them verbatim.
+criteria — and the demo's stage set: the scenarios below are the
+source material for [demo.md](demo.md)'s beats. All names are
+canonical — use them verbatim.
 
 **flume** is a 200-engineer B2B company on multi-account AWS with
 Organizations and Identity Center, carrying SOC 2. The platform team

@@ -90,16 +90,23 @@ it. Reversing one requires editing this file in the same PR.
     maintainer-applied label. Applies to fork PRs and agent-authored PRs
     identically. ([threat-model](threat-model.md))
 23. **Two backends, one manifest.** water park supports chant and
-    Terraform/OpenTofu as authoring backends. The normalized change
-    manifest — chant's typed change set, Terraform's plan JSON reduced
-    to the same schema — is the common review, evidence, and
-    access-review object; everything backend-specific stays behind it.
-    `chant carve` remains the migration for orgs that move; backend
-    support is for orgs that stay. ([plan](plan.md),
-    [pr-automation](pr-automation.md))
+    Terraform/OpenTofu as authoring backends, both first-class end
+    states. The normalized change manifest — chant's typed change set,
+    Terraform's plan JSON reduced to the same schema — is the common
+    review, evidence, and access-review object; everything
+    backend-specific stays behind it. `chant carve` is a chant feature
+    documented for orgs that choose to move, never a water park funnel.
+    ([plan](plan.md), [pr-automation](pr-automation.md))
 24. **Approval binds to the manifest; the PR is the envelope.** A
     reviewer approves the rendered change manifest, identified by its
     digest; apply refuses when the recompiled manifest or the live
     estate diverges. The manifest is never the system of record —
     declared source in git is (decision 2). Extends decision 6.
     ([pr-automation](pr-automation.md))
+25. **water park is a seed for the demo.** The deliverable is
+    principles, prescriptions, and a runbook that an agent on Fountain
+    builds from, live, in front of an audience. The kit (tracks A–E) is
+    parked, retained in [issues.md](issues.md) as the parking lot and
+    as depth behind the prescriptions. Nothing in the parked backlog
+    gates the demo. Un-parking the kit means editing this decision.
+    ([plan](plan.md), [demo](demo.md))

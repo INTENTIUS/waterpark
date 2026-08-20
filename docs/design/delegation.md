@@ -79,7 +79,7 @@ will not catch, so guardrail-rollout's warn discipline applies.
 
 **Reachability spans repos.** Either satellites publish a graph
 artifact the access review folds in, or A11's evidence states the gap
-(plan.md question 13).
+(the reachability unknown, issues.md).
 
 **Ownership crosses a repo boundary.** A satellite-created role carries
 the satellite's marker; central reconcile treats it as foreign, and
@@ -93,7 +93,8 @@ each satellite watches its own.
    the apply-role boundary — same mechanism, two tiers.
 2. **One boundary or several.** Lean: start with one; split per OU when
    needed.
-3. **Cross-repo reachability** — plan.md questions 3 and 13.
+3. **Cross-repo reachability** — the refs and reachability unknowns
+   (issues.md).
 4. **Whether `deployer` is delegable.** Lean: no — satellites create
    only `service` roles. Confirm against A18.
 5. **Sandbox accounts.** Looser boundary or none for the Sandbox OU.

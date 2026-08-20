@@ -21,9 +21,9 @@ fully and documents the coexistence seam.
 **The real incumbent is a pile of Terraform.** Most orgs doing
 IAM-as-code do it with hand-rolled modules and Terragrunt hierarchies —
 state-taxed, convention-by-review. That, not any product, is what water
-park addresses: `chant carve` is the migration path for shops that move
-(A14), and the Terraform backend (decision 23) is the path for shops
-that stay.
+park addresses — on the Terraform backend for shops as they are
+(decision 23), with `chant carve` available upstream for shops that
+choose to move (A14).
 
 **The code host is part of the estate.** Merge rights on the water park
 repo are grant rights on everything it manages. The
@@ -70,8 +70,8 @@ companion to chant-audit, not competition.
 Healthy and consolidating. Complementary, not competing: SPIFFE does
 authentication, water park does authorization, the seam is **federation
 trust config** — declarable, security-critical estate. SPIFFE IDs are
-the universal workload principal name for cross-cloud (question 9's
-workload half). water park never operates the issuer
+the universal workload principal name for cross-cloud (the equivalence
+unknown's workload half). water park never operates the issuer
 ([design/workload-identity.md](design/workload-identity.md)). Scope
 line: **Athenz** bundles authn + policy and overlaps — a docs sentence,
 not an integration.
