@@ -12,8 +12,8 @@ builds_on: ["I1"]
 ## Outcome
 
 The persona composites and `OrgPrincipal`; one principal per
-file under `src/principals/<team>/`; `payments-api`, `payments`,
-`search-indexer` exist as near-data leaf files.
+file under `src/principals/<team>/`; `tickets-api`, `tickets`,
+`rides-board` exist as near-data leaf files.
 
 ## Steps
 
@@ -22,7 +22,7 @@ file under `src/principals/<team>/`; `payments-api`, `payments`,
    permission set, workload → role.
 2. Grants as access levels × resource, expanded at synth; `expires` as a
    first-class field.
-3. Add `payments-api` by copying `search-indexer` and editing typed
+3. Add `tickets-api` by copying `rides-board` and editing typed
    fields; misspell a persona and read the type error.
 4. An IAM user in a leaf file: lint fails it (decision 5).
 

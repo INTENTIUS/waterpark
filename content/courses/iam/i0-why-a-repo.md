@@ -10,12 +10,12 @@ builds_on: ["F0"]
 
 ## Outcome
 
-You know pepperoni, the ten invariants, and where the "why"
+You know splashdown, the ten invariants, and where the "why"
 lives (the decisions ledger), before you type anything.
 
 ## Steps
 
-1. [demo-org.md](../../docs/demo-org.md): pepperoni, its accounts, teams, the six
+1. [demo-org.md](../../docs/demo-org.md): splashdown, its accounts, teams, the six
    canonical scenarios. Use the names verbatim from here on.
 2. [principles.md](../../docs/principles.md): ten invariants, each citing a
    decision.

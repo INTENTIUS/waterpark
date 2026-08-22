@@ -11,8 +11,8 @@ builds_on: ["I5"]
 
 ## Outcome
 
-`@pepperoni/waterpark-context` (C2) with the guardrails and
-`WorkloadRole`; `pepperoni-payments` (C3) declaring an SQS queue and the
+`@splashdown/waterpark-context` (C2) with the guardrails and
+`WorkloadRole`; `splashdown-tickets` (C3) declaring an SQS queue and the
 role that reads it, inside the boundary; the boundary condition on the
 satellite deploy credential (C6).
 

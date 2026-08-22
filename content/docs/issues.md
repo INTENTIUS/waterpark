@@ -159,7 +159,7 @@ flagged within one cycle.
 as Ops over typed source: OU tree, SCPs, Identity Center, org trail.
 Ownership-gated deletes, removal-delta cap, dry-run by default, account
 creation surfacing in the plan rather than being attempted.
-AC: the four cycles reconcile pepperoni's declared org; a removal beyond the
+AC: the four cycles reconcile splashdown's declared org; a removal beyond the
 cap refuses; the break-glass permission set cannot be removed by a
 reconcile.
 
@@ -172,7 +172,7 @@ high-severity.
 
 **A21. Export bundle (decision 2).** The walk-away artifact:
 synthesized CloudFormation, policy JSON, marker inventory, provenance.
-AC: build the pepperoni estate, delete the kit and every chant dependency,
+AC: build the splashdown estate, delete the kit and every chant dependency,
 deploy the bundle with the AWS CLI alone, byte-identical. If the AC
 cannot run, decision 2 gets softened instead.
 
@@ -231,7 +231,7 @@ Design source: [design/agentic.md](design/agentic.md). Depends on A15
 and the threat-model agent boundary; D1 unblocks the rest.
 
 **Sequencing: demo-first against a fixture.** The request→PR loop is
-built end to end against a fixed pepperoni estate checked into the repo,
+built end to end against a fixed splashdown estate checked into the repo,
 real Track A backfilling behind it. The rationale, re-derived after the
 chat front-end was deferred: the loop is the earliest end-to-end
 exercise of the verb layer and the manifest rendering, and scenario 6
@@ -258,7 +258,7 @@ estate, never on a workload principal), and the refusal path for
 unmapped identities — enrollment is access-relevant and gets CODEOWNERS
 routing.
 AC: `fountain apply` stands up the concierge; "who can reach the
-invoices bucket?" answers from the D0 projection; pepperoni scenario 6
+receipts bucket?" answers from the D0 projection; splashdown scenario 6
 yields a correct one-file PR passing lint and CheckNoNewAccess with no
 human edit; an unmapped identity gets a refusal naming the enrollment
 path and no PR; a boundary-exception request gets a directed refusal.
@@ -292,7 +292,7 @@ CODEOWNERS and the delegation boundary unchanged (AWS mechanics, not
 backend mechanics). Honest scope: reconcile *authoring* is chant-only —
 cloud-to-code needs an emit path Terraform lacks, so this backend
 detects and reports drift and a human authors the fix.
-AC: the pepperoni central repo in Terraform passes the same guardrail
+AC: the splashdown central repo in Terraform passes the same guardrail
 intent; scenario 5's double refusal holds with the Terraform deploy
 credential; drift on an owned resource is detected and reported within
 one cycle, and the docs state the no-auto-reconcile boundary.

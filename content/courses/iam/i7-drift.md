@@ -20,7 +20,7 @@ from findings. Same rules, opposite direction.
 
 1. `diff --live` over owned resources on a cron; severity: SG and trust
    drift page-worthy, the rest PR-worthy.
-2. Hand-widen `payments-prod`'s SG ingress (console, or the AWS CLI
+2. Hand-widen `tickets-prod`'s SG ingress (console, or the AWS CLI
    against Floci). The watch flags it.
 3. The reconcile opens one PR per resource, branch `reconcile/<key>`,
    marker in the body. The PR restores the declared state (revert); an

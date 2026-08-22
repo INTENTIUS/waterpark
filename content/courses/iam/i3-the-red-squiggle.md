@@ -25,7 +25,7 @@ taxonomies; each with failing and passing fixtures; firing over LSP.
    with a fix-it.
 4. Same file edited by a teammate: the diagnostic in its transcript is the
    one you saw.
-5. Point Mend at `pepperoni/access` (F8): `chant audit`'s aws catalog
+5. Point Mend at `splashdown/access` (F8): `chant audit`'s aws catalog
    reads the synthesized CloudFormation and the repo's own rules are the
    judgement tier. Mend as-is is the interactive audit form on IAM
    ([the propose loop](../../propose-loop.md)).

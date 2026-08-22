@@ -8,7 +8,7 @@ credential tiers.
 ## The split
 
 water park manages authorization objects; SPIFFE/SPIRE manages
-authentication — how a workload proves it is `payments-api` without a
+authentication — how a workload proves it is `tickets-api` without a
 static key. Complementary, with one seam: **federation trust config**.
 JWT-SVID through an OIDC provider + role trust policy, X.509-SVID
 through IAM Roles Anywhere, GCP WIF pools, Azure federated credentials —
@@ -51,7 +51,7 @@ verb service's trust anchor, its role, and the lint on both.
 ## The cross-cloud upside
 
 For workloads, SPIFFE offers the universal principal name cross-cloud
-personas otherwise lack: `spiffe://pepperoni.io/payments/api` is one
+personas otherwise lack: `spiffe://splashdown.io/tickets/api` is one
 identity every cloud's federation config can reference. A workload leaf
 file carries an optional SPIFFE ID; each leg compiles to that cloud's
 trust for the same ID. The workload half of OrgPrincipal goes

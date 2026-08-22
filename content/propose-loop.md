@@ -53,16 +53,16 @@ makes a wrong proposal harmless at apply.
 
 | Form | IAM instance | Build or reuse | Lessons |
 |---|---|---|---|
-| interactive, request-driven | **the concierge**, in the desk's form: the estate on screen (`chant search`), "payments-api needs read on the invoices bucket", `wp-request` makes one deterministic leaf edit, the plan is the rendered access delta, the PR is opened with a PR-only token, CODEOWNERS approve, the gated job applies; refusals name the enrollment or escalation path | build | I12 |
-| ambient, audit-driven | **the watcher**, in Rounds' form: unused-access findings and expiring grants on a schedule, one PR per finding, capped, declines stick; and the drift reconcile under the same rules | Rounds as-is for the lint tier (enroll `pepperoni/access`); IAM projections added | I7, I13 |
-| interactive, audit-driven | **mend the access repo**: point Mend at `pepperoni/access`; `chant audit`'s aws catalog reads the synthesized CloudFormation; the repo's own `.chant/rules/` are the judgement tier | Mend as-is | I3 |
+| interactive, request-driven | **the concierge**, in the desk's form: the estate on screen (`chant search`), "tickets-api needs read on the receipts bucket", `wp-request` makes one deterministic leaf edit, the plan is the rendered access delta, the PR is opened with a PR-only token, CODEOWNERS approve, the gated job applies; refusals name the enrollment or escalation path | build | I12 |
+| ambient, audit-driven | **the watcher**, in Rounds' form: unused-access findings and expiring grants on a schedule, one PR per finding, capped, declines stick; and the drift reconcile under the same rules | Rounds as-is for the lint tier (enroll `splashdown/access`); IAM projections added | I7, I13 |
+| interactive, audit-driven | **mend the access repo**: point Mend at `splashdown/access`; `chant audit`'s aws catalog reads the synthesized CloudFormation; the repo's own `.chant/rules/` are the judgement tier | Mend as-is | I3 |
 | ambient, request-driven | a ticket that opens a desk conversation and tracks the PR as comments | later | I12 (ticketing) |
 
 The parts, on IAM:
 
-| Part | IAM at pepperoni | Lessons |
+| Part | IAM at splashdown | Lessons |
 |---|---|---|
-| target | `pepperoni/access` and the live estate it owns; a satellite repo | I1, I8 |
+| target | `splashdown/access` and the live estate it owns; a satellite repo | I1, I8 |
 | read | the lint pack, the drift watch, the Access Analyzer proofs, the unused-access and expiring-grant projections, `chant search` for the estate view | I3, I6, I7, I11 |
 | operator | a teammate on the reference Environment: checkout, SKILL.md, a code-host token that can open PRs and nothing else, **no cloud credential** | I12, F4 |
 | plan | the access delta rendered by the deterministic renderer (never the model); a directed refusal for a boundary exception or an unmapped requester | I12, I14 |

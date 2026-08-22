@@ -17,7 +17,7 @@ documented.
 
 ## Steps
 
-1. ml's on-call requests prod access (scenario 3); the gate is satisfied
+1. waits' on-call requests prod access (scenario 3); the gate is satisfied
    on the local executor by a second human's CLI confirmation, or by a
    Temporal signal where one is deployed.
 2. The grant: time-conditioned, 2h TTL, cloud-enforced.

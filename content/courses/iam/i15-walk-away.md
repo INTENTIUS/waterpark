@@ -15,7 +15,7 @@ JSON, marker inventory, provenance; the adoption seams (A14).
 
 ## Steps
 
-1. Build pepperoni's estate; export.
+1. Build splashdown's estate; export.
 2. Remove the kit and every chant dependency; deploy the bundle with the
    AWS CLI; diff: byte-identical.
 3. Adopt a pre-existing role and SG with reference-existing and zero

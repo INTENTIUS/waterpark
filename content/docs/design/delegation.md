@@ -4,7 +4,7 @@ title: "Design: delegated role creation (decision 20)"
 
 Track C says a satellite declares an SQS queue. Under the layout as
 first written, the role that reads it took a second PR in
-`pepperoni/access` — the ticket queue the product exists to remove, wearing
+`splashdown/access` — the ticket queue the product exists to remove, wearing
 a git costume. This doc says satellites create their own workload roles,
 and names the mechanism that makes it safe.
 
@@ -37,7 +37,7 @@ first one cheap.
 
 ## What stays central
 
-| Central (`pepperoni/access`) | Satellite |
+| Central (`splashdown/access`) | Satellite |
 |---|---|
 | The boundary policy itself | Workload roles inside it |
 | Personas | Which persona a workload instantiates |
@@ -60,7 +60,7 @@ Satellites do not write `new Role({...})`. The context package exports
 boundary, ownership marker, and naming itself:
 
 ```ts
-// pepperoni-payments/src/roles/queue-consumer.ts — the whole file
+// splashdown-tickets/src/roles/queue-consumer.ts — the whole file
 export default WorkloadRole({
   persona: "service",
   grants: [read(queue), write(deadLetterQueue)],

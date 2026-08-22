@@ -10,7 +10,7 @@ builds_on: ["F6", "F9", "I7", "I12"]
 
 ## Outcome
 
-Rounds as-is enrolled on `pepperoni/access` for the lint
+Rounds as-is enrolled on `splashdown/access` for the lint
 tier; the hygiene agent (D3) as the same form over the I7 watch and the
 I11 projections, with a server-side policy (cap, declined list, branch
 prefix) the prompt cannot override.

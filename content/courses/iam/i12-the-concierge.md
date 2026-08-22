@@ -21,7 +21,7 @@ file; refusals that name the escalation path.
 1. `chant run wp-request` with typed args produces the PR with no agent.
 2. The Environment manifest (chant-lexicon-fountain can declare it);
    `fountain apply` stands up the concierge as a teammate.
-3. "payments-api needs read on the invoices bucket" (scenario 6): one-file
+3. "tickets-api needs read on the receipts bucket" (scenario 6): one-file
    PR, lint and the proof pass, access delta rendered by the deterministic
    renderer, not the model.
 4. An unmapped identity: a refusal naming the enrollment route, no PR. A

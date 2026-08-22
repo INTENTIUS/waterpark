@@ -9,7 +9,7 @@ themes. The basis is one loop, abstracted from the Fountain apps Mend,
 Rounds and dns-desk ([the propose loop](../propose-loop.md)), applied to a use case. Every
 lesson can be run alone or conducted live with a group (decision 26).
 The lessons are in two parts: **foundations**, which teach Fountain and
-the propose loop, and **the scenario**, org IAM at pepperoni, which applies them
+the propose loop, and **the scenario**, org IAM at splashdown, which applies them
 to a problem an ops crowd recognizes. IAM is one example of the loop,
 and it does not need to hit every property.
 
@@ -71,9 +71,9 @@ the upstream versions pinned in [upstream.md](upstream.md).
 | F10 | Your own machine | The self-hosted runner: trusted mode, no isolation, no egress policy, state that stays (ADR 0022) | A runner serves a sandbox; you can say what F3 no longer guarantees on it |
 | F11 | What Fountain will not do for you | No approval gate in the loop (ADR 0016 is proposed, unbuilt); the gate lives where the write lands; the audit trail is retrospective | You can point at the gate in each scenario and say why it is not in Fountain |
 
-## Part II — the scenario: IAM at pepperoni
+## Part II — the scenario: IAM at splashdown
 
-Builds [pepperoni/access](demo-org.md) from nothing to a conforming
+Builds [splashdown/access](demo-org.md) from nothing to a conforming
 access repo with a concierge and a watcher. chant is the toolchain
 (decision 23: backends are end states; the course teaches on chant).
 Solo mode deploys to Floci; live mode deploys to real sandbox accounts
@@ -142,7 +142,7 @@ makes an agent safe to hand them to.
    unmodified against a chant repo's synthesized CloudFormation (I3, I13). Each body is written against the versions in
    [upstream.md](upstream.md) and re-run before it ships.
 2. Cut checkpoints per IAM lesson (a tag each) from a reference build of
-   pepperoni/access; the reference build is the seed test's expected
+   splashdown/access; the reference build is the seed test's expected
    output.
 3. Verify on Floci whether enforcement mode honors the
    `iam:PermissionsBoundary` condition on `CreateRole` (I8's solo path
@@ -155,7 +155,7 @@ makes an agent safe to hand them to.
 
 - **lesson** — one theme, one outcome, one check; runs solo or live.
 - **scenario** — the track of lessons that applies the loop to one ops
-  problem; IAM at pepperoni is the one the course carries.
+  problem; IAM at splashdown is the one the course carries.
 - **checkpoint** — the tagged state a lesson starts from; a live session
   restarts from it, never from scratch.
 - **principal / persona / grant / estate** — as the prescriptions use

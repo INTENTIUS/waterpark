@@ -13,7 +13,7 @@ teach Fountain and that loop: four primitives, what a sandbox can reach,
 named credentials, the team, schedules, talking to an agent from an app,
 the loop interactive and ambient, your own machine, and what Fountain
 will not do for you. The scenario applies it to a problem an ops crowd
-recognizes: org IAM at a fictional company, pepperoni. An agent holding
+recognizes: org IAM at a fictional water-park operator, splashdown. An agent holding
 no cloud credentials builds a working AWS access repo (one resource type
 per file, PR-only writes, guardrails failing in the editor, drift caught,
 delegation bounded by IAM itself) with [chant](https://intentius.io/chant),
@@ -36,7 +36,7 @@ real zones, real repos, from checkpoints, with a facilitator.
   invariants, mapped to the Accessible Ops properties
 - [docs/prescriptions.md](content/docs/prescriptions.md) — the checkable pattern
   the IAM lessons build, each prescription with its lesson
-- [docs/demo-org.md](content/docs/demo-org.md) — pepperoni
+- [docs/demo-org.md](content/docs/demo-org.md) — splashdown
 - [docs/decisions.md](content/docs/decisions.md) — the ledger of why
 - [docs/upstream.md](content/docs/upstream.md) — what Fountain, the Fountain apps,
   chant and Floci ship today, pinned
@@ -47,5 +47,5 @@ real zones, real repos, from checkpoints, with a facilitator.
 
 Naming: *water park* is the course (this repo, `waterpark`). In the
 kit-era docs under docs/ it also names the IAM access-repo kit those docs
-designed; that kit is now the IAM scenario. pepperoni is the worked
+designed; that kit is now the IAM scenario. splashdown is the worked
 example. Fountain, chant and Floci are the tools.

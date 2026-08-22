@@ -59,9 +59,9 @@ capability map (A15).
 
 ## The capability ladder
 
-1. **Q&A** (read-only). "Who can reach the invoices bucket?" from
+1. **Q&A** (read-only). "Who can reach the receipts bucket?" from
    `chant search`; offboarding previews from lifecycle projections.
-2. **Request → PR.** "payments-api needs read on the invoices bucket" →
+2. **Request → PR.** "tickets-api needs read on the receipts bucket" →
    one-file typed edit, PR, lint and CheckNoNewAccess before any human
    looks.
 3. **Explain.** Who/when annotation on drift PRs, reviewer-side

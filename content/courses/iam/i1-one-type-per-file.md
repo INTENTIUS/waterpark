@@ -11,7 +11,7 @@ builds_on: ["F1", "I0"]
 
 ## Outcome
 
-`pepperoni/access` exists: `chant.config.ts`, `src/` layout,
+`splashdown/access` exists: `chant.config.ts`, `src/` layout,
 a justfile, tests, an empty-but-valid baseline stack, and the two layout
 lint rules.
 

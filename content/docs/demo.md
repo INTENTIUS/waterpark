@@ -17,7 +17,7 @@ radius; the best moments are refusals.
   E2B, Daytona) for anything that claims containment. A self-hosted
   runner is trusted mode (F10); do not present it as sandboxed.
   `API_CORS_ORIGINS` and `OAUTH_CLIENTS` set for any app you will show.
-- **Accounts.** For IAM: a sandbox org with the pepperoni account set
+- **Accounts.** For IAM: a sandbox org with the splashdown account set
   (demo-org.md), the org-tier credential on the facilitator's machine
   only, the plan/apply roles from I6 already built if the playlist starts
   past it.
@@ -55,7 +55,7 @@ I12 and I13 as the finale; I15 if there is time.
    only.
 6. **The double refusal** (I8). Lint at build; IAM at apply. No human in
    either.
-7. **The ask** (I12). "payments-api needs read on the invoices bucket."
+7. **The ask** (I12). "tickets-api needs read on the receipts bucket."
    One-file PR, access delta rendered, proof passed, opened by the
    concierge, merged by a CODEOWNER in the room.
 8. **Closers.** The watcher's `run now` (I13); the transcript plus git
@@ -82,7 +82,7 @@ I12 and I13 as the finale; I15 if there is time.
   pipeline self-rescue is an open item (issues.md).
 - *"Does this page me?"* SG and trust-anchor drift is page-worthy, the
   rest is PR-worthy; routing is open.
-- *"It's 2am Saturday and I need access."* I10: cloud-side TTL, no broker
+- *"It's noon on the hottest Saturday of the year and I need access."* I10: cloud-side TTL, no broker
   in the credential path; routine off-hours latency is a real trade and
   the answer is CODEOWNERS coverage.
 - *"Why is the agent safe?"* It isn't. Nothing it does is trusted,
@@ -92,7 +92,7 @@ I12 and I13 as the finale; I15 if there is time.
 
 ## Prep backlog
 
-1. Reference build of pepperoni/access; checkpoints tagged per lesson.
+1. Reference build of splashdown/access; checkpoints tagged per lesson.
 2. The seed test: a fresh teammate given the lessons produces a conforming
    repo; every failure is a lesson-writing bug.
 3. Recorded runs for I6 and I8.

@@ -119,7 +119,7 @@ it. Reversing one requires editing this file in the same PR.
 26. **water park is a course on the propose loop.** Short lessons, each one
     theme and one check, teaching Fountain and one loop abstracted from
     Mend, Rounds and dns-desk ([propose loop](../propose-loop.md)) through the Accessible
-    Ops properties, with one scenario, IAM at pepperoni, that applies
+    Ops properties, with one scenario, IAM at splashdown, that applies
     it; Mend, Rounds and dns-desk are worked references inside the
     lessons, not tracks of their own. Every lesson runs alone or live
     with a group. IAM is one example and need not cover every property,
