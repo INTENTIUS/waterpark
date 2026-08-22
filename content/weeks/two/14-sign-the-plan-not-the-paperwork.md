@@ -5,28 +5,53 @@ shift: 14
 weight: 14
 subtitle: "approve the change, not the diff"
 summary: "approve the change, not the diff"
-today: "The reviewer approves the rendered manifest (the access delta and its proofs) bound by digest; apply refuses if the recompiled manifest or the live park diverges. This shift waits on chant items 1, 2 and 9; as of chant 0.44.14 none has landed, so until then it teaches the mechanics and shows the plain-text renderer."
-done_when: "Prescription 3's check once the renderer exists."
+# card — fill in; empty renders as TODO
+today: ""
+done_when: ""
 clock_in: "shift 6"
 rule: "Escalate the judgment (handbook VIII); verify the artifact (XIV)."
 properties: ["VIII", "XIV"]
 closes: ["P3"]
+# media — provider: youtube | vimeo | file | todo
+video:
+  provider: todo
+  title: ""
+  length: ""
+# activity — kind: hands-on | watch-along | discuss
+activity:
+  kind: hands-on
+  time: ""
+  needs: []
+  solo: true
+  live: true
 ---
 
-## Steps
+## Context
 
-1. The five primitives: scope, plan, present, gate, serialize/freshness.
-2. The manifest as the reviewable object; the PR as the envelope.
-3. A lexicon bump on unchanged source: the digest changes, apply refuses.
-4. Terraform's plan JSON reduced to the same schema (E1) so review is backend-blind.
+- Underneath: approve the change, not the diff.
+- Rule quoted on the card: Escalate the judgment (handbook VIII); verify the artifact (XIV).
+- Closes prescriptions P3 (see the back office).
+- Clock-in point: shift 6.
+
+## Watch
+
+{{< todo "video script or link; optional, drop the section if no video" >}}
+
+## Do
+
+{{< todo "the activity: numbered steps, imperative, one job" >}}
+
+1. {{< todo >}}
+2. {{< todo >}}
+3. {{< todo >}}
 
 ## Self-paced
 
-Same as with the shift lead until the upstream lands.
+{{< todo "what the practice pool can and cannot show for this shift" >}}
 
 ## With the shift lead
 
-Same.
+{{< todo "what the crew sees; timing; the line to say out loud" >}}
 
 ## Back office
 

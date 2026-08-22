@@ -5,26 +5,50 @@ shift: 10
 weight: 10
 subtitle: "the self-hosted runner"
 summary: "the self-hosted runner"
-today: "Run `fountain runner` on a machine you own and put a shift on it. Sandboxes are directories, processes stay alive between turns, nothing bills by the minute. Then re-run shift 3's bounce: it doesn't bounce. A runner is trusted mode: no VM isolation, no egress policy, and the daemon has to be online for the sandbox to be reachable."
-done_when: "A runner serves a sandbox and you can finish \"on a runner the sandbox is …\" correctly."
+# card — fill in; empty renders as TODO
+today: ""
+done_when: ""
 clock_in: "shift 3"
 rule: "Don't call your own truck a sandbox in front of the crew."
+# media — provider: youtube | vimeo | file | todo
+video:
+  provider: todo
+  title: ""
+  length: ""
+# activity — kind: hands-on | watch-along | discuss
+activity:
+  kind: hands-on
+  time: ""
+  needs: []
+  solo: true
+  live: true
 ---
 
-## Steps
+## Context
 
-1. Start `fountain runner` on a machine; register it.
-2. Create a shift on it; note the state that stays.
-3. Re-run shift 3 step 1 on the runner: the fetch succeeds. Say why.
-4. Decide which jobs may run on a runner (your own repo, your own zone) and which must not (anything reading untrusted input while holding a key).
+- Underneath: the self-hosted runner.
+- Rule quoted on the card: Don't call your own truck a sandbox in front of the crew.
+- Clock-in point: shift 3.
+
+## Watch
+
+{{< todo "video script or link; optional, drop the section if no video" >}}
+
+## Do
+
+{{< todo "the activity: numbered steps, imperative, one job" >}}
+
+1. {{< todo >}}
+2. {{< todo >}}
+3. {{< todo >}}
 
 ## Self-paced
 
-The free path for people with a spare machine.
+{{< todo "what the practice pool can and cannot show for this shift" >}}
 
 ## With the shift lead
 
-Never run the access desk on a runner in front of the crew and call it sandboxed.
+{{< todo "what the crew sees; timing; the line to say out loud" >}}
 
 ## Back office
 

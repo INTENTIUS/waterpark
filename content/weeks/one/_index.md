@@ -3,10 +3,25 @@ title: "Week one: orientation"
 kicker: "Week one"
 weight: 1
 summary: "The shed, the locker, the co-hire, the shift; the crew and the rota; the radio; how work gets done here (look, fix, propose), by day and by night; your own truck; what the park won't do for you."
+# the two-minute talk can be a video instead of text
+video:
+  provider: todo
+  title: "the two-minute talk"
+  length: "2 min"
+activity:
+  kind: watch-along
+  time: "2 min"
+  needs: []
+  solo: true
+  live: true
 ---
 
-**The two-minute talk, from the shift lead.** Your co-hire is an agent. It is the newest hire: it reads what is written, works through the paths you give it, and touches what its keys allow. What makes a new person safe in week one is what makes it safe. That is the whole handbook in one sentence; the fourteen rules are the long version, and you'll hear one per shift.
+## Context
 
-The co-hire lives in [Fountain](https://github.com/BinaryBourbon/fountain): it gets a shed to work out of, a locker for keys, a job card, and a computer for each shift. Everything it does here follows one loop, which week one builds up to: it reads a target it does not control, plans a change as a diff, verifies, and *proposes*; something that is not the co-hire writes; the rules hold where the write happens; the record is the conversation or the code host; a refusal is an outcome. By day a person is the propose step; by night a server with policy is. Three apps the park already uses (Mend, Rounds, dns-desk) are the worked examples.
+- Absorbs the old F0 (an agent is the newest hire; Accessible Ops thesis).
+- Names the three things the week builds up to: Fountain's primitives, the crew and rota, the propose loop (Mend, Rounds, dns-desk as worked examples).
+- Says what you need: a Fountain instance, an inference key, a repo you own; a hosted sandbox provider for containment claims.
 
-You need: a Fountain instance (self-hosted is fine), an inference key, a GitHub repo you own. For anything that claims the co-hire is contained, a hosted sandbox provider.
+## The two-minute talk
+
+{{< todo "the shift lead's talk, spoken not read; under 250 words" >}}

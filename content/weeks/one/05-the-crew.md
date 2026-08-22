@@ -5,26 +5,50 @@ shift: 5
 weight: 5
 subtitle: "the team page"
 summary: "the team page"
-today: "Put a co-hire on the crew. A teammate is one ongoing shift bound to the reserved channel `fountain:team`, with a computer that persists between messages; the roster on the left, the thread on the right. Not a fifth primitive."
-done_when: "`GET /api/team` lists the teammate with presence, and `/api/team/stream` shows the turn."
+# card — fill in; empty renders as TODO
+today: ""
+done_when: ""
 clock_in: "shift 2"
 rule: "One crew member, one thread; you can always find what they did."
+# media — provider: youtube | vimeo | file | todo
+video:
+  provider: todo
+  title: ""
+  length: ""
+# activity — kind: hands-on | watch-along | discuss
+activity:
+  kind: hands-on
+  time: ""
+  needs: []
+  solo: true
+  live: true
 ---
 
-## Steps
+## Context
 
-1. Add an agent to the team; watch it provision its computer.
-2. Send a message; it is a follow-up turn. Suspend and wake apply as in shift 2.
-3. Open `/api/team/stream` and send another message; read the event.
-4. Remove the teammate; note what is terminated and what is kept.
+- Underneath: the team page.
+- Rule quoted on the card: One crew member, one thread; you can always find what they did.
+- Clock-in point: shift 2.
+
+## Watch
+
+{{< todo "video script or link; optional, drop the section if no video" >}}
+
+## Do
+
+{{< todo "the activity: numbered steps, imperative, one job" >}}
+
+1. {{< todo >}}
+2. {{< todo >}}
+3. {{< todo >}}
 
 ## Self-paced
 
-Any instance.
+{{< todo "what the practice pool can and cannot show for this shift" >}}
 
 ## With the shift lead
 
-One teammate per job on stage ("the desk", "the watcher"); the crew sees the roster.
+{{< todo "what the crew sees; timing; the line to say out loud" >}}
 
 ## Back office
 

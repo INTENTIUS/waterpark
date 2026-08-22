@@ -47,6 +47,11 @@ syllabus:
 new week shift id title:
     scripts/new_lesson.sh {{week}} {{shift}} {{id}} "{{title}}"
 
+# List every TODO marker and empty card field across the content
+todos:
+    @grep -rn --include='*.md' -e '{{{{< todo' -e '^today: ""' -e '^done_when: ""' -e 'provider: todo' content | sed 's|^content/||' || true
+    @echo; echo "$(grep -rho --include='*.md' '{{{{< todo' content | wc -l | tr -d ' ') todo markers"
+
 # Remove build output
 clean:
     rm -rf public resources .hugo_build.lock

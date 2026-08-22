@@ -5,28 +5,53 @@ shift: 10
 weight: 10
 subtitle: "break-glass with a cloud-side TTL"
 summary: "break-glass with a cloud-side TTL"
-today: "It is noon on the hottest Saturday of the season, gates open, and the waits on-call needs prod. Grant it with a cloud-side TTL, then kill the worker mid-grant: access still ends on time, the watch flags the leftover artifact, the restarted worker cleans it up. A dead executor can delay cleanup and never extend access."
-done_when: "Kill the worker mid-grant; access still ends at the TTL; the watch flags the leftover; the restarted worker removes it."
+# card — fill in; empty renders as TODO
+today: ""
+done_when: ""
 clock_in: "shift 6"
 rule: "Reversible before risky (handbook VII); escalate the judgment (VIII)."
 properties: ["VII", "VIII"]
 closes: ["P9"]
+# media — provider: youtube | vimeo | file | todo
+video:
+  provider: todo
+  title: ""
+  length: ""
+# activity — kind: hands-on | watch-along | discuss
+activity:
+  kind: hands-on
+  time: ""
+  needs: []
+  solo: true
+  live: true
 ---
 
-## Steps
+## Context
 
-1. The on-call requests prod access (scenario 3); the gate is satisfied on the local executor by a second human's CLI confirmation, or by a Temporal signal where one is deployed (A9).
-2. The grant: time-conditioned, 2h TTL, cloud-enforced.
-3. Kill the worker mid-grant. Access still ends at the TTL; the watch flags the artifact; the restarted worker cleans it up.
-4. The Op-manifest diff: a PR removing the gate renders loudly.
+- Underneath: break-glass with a cloud-side TTL.
+- Rule quoted on the card: Reversible before risky (handbook VII); escalate the judgment (VIII).
+- Closes prescriptions P9 (see the back office).
+- Clock-in point: shift 6.
+
+## Watch
+
+{{< todo "video script or link; optional, drop the section if no video" >}}
+
+## Do
+
+{{< todo "the activity: numbered steps, imperative, one job" >}}
+
+1. {{< todo >}}
+2. {{< todo >}}
+3. {{< todo >}}
 
 ## Self-paced
 
-Floci evaluates time conditions in enforcement mode; the TTL expiry is demonstrable. Temporal optional (local executor path).
+{{< todo "what the practice pool can and cannot show for this shift" >}}
 
 ## With the shift lead
 
-Real; this answers the hottest-Saturday question.
+{{< todo "what the crew sees; timing; the line to say out loud" >}}
 
 ## Back office
 

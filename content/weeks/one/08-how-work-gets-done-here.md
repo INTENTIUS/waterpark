@@ -5,27 +5,51 @@ shift: 8
 weight: 8
 subtitle: "the propose loop, interactive (Mend and the desk)"
 summary: "the propose loop, interactive (Mend and the desk)"
-today: "Run Mend on a repo of yours and dns-desk on a throwaway zone, then fill the propose loop's parts table for both: a target the co-hire does not control, a deterministic read, an operator that can only read, a plan as a diff, a verify before propose, a propose step held by a person, rules enforced at the write, the conversation or the code host as record, refusals as outcomes."
-done_when: "Two filled parts tables, and the one part that differs between an audit-driven and a request-driven operator."
+# card — fill in; empty renders as TODO
+today: ""
+done_when: ""
 clock_in: "shift 4 and shift 7"
 rule: "One path to prod (handbook IV); escalate the judgment (VIII)."
 properties: ["IV", "VIII"]
+# media — provider: youtube | vimeo | file | todo
+video:
+  provider: todo
+  title: ""
+  length: ""
+# activity — kind: hands-on | watch-along | discuss
+activity:
+  kind: hands-on
+  time: ""
+  needs: []
+  solo: true
+  live: true
 ---
 
-## Steps
+## Context
 
-1. Run Mend against a repo of yours: the report with its three tiers, the plan with applied / proposed / skipped, the per-fix diffs, the PR opened from your browser with your token. The mender's locker still holds only a read key.
-2. Run dns-desk against a throwaway zone: the state, the plan as a diff, `APPROVE plan-id`, the re-read before apply, the status derived from the conversation and never stored.
-3. Read Mend's *Opening a pull request* (every context line re-verified against the file as it is on GitHub now; refuse if it moved) next to the desk's re-read-before-apply. Same part, two targets.
-4. Fill the parts table from [the propose loop page](../../propose-loop.md) for each. The key rows are shift 4's table; do not redo them.
+- Underneath: the propose loop, interactive (Mend and the desk).
+- Rule quoted on the card: One path to prod (handbook IV); escalate the judgment (VIII).
+- Clock-in point: shift 4 and shift 7.
+
+## Watch
+
+{{< todo "video script or link; optional, drop the section if no video" >}}
+
+## Do
+
+{{< todo "the activity: numbered steps, imperative, one job" >}}
+
+1. {{< todo >}}
+2. {{< todo >}}
+3. {{< todo >}}
 
 ## Self-paced
 
-A repo and a zone of yours.
+{{< todo "what the practice pool can and cannot show for this shift" >}}
 
 ## With the shift lead
 
-Mend on the crew's repo; the PR from your browser. Point at the key that did it.
+{{< todo "what the crew sees; timing; the line to say out loud" >}}
 
 ## Back office
 

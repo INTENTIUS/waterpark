@@ -1,11 +1,17 @@
 ---
 title: "water park"
+# optional welcome video
+video:
+  provider: todo
+  title: "the welcome memo, read by the shift lead"
+  length: ""
 ---
 
-**Welcome to splashdown.** You've been hired onto the ops team. You start Monday. Don't read anything before then; we do everything on shift.
+**Welcome to splashdown.** {{< todo "the welcome memo: you're hired onto the ops team; start Monday; nothing to read before then" >}}
 
-A few things before you clock in. You have a **co-hire**: an agent, started the same day you did, reads the same handbook, trusted exactly as much as you are on day one, which is to say not at all. The **handbook** is fourteen rules ([Accessible Ops](https://accessibleops.net)); nobody reads it cover to cover, the shift lead quotes one per shift. A **shift** is ten to fifteen minutes, hands on keyboard, one job, one way to know you're done. If a shift goes sideways you **clock back in** at the last checkpoint, never from scratch.
-
-**Week one** is orientation: the shed, the locker, the co-hire, the crew, the rota, the radio, and how work gets done here (look, fix, propose; the same loop whether someone is watching or not). **Week two** you're on the access desk: `splashdown/access`, the repo every team PRs for the access they need, built from nothing with your co-hire, then run by it.
-
-Self-paced is the practice pool: Floci, your own machine, nobody gets wet. With the shift lead is the real park, gates open.
+- Your co-hire is an agent: {{< todo "one sentence; newest hire, trusted exactly as much as you" >}}
+- The handbook is fourteen rules ([Accessible Ops](https://accessibleops.net)): {{< todo "one sentence; the shift lead quotes one per shift" >}}
+- A shift is ten to fifteen minutes, one job, one way to know you're done: {{< todo "one sentence" >}}
+- Clock back in at the last checkpoint, never from scratch: {{< todo "one sentence" >}}
+- Week one is orientation; week two you're on the access desk: {{< todo "one sentence each" >}}
+- Self-paced is the practice pool; with the shift lead is the real park: {{< todo "one sentence" >}}

@@ -5,28 +5,53 @@ shift: 4
 weight: 4
 subtitle: "deploy with no account"
 summary: "deploy with no account"
-today: "Take the estate to CREATE_COMPLETE. Self-paced, that is Floci: no account, no keys, nothing to leak. With the shift lead, it is a real sandbox account. Either way there is no state file; read a role back and see that the source predicted it."
-done_when: "CREATE_COMPLETE and a read-back that matches the source."
+# card — fill in; empty renders as TODO
+today: ""
+done_when: ""
 clock_in: "shift 3"
 rule: "The live system is the truth (handbook XI)."
 properties: ["XI"]
 closes: ["P6 (part)"]
+# media — provider: youtube | vimeo | file | todo
+video:
+  provider: todo
+  title: ""
+  length: ""
+# activity — kind: hands-on | watch-along | discuss
+activity:
+  kind: hands-on
+  time: ""
+  needs: []
+  solo: true
+  live: true
 ---
 
-## Steps
+## Context
 
-1. Self-paced: `floci start`, `eval $(floci env)`, `just local-up` (A13).
-2. With the shift lead: the plan and apply roles from shift 6 are not built yet; the lead applies with a bounded account credential and says so.
-3. Read a deployed role back: the source predicted it.
-4. Note what the practice pool cannot do: Organizations, Identity Center, Access Analyzer. Everything else in this shift is real on both paths.
+- Underneath: deploy with no account.
+- Rule quoted on the card: The live system is the truth (handbook XI).
+- Closes prescriptions P6 (part) (see the back office).
+- Clock-in point: shift 3.
+
+## Watch
+
+{{< todo "video script or link; optional, drop the section if no video" >}}
+
+## Do
+
+{{< todo "the activity: numbered steps, imperative, one job" >}}
+
+1. {{< todo >}}
+2. {{< todo >}}
+3. {{< todo >}}
 
 ## Self-paced
 
-Floci, zero cloud credentials; the co-hire variant (week one, shift 3) holds nothing but the local endpoint.
+{{< todo "what the practice pool can and cannot show for this shift" >}}
 
 ## With the shift lead
 
-Real account; checkpoint `I4` is a deployed estate, so later shifts can start from a live one.
+{{< todo "what the crew sees; timing; the line to say out loud" >}}
 
 ## Back office
 

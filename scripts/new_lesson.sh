@@ -13,21 +13,48 @@ shift: ${shift_n}
 weight: ${shift_n}
 subtitle: ""
 summary: ""
+# card — fill in; empty renders as TODO
 today: ""
 done_when: ""
 clock_in: "shift $((shift_n-1))"
 rule: ""
 properties: []
+# media — provider: youtube | vimeo | file | todo
+video:
+  provider: todo
+  title: ""
+  length: ""
+# activity — kind: hands-on | watch-along | discuss
+activity:
+  kind: hands-on
+  time: ""
+  needs: []
+  solo: true
+  live: true
 ---
 
-## Steps
+## Context
 
-1.
+- {{< todo "what's underneath; sources" >}}
+
+## Watch
+
+{{< todo "video script or link; optional" >}}
+
+## Do
+
+1. {{< todo >}}
 
 ## Self-paced
 
+{{< todo >}}
+
 ## With the shift lead
 
+{{< todo >}}
+
 ## Back office
+
+{{< todo "links into content/docs" >}}
 EOT
 echo "$f"

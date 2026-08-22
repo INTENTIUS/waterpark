@@ -1,0 +1,19 @@
+{{- /* . is the page. Front matter:
+activity:
+  kind: hands-on | watch-along | discuss | read
+  time: "10 min"
+  needs: ["a Fountain instance", "a repo you own"]
+  solo: true|false      (runs self-paced)
+  live: true|false      (runs with the shift lead)
+*/ -}}
+{{- with .Params.activity }}
+<section class="block block-activity" aria-label="Activity">
+  <h2 class="block-head">Do{{ with .time }} <span class="muted">&middot; {{ . }}</span>{{ end }}</h2>
+  <p class="activity-meta">
+    {{ with .kind }}<span class="tag">{{ . }}</span>{{ end }}
+    {{ if .solo }}<span class="tag">self-paced</span>{{ end }}
+    {{ if .live }}<span class="tag">with the shift lead</span>{{ end }}
+  </p>
+  {{ with .needs }}<p class="needs"><strong>You need:</strong> {{ delimit . ", " }}.</p>{{ end }}
+</section>
+{{- end }}

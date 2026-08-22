@@ -5,28 +5,53 @@ shift: 5
 weight: 5
 subtitle: "the permission boundary and the baseline"
 summary: "the permission boundary and the baseline"
-today: "Build the baseline: the permission boundary every role carries, the apply role's own boundary so the system cannot escalate itself, the org policy set (SCP, RCP, declarative; synthesized, deployable live only), password and MFA policy, default-deny security groups and the typed network layer, the forbidden-actions list. Nothing in the park gets more than the fence allows."
-done_when: "A role without the boundary fails lint; every stack references the boundary by deterministic name; the apply role's boundary is in place for shift 6's proof."
+# card — fill in; empty renders as TODO
+today: ""
+done_when: ""
 clock_in: "shift 4"
 rule: "Bounded blast radius (handbook VI)."
 properties: ["VI"]
 closes: ["P7"]
+# media — provider: youtube | vimeo | file | todo
+video:
+  provider: todo
+  title: ""
+  length: ""
+# activity — kind: hands-on | watch-along | discuss
+activity:
+  kind: hands-on
+  time: ""
+  needs: []
+  solo: true
+  live: true
 ---
 
-## Steps
+## Context
 
-1. Start from the aws lexicon's landing-zone composites (A6); document the org-formation coexistence seam.
-2. Boundary contents, lean from [delegation](../../docs/design/delegation.md): deny all IAM write, org and Identity Center, guardrail-path resources by name, boundary detachment; allow the service surface a team plausibly needs.
-3. The apply role's own boundary (decision 12): denies detaching itself and editing the apply role or baseline outside the pipeline.
-4. SG composites, one per file (A7); raw CIDR ingress fails unless allowlisted.
+- Underneath: the permission boundary and the baseline.
+- Rule quoted on the card: Bounded blast radius (handbook VI).
+- Closes prescriptions P7 (see the back office).
+- Clock-in point: shift 4.
+
+## Watch
+
+{{< todo "video script or link; optional, drop the section if no video" >}}
+
+## Do
+
+{{< todo "the activity: numbered steps, imperative, one job" >}}
+
+1. {{< todo >}}
+2. {{< todo >}}
+3. {{< todo >}}
 
 ## Self-paced
 
-Floci deploys the boundary and SGs; the org layer synthesizes and is checked by lint only.
+{{< todo "what the practice pool can and cannot show for this shift" >}}
 
 ## With the shift lead
 
-The org layer deploys to the management account from your org-tier credential; say that it is the narrowest credential in the room.
+{{< todo "what the crew sees; timing; the line to say out loud" >}}
 
 ## Back office
 

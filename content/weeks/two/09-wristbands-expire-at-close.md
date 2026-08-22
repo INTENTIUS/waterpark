@@ -5,28 +5,53 @@ shift: 9
 weight: 9
 subtitle: "federation trust, short-lived everything"
 summary: "federation trust, short-lived everything"
-today: "Declare the trust anchors (CI OIDC, k8s service accounts, SPIFFE) in one typed form under `src/trust/`, with the strictest lint and drift severity in the repo. An estate of federated short-lived credentials has almost nothing to rotate; a loose trust condition is a standing backdoor."
-done_when: "A workload principal's subject synthesizes its AWS trust; a wildcard subject fails lint; a hand-edited trust policy is flagged within one cycle."
+# card — fill in; empty renders as TODO
+today: ""
+done_when: ""
 clock_in: "shift 6"
 rule: "Secret rotation is cheap (handbook X); named secrets (V)."
 properties: ["X", "V"]
 closes: ["P12"]
+# media — provider: youtube | vimeo | file | todo
+video:
+  provider: todo
+  title: ""
+  length: ""
+# activity — kind: hands-on | watch-along | discuss
+activity:
+  kind: hands-on
+  time: ""
+  needs: []
+  solo: true
+  live: true
 ---
 
-## Steps
+## Context
 
-1. Declare the CI OIDC anchor the plan and apply roles already use; it is an instance of this layer, not a special case.
-2. A workload principal declares a subject; its AWS leg synthesizes the trust policy.
-3. A wildcard subject fails lint. Hand-edit a trust policy in the console: flagged within one cycle.
-4. The sandbox exception: an untrusted co-hire is never a federation subject (decision 15); the verb service outside it is. Rotate the few static secrets (break-glass signing material) on a policy window (A17).
+- Underneath: federation trust, short-lived everything.
+- Rule quoted on the card: Secret rotation is cheap (handbook X); named secrets (V).
+- Closes prescriptions P12 (see the back office).
+- Clock-in point: shift 6.
+
+## Watch
+
+{{< todo "video script or link; optional, drop the section if no video" >}}
+
+## Do
+
+{{< todo "the activity: numbered steps, imperative, one job" >}}
+
+1. {{< todo >}}
+2. {{< todo >}}
+3. {{< todo >}}
 
 ## Self-paced
 
-Floci's IAM and STS cover the synthesis and the read-back; the OIDC provider itself is a real-account thing.
+{{< todo "what the practice pool can and cannot show for this shift" >}}
 
 ## With the shift lead
 
-Real.
+{{< todo "what the crew sees; timing; the line to say out loud" >}}
 
 ## Back office
 

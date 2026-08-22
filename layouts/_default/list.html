@@ -2,6 +2,8 @@
 <article class="intro">
   {{ with .Params.kicker }}<p class="kicker">{{ . }}</p>{{ end }}
   <h1>{{ .Title }}</h1>
+  {{ partial "page/video.html" . }}
+  {{ partial "page/activity.html" . }}
   {{ .Content }}
 </article>
 {{ if and (eq .Section "weeks") (eq .Kind "section") (gt (len .Sections) 0) }}

@@ -5,26 +5,50 @@ shift: 6
 weight: 6
 subtitle: "team schedules"
 summary: "team schedules"
-today: "Put a crew member on a rota: a cron (five fields, UTC) that runs them with a prompt; `run now` when you can't wait; a `schedule` event on the team stream so an app re-lists instead of polling."
-done_when: "`last_run_at` is stamped and the turn is in the thread."
+# card — fill in; empty renders as TODO
+today: ""
+done_when: ""
 clock_in: "shift 5"
 rule: "If nobody is watching, the rota is. The night shift (shift 9) depends on this."
+# media — provider: youtube | vimeo | file | todo
+video:
+  provider: todo
+  title: ""
+  length: ""
+# activity — kind: hands-on | watch-along | discuss
+activity:
+  kind: hands-on
+  time: ""
+  needs: []
+  solo: true
+  live: true
 ---
 
-## Steps
+## Context
 
-1. `POST /api/team/:agent_id/schedules` with `cron`, `prompt`, `name`.
-2. `POST .../run` and watch the shift take a turn.
-3. `one_off: true` for a single future run; `enabled: false` to pause.
-4. Read how Rounds presents weekly and daily to a person (`src/lib/cron.ts`).
+- Underneath: team schedules.
+- Rule quoted on the card: If nobody is watching, the rota is. The night shift (shift 9) depends on this.
+- Clock-in point: shift 5.
+
+## Watch
+
+{{< todo "video script or link; optional, drop the section if no video" >}}
+
+## Do
+
+{{< todo "the activity: numbered steps, imperative, one job" >}}
+
+1. {{< todo >}}
+2. {{< todo >}}
+3. {{< todo >}}
 
 ## Self-paced
 
-Any instance; a five-minute cron is fine.
+{{< todo "what the practice pool can and cannot show for this shift" >}}
 
 ## With the shift lead
 
-Create the schedule, then `run now`. Nobody waits for a cron.
+{{< todo "what the crew sees; timing; the line to say out loud" >}}
 
 ## Back office
 

@@ -1,30 +1,14 @@
 {{ define "main" }}
-<article class="{{ if .Params.shift }}lesson{{ else }}page{{ end }}">
-  {{ if .Params.shift }}
+{{- $kind := .Params.layout | default (cond (isset .Params "shift") "shift" "page") -}}
+<article class="{{ $kind }}">
+  {{ if eq $kind "shift" }}
   <p class="crumb"><a href="{{ .CurrentSection.RelPermalink }}">{{ .CurrentSection.Title }}</a> &middot; shift {{ .Params.shift }} <span class="muted">({{ .Params.id }})</span></p>
   <h1>{{ .Title }}</h1>
   {{ with .Params.subtitle }}<p class="factor-lead">{{ . }}</p>{{ end }}
-  <section class="card" aria-label="Shift card">
-    <dl>
-      <dt>Today</dt><dd>{{ .Params.today | markdownify }}</dd>
-      <dt>Done when</dt><dd>{{ .Params.done_when | markdownify }}</dd>
-      <dt>If it goes sideways</dt><dd>Clock back in at {{ .Params.clock_in | markdownify }}.</dd>
-      <dt>The rule</dt><dd>{{ .Params.rule | markdownify }}</dd>
-    </dl>
-    {{ if or .Params.properties .Params.closes }}
-    <p class="tags">
-      {{ range .Params.properties }}<span class="tag tag-prop">handbook {{ . }}</span>{{ end }}
-      {{ range .Params.closes }}<span class="tag tag-closes">closes {{ . }}</span>{{ end }}
-    </p>
-    {{ end }}
-  </section>
-  {{ else }}
-  <h1>{{ .Title }}</h1>
-  {{ with .Params.theme }}<p class="factor-lead">{{ . }}</p>{{ end }}
-  {{ end }}
+  {{ partial "page/card.html" . }}
+  {{ partial "page/video.html" . }}
+  {{ partial "page/activity.html" . }}
   {{ .Content }}
-
-  {{ if .Params.shift }}
   <nav class="pager" aria-label="Between shifts">
     {{ $ordered := .CurrentSection.RegularPages.ByWeight }}
     {{ range $i, $p := $ordered }}
@@ -35,6 +19,12 @@
       {{ end }}
     {{ end }}
   </nav>
+  {{ else }}
+  <h1>{{ .Title }}</h1>
+  {{ with .Params.subtitle }}<p class="factor-lead">{{ . }}</p>{{ end }}
+  {{ partial "page/video.html" . }}
+  {{ partial "page/activity.html" . }}
+  {{ .Content }}
   {{ end }}
 </article>
 {{ end }}

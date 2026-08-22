@@ -5,28 +5,53 @@ shift: 6
 weight: 6
 subtitle: "the PR is the only write path"
 summary: "the PR is the only write path"
-today: "Wire the gate. CODEOWNERS generated from the principal files and watched; branch protection declared; PR checks that hold no credential; the three credential tiers in gated jobs via OIDC (the anchor typed in full in shift 9); Access Analyzer proofs only where an untrusted author cannot trigger them."
-done_when: "Adding a principal reroutes review with no CODEOWNERS edit; a hand-edit is flagged within one cycle; a fork PR cannot reach a credentialed job; the apply role cannot detach its own boundary (proof check)."
+# card — fill in; empty renders as TODO
+today: ""
+done_when: ""
 clock_in: "shift 5"
 rule: "One path to prod (handbook IV); attributable (IX); verify the artifact (XIV)."
 properties: ["IV", "IX", "XIV"]
 closes: ["P5", "P6", "P7"]
+# media — provider: youtube | vimeo | file | todo
+video:
+  provider: todo
+  title: ""
+  length: ""
+# activity — kind: hands-on | watch-along | discuss
+activity:
+  kind: hands-on
+  time: ""
+  needs: []
+  solo: true
+  live: true
 ---
 
-## Steps
+## Context
 
-1. Derive CODEOWNERS from the principal files; guardrail paths route to security by rule; emit it and declare it, with branch protection, as watched resources (A20). Add a principal: review reroutes with no CODEOWNERS edit.
-2. PR jobs: emulator-backed validation plus the full lint pack, no cloud credential (A12). Prove with a fork PR that no credentialed job is reachable.
-3. Wire the three tiers into jobs (A17): plan (read) in the post-merge job, apply (write, bounded since shift 5) only on protected branches, org tier separate and rare. Short-lived via OIDC.
-4. CheckNoNewAccess against the base branch in the post-merge job (A3b); a PR widening a policy fails with the verdict rendered.
+- Underneath: the PR is the only write path.
+- Rule quoted on the card: One path to prod (handbook IV); attributable (IX); verify the artifact (XIV).
+- Closes prescriptions P5, P6, P7 (see the back office).
+- Clock-in point: shift 5.
+
+## Watch
+
+{{< todo "video script or link; optional, drop the section if no video" >}}
+
+## Do
+
+{{< todo "the activity: numbered steps, imperative, one job" >}}
+
+1. {{< todo >}}
+2. {{< todo >}}
+3. {{< todo >}}
 
 ## Self-paced
 
-Steps 1–2 in full on Floci; steps 3–4 need an account, so read a recorded verdict and say so.
+{{< todo "what the practice pool can and cannot show for this shift" >}}
 
 ## With the shift lead
 
-Everything real. Open the fork PR, show the job list.
+{{< todo "what the crew sees; timing; the line to say out loud" >}}
 
 ## Back office
 

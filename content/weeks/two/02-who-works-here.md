@@ -5,28 +5,53 @@ shift: 2
 weight: 2
 subtitle: "personas and principals"
 summary: "personas and principals"
-today: "Add the people and the machines. Humans get permission sets, workloads get roles, nobody gets an IAM user; grants are typed access levels with an optional `expires`. Put `tickets-api`, `tickets` and `rides-board` in as one near-data leaf file each."
-done_when: "A sibling copy works, a misspelled persona is a type error, an IAM user fails lint; an expired grant will surface as drift in shift 7."
+# card — fill in; empty renders as TODO
+today: ""
+done_when: ""
 clock_in: "shift 1"
 rule: "Named secrets, least privilege (handbook V)."
 properties: ["V"]
 closes: ["P2", "P3"]
+# media — provider: youtube | vimeo | file | todo
+video:
+  provider: todo
+  title: ""
+  length: ""
+# activity — kind: hands-on | watch-along | discuss
+activity:
+  kind: hands-on
+  time: ""
+  needs: []
+  solo: true
+  live: true
 ---
 
-## Steps
+## Context
 
-1. The archetype set from [personas](../../docs/design/personas.md): `developer`, `operator`, `auditor`, `service`, `deployer`; human → permission set, workload → role.
-2. Grants as access levels × resource, expanded at synth; `expires` as a first-class field.
-3. Add `tickets-api` by copying `rides-board` and editing typed fields; misspell a persona and read the type error.
-4. An IAM user in a leaf file: lint fails it (decision 5).
+- Underneath: personas and principals.
+- Rule quoted on the card: Named secrets, least privilege (handbook V).
+- Closes prescriptions P2, P3 (see the back office).
+- Clock-in point: shift 1.
+
+## Watch
+
+{{< todo "video script or link; optional, drop the section if no video" >}}
+
+## Do
+
+{{< todo "the activity: numbered steps, imperative, one job" >}}
+
+1. {{< todo >}}
+2. {{< todo >}}
+3. {{< todo >}}
 
 ## Self-paced
 
-The human half (permission sets) synthesizes but cannot deploy to Floci (no Identity Center); the workload half can.
+{{< todo "what the practice pool can and cannot show for this shift" >}}
 
 ## With the shift lead
 
-Same, except the human half deploys for real in shift 4.
+{{< todo "what the crew sees; timing; the line to say out loud" >}}
 
 ## Back office
 

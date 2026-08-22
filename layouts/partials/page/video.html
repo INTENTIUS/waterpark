@@ -1,0 +1,24 @@
+{{- /* . is the page. Front matter:
+video:
+  provider: youtube | vimeo | file | todo
+  id: "<youtube/vimeo id>"        (youtube, vimeo)
+  src: "/media/x.mp4"             (file)
+  poster: "/media/x.jpg"          (file, optional)
+  length: "6 min"                 (optional)
+  title: "…"                      (optional caption)
+*/ -}}
+{{- with .Params.video }}
+<section class="block block-video" aria-label="Video">
+  <h2 class="block-head">Watch{{ with .length }} <span class="muted">&middot; {{ . }}</span>{{ end }}</h2>
+  {{- if eq .provider "youtube" }}
+  <div class="frame"><iframe src="https://www.youtube-nocookie.com/embed/{{ .id }}" title="{{ .title | default $.Title }}" loading="lazy" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
+  {{- else if eq .provider "vimeo" }}
+  <div class="frame"><iframe src="https://player.vimeo.com/video/{{ .id }}" title="{{ .title | default $.Title }}" loading="lazy" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe></div>
+  {{- else if eq .provider "file" }}
+  <video controls preload="metadata"{{ with .poster }} poster="{{ . | relURL }}"{{ end }}><source src="{{ .src | relURL }}"></video>
+  {{- else }}
+  <div class="placeholder"><span class="todo">TODO: video{{ with .title }} — {{ . }}{{ end }}</span></div>
+  {{- end }}
+  {{ with .title }}<p class="caption">{{ . }}</p>{{ end }}
+</section>
+{{- end }}

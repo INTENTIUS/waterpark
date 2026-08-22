@@ -1,0 +1,14 @@
+<section class="card" aria-label="Shift card">
+  <dl>
+    <dt>Today</dt><dd>{{ .Params.today | default "TODO" | markdownify }}</dd>
+    <dt>Done when</dt><dd>{{ .Params.done_when | default "TODO" | markdownify }}</dd>
+    <dt>If it goes sideways</dt><dd>{{ with .Params.clock_in }}Clock back in at {{ . | markdownify }}.{{ else }}TODO{{ end }}</dd>
+    <dt>The rule</dt><dd>{{ .Params.rule | default "TODO" | markdownify }}</dd>
+  </dl>
+  {{ if or .Params.properties .Params.closes }}
+  <p class="tags">
+    {{ range .Params.properties }}<span class="tag tag-prop">handbook {{ . }}</span>{{ end }}
+    {{ range .Params.closes }}<span class="tag tag-closes">closes {{ . }}</span>{{ end }}
+  </p>
+  {{ end }}
+</section>

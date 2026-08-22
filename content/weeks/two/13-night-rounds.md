@@ -5,27 +5,51 @@ shift: 13
 weight: 13
 subtitle: "the watcher, in Rounds' form"
 summary: "the watcher, in Rounds' form"
-today: "Put the co-hire on the rota. Unused-access findings and expiring grants become burndown PRs, one per finding, capped, never reopening what a human closed; a clean round is a good round. Rounds as-is runs against `splashdown/access` for the lint tier; the IAM projections ride the same form. Where shift 7 restores declared state, this proposes changes to it."
-done_when: "An unused grant becomes a removal PR citing the finding; volume respects the cap; a closed PR stays declined until relabeled; no PR for foreign resources; the rules table from week one shift 9 filled with its enforcement column."
+# card — fill in; empty renders as TODO
+today: ""
+done_when: ""
 clock_in: "shift 7, shift 12; week one, shift 9"
 rule: "Manage only what you declare (handbook XIII)."
 properties: ["XIII"]
+# media — provider: youtube | vimeo | file | todo
+video:
+  provider: todo
+  title: ""
+  length: ""
+# activity — kind: hands-on | watch-along | discuss
+activity:
+  kind: hands-on
+  time: ""
+  needs: []
+  solo: true
+  live: true
 ---
 
-## Steps
+## Context
 
-1. Enroll `splashdown/access` in Rounds as-is for the lint tier.
-2. A teammate on a weekly cron over the shift 7 watch and the shift 11 projections (D3); the prompt is the spec; the propose endpoint is the enforcement (cap, declined list, branch prefix).
-3. An unused grant becomes a removal PR citing the finding; volume respects the cap; no PR for foreign resources.
-4. Close one unmerged; next round it is `declined`; label it to take the no back. Read the round report: findings, cluster status, diff; the PR body rendered from the same objects.
+- Underneath: the watcher, in Rounds' form.
+- Rule quoted on the card: Manage only what you declare (handbook XIII).
+- Clock-in point: shift 7, shift 12; week one, shift 9.
+
+## Watch
+
+{{< todo "video script or link; optional, drop the section if no video" >}}
+
+## Do
+
+{{< todo "the activity: numbered steps, imperative, one job" >}}
+
+1. {{< todo >}}
+2. {{< todo >}}
+3. {{< todo >}}
 
 ## Self-paced
 
-Floci plus Fountain; a five-minute cron.
+{{< todo "what the practice pool can and cannot show for this shift" >}}
 
 ## With the shift lead
 
-`run now` on stage.
+{{< todo "what the crew sees; timing; the line to say out loud" >}}
 
 ## Back office
 

@@ -5,26 +5,51 @@ shift: 11
 weight: 11
 subtitle: "offboard and the access review"
 summary: "offboard and the access review"
-today: "A rides engineer leaves: one gated run removes every leg. Then the end-of-season report: every principal, its personas, what it can reach, what is expiring, satellite package versions, in one artifact a compliance reviewer accepts."
-done_when: "Role, memberships and SG references removed in one PR plus apply with zero remaining references; the review artifact runs on the local executor."
+# card — fill in; empty renders as TODO
+today: ""
+done_when: ""
 clock_in: "shift 7"
 rule: "Attributable (handbook IX); manage only what you declare (XIII)."
 properties: ["IX", "XIII"]
+# media — provider: youtube | vimeo | file | todo
+video:
+  provider: todo
+  title: ""
+  length: ""
+# activity — kind: hands-on | watch-along | discuss
+activity:
+  kind: hands-on
+  time: ""
+  needs: []
+  solo: true
+  live: true
 ---
 
-## Steps
+## Context
 
-1. Scenario 4: offboard (A10) removes role, memberships and SG references in one gated run; the graph shows zero remaining references.
-2. The quarterly artifact (A11); `chant search` is the Q&A substrate, the artifact is the evidence; evaluate OKF before inventing a format.
-3. Satellite package versions in the same report (guardrail rollout).
+- Underneath: offboard and the access review.
+- Rule quoted on the card: Attributable (handbook IX); manage only what you declare (XIII).
+- Clock-in point: shift 7.
+
+## Watch
+
+{{< todo "video script or link; optional, drop the section if no video" >}}
+
+## Do
+
+{{< todo "the activity: numbered steps, imperative, one job" >}}
+
+1. {{< todo >}}
+2. {{< todo >}}
+3. {{< todo >}}
 
 ## Self-paced
 
-Fully on Floci.
+{{< todo "what the practice pool can and cannot show for this shift" >}}
 
 ## With the shift lead
 
-Real.
+{{< todo "what the crew sees; timing; the line to say out loud" >}}
 
 ## Back office
 

@@ -3,17 +3,9 @@ title: "The propose loop"
 weight: 1
 ---
 
-How work gets done at splashdown is one loop, abstracted from three Fountain apps
-— [Mend](https://github.com/jhgaylor/mend),
-[Rounds](https://github.com/jhgaylor/rounds) and
-[dns-desk](https://github.com/jhgaylor/dns-desk) — and applied to a use
-case. The apps differ on two axes (interactive or ambient; driven by an
-audit or by a request) and share everything else. IAM is not forced onto
-any one of them: the concierge takes the desk's form, the watcher takes
-Rounds', and mending the access repo is Mend as it already exists.
-Everything else here — Fountain, chant, the access-repo pattern — is what
-it takes to run the loop on org IAM. Read the three READMEs once; this
-page is what survives the abstraction.
+{{< todo "prose" >}}
+
+<!-- context: How work gets done at splashdown is one loop, abstracted from three Fountain apps — [Mend](https://github.com/jhgaylor/mend), [Rounds](https://github.com/jhgayl … -->
 
 ## The parts
 
@@ -29,11 +21,9 @@ page is what survives the abstraction.
 | **record** | where the state lives: where the person who decides is already standing, nothing to keep in sync | the conversation: report, plan, patch derived from turns and blocks | GitHub: branch name and a marker in the PR body; the conversation for the round report | the conversation: plan status always derived, never stored |
 | **refusal** | an outcome, not a failure, rendered as one | `skipped`, with the note | `already-open`, `declined`, `deferred`, `clean`; a decline sticks until `rounds:reconsider` | a request outside the token's zones |
 
-Two invariants run through every column. The claim and the report are
-one copy (a PR body rendered from the objects the plan reports cannot
-disagree with it). And the operator never holds a write: what it holds
-cannot push, so an agent reading attacker-controlled input all day is a
-nuisance at worst.
+{{< todo "prose" >}}
+
+<!-- context: Two invariants run through every column. The claim and the report are one copy (a PR body rendered from the objects the plan reports cannot disagree with it). A … -->
 
 ## The four forms
 
@@ -44,12 +34,9 @@ nuisance at worst.
 
 ## The loop on IAM
 
-IAM is a target that is *also* a repo, so propose is the PR in every form
-and approval is the merge, never an in-conversation message (decision
-18). That is the one deliberate deviation from dns-desk, and it is why
-IAM is the deep scenario: one type per file makes findings addressable by
-path, the PR is propose and gate at once, and the permission boundary
-makes a wrong proposal harmless at apply.
+{{< todo "prose" >}}
+
+<!-- context: IAM is a target that is *also* a repo, so propose is the PR in every form and approval is the merge, never an in-conversation message (decision 18). That is the … -->
 
 | Form | IAM instance | Build or reuse | Shifts |
 |---|---|---|---|
@@ -58,7 +45,9 @@ makes a wrong proposal harmless at apply.
 | interactive, audit-driven | **mend the access repo**: point Mend at `splashdown/access`; `chant audit`'s aws catalog reads the synthesized CloudFormation; the repo's own `.chant/rules/` are the judgement tier | Mend as-is | I3 |
 | ambient, request-driven | a ticket that opens a desk conversation and tracks the PR as comments | later | I12 (ticketing) |
 
-The parts, on IAM:
+{{< todo "prose" >}}
+
+<!-- context: The parts, on IAM: … -->
 
 | Part | IAM at splashdown | Shifts |
 |---|---|---|
@@ -74,11 +63,6 @@ The parts, on IAM:
 
 ## What the loop asks of Fountain
 
-An environment with the tool preinstalled and no secrets (F1, F4); a
-vault per target bound at creation (F4); a teammate per target with a
-persistent computer so the clone and the branch survive between turns
-(F5); a schedule for the ambient forms (F6); protocol blocks and the
-conversation as record for the interactive forms (F7); a hosted sandbox
-provider wherever the operator reads untrusted input while holding
-anything (F10); and no approval gate in the loop, which is why propose
-lives outside it (F11).
+{{< todo "prose" >}}
+
+<!-- context: An environment with the tool preinstalled and no secrets (F1, F4); a vault per target bound at creation (F4); a teammate per target with a persistent computer s … -->

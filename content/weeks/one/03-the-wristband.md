@@ -5,27 +5,51 @@ shift: 3
 weight: 3
 subtitle: "the egress allowlist"
 summary: "the egress allowlist"
-today: "Give your co-hire a wristband that opens two gates and no others, then watch it get turned away at a third. `networking_type: limited` is a default-deny egress allowlist (`allowed_hosts`; an empty list denies everything). It is the first containment claim any job makes, and it holds only on a hosted sandbox provider."
-done_when: "The denied fetch and the allowed fetch are both in the transcript, and you can finish \"the wristband holds only when …\"."
+# card — fill in; empty renders as TODO
+today: ""
+done_when: ""
 clock_in: "shift 1"
 rule: "Bounded blast radius (handbook VI)."
 properties: ["VI"]
+# media — provider: youtube | vimeo | file | todo
+video:
+  provider: todo
+  title: ""
+  length: ""
+# activity — kind: hands-on | watch-along | discuss
+activity:
+  kind: hands-on
+  time: ""
+  needs: []
+  solo: true
+  live: true
 ---
 
-## Steps
+## Context
 
-1. Hand it a wristband with no gates on it: `networking_type: limited`, no `allowed_hosts`. Send it to fetch anything. It bounces.
-2. Add the two gates the job needs: the code host and the thing it operates. Send it again.
-3. Run the same Environment from your own truck (shift 10). It gets in everywhere; a runner has no egress policy.
-4. Note that `unrestricted` is a no-op on Sprites, which are open by default. `limited` is the only setting that says anything.
+- Underneath: the egress allowlist.
+- Rule quoted on the card: Bounded blast radius (handbook VI).
+- Clock-in point: shift 1.
+
+## Watch
+
+{{< todo "video script or link; optional, drop the section if no video" >}}
+
+## Do
+
+{{< todo "the activity: numbered steps, imperative, one job" >}}
+
+1. {{< todo >}}
+2. {{< todo >}}
+3. {{< todo >}}
 
 ## Self-paced
 
-Hosted providers only (Sprites, E2B, Daytona) for the bounce.
+{{< todo "what the practice pool can and cannot show for this shift" >}}
 
 ## With the shift lead
 
-The bounce is the first thing the crew sees in any job: "this co-hire cannot leave its box except to two gates."
+{{< todo "what the crew sees; timing; the line to say out loud" >}}
 
 ## Back office
 

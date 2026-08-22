@@ -5,28 +5,53 @@ shift: 8
 weight: 8
 subtitle: "delegation and the double refusal"
 summary: "delegation and the double refusal"
-today: "Let the tickets team declare an SQS queue and the role that reads it in their own repo, inside the fence: a satellite's deploy credential may create roles only when `iam:PermissionsBoundary` equals the central ARN, and lint enforces the same at build. Then strip the fence: lint refuses at build; bypass lint: IAM refuses at apply. Nobody from the platform team is involved either time."
-done_when: "Two independent refusals with no platform human involved; a context-package upgrade cannot break a satellite without a warn cycle."
+# card — fill in; empty renders as TODO
+today: ""
+done_when: ""
 clock_in: "shift 5"
 rule: "Bounded blast radius (handbook VI): rides decentralize, the fence does not."
 properties: ["VI"]
 closes: ["P8", "P10"]
+# media — provider: youtube | vimeo | file | todo
+video:
+  provider: todo
+  title: ""
+  length: ""
+# activity — kind: hands-on | watch-along | discuss
+activity:
+  kind: hands-on
+  time: ""
+  needs: []
+  solo: true
+  live: true
 ---
 
-## Steps
+## Context
 
-1. Publish `@splashdown/waterpark-context` (C2): guardrails, presets, `WorkloadRole`. A new satellite is one dep, three lines of config, one resource file.
-2. In `splashdown-tickets` (C3): `WorkloadRole({ persona: "service", grants: [read(queue)] })`; deploy.
-3. Strip the boundary: lint refuses at build. Bypass lint with a hand-rolled template: IAM refuses at apply (C6).
-4. Bump the package with a new rule: it lands as warn in a minor; the satellite sees it for a cycle before it errors.
+- Underneath: delegation and the double refusal.
+- Rule quoted on the card: Bounded blast radius (handbook VI): rides decentralize, the fence does not.
+- Closes prescriptions P8, P10 (see the back office).
+- Clock-in point: shift 5.
+
+## Watch
+
+{{< todo "video script or link; optional, drop the section if no video" >}}
+
+## Do
+
+{{< todo "the activity: numbered steps, imperative, one job" >}}
+
+1. {{< todo >}}
+2. {{< todo >}}
+3. {{< todo >}}
 
 ## Self-paced
 
-The lint refusal is real. Floci has an IAM enforcement mode that evaluates boundaries and conditions; whether it honors `iam:PermissionsBoundary` on `CreateRole` is unverified. Until it is, show one refusal and say so.
+{{< todo "what the practice pool can and cannot show for this shift" >}}
 
 ## With the shift lead
 
-Both refusals real; the best thirty seconds of any session.
+{{< todo "what the crew sees; timing; the line to say out loud" >}}
 
 ## Back office
 
