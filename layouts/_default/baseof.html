@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {{- $title := printf "%s — %s" .Title .Site.Title }}
+  {{- if .IsHome }}{{ $title = .Site.Title }}{{ end }}
+  {{- $description := .Description }}
+  {{- if not $description }}{{ $description = .Params.summary }}{{ end }}
+  {{- if not $description }}{{ $description = .Site.Params.description }}{{ end }}
+  <title>{{ $title }}</title>
+  <meta name="description" content="{{ $description }}">
+  <link rel="stylesheet" href="{{ "css/style.css" | relURL }}">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="{{ site.Home.RelPermalink }}">water park</a>
+    <nav class="topnav" aria-label="Site">
+      <a href="{{ "courses/" | relURL }}"{{ if eq .Section "courses" }} aria-current="page"{{ end }}>Courses</a>
+      <a href="{{ "propose-loop/" | relURL }}"{{ if eq .RelPermalink (printf "%spropose-loop/" site.Home.RelPermalink) }} aria-current="page"{{ end }}>The propose loop</a>
+      <a href="{{ "docs/" | relURL }}"{{ if eq .Section "docs" }} aria-current="page"{{ end }}>Docs</a>
+      <a href="{{ .Site.Params.github }}">GitHub</a>
+    </nav>
+  </header>
+  <main>
+    {{ block "main" . }}{{ end }}
+    <footer class="site-footer">
+      <p>Themes from <a href="https://accessibleops.net">Accessible Ops</a>. Runtime: <a href="https://github.com/BinaryBourbon/fountain">Fountain</a>. Toolchain: <a href="https://intentius.io/chant">chant</a>. The propose loop is abstracted from <a href="https://github.com/jhgaylor/mend">Mend</a>, <a href="https://github.com/jhgaylor/rounds">Rounds</a> and <a href="https://github.com/jhgaylor/dns-desk">dns-desk</a>.</p>
+    </footer>
+  </main>
+</body>
+</html>

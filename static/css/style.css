@@ -1,0 +1,66 @@
+:root {
+  --ink: #1a1a1a; --muted: #666; --faint: #999; --rule: #e4e4e4; --rule-strong: #d3d3d0;
+  --link: #1a5fb4; --bg: #ffffff; --panel: #fbfbf9; --panel-2: #f6f6f3;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { font-family: -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif; color: var(--ink); background: var(--bg); line-height: 1.62; font-size: 18px; margin: 0; }
+a { color: var(--link); text-decoration: none; }
+a:hover { text-decoration: underline; }
+a:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; border-radius: 2px; }
+.topbar { max-width: 54rem; margin: 0 auto; padding: 1.5rem 1.5rem 1.1rem; display: flex; justify-content: space-between; align-items: baseline; gap: 0.7rem 1.4rem; flex-wrap: wrap; border-bottom: 1px solid var(--rule); }
+.brand { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.01em; color: var(--ink); }
+.brand:hover { text-decoration: none; }
+.topnav { display: flex; flex-wrap: wrap; gap: 0.4rem 1.15rem; font-size: 0.92rem; align-items: baseline; }
+.topnav a { color: var(--muted); }
+.topnav a:hover { color: var(--link); }
+.topnav a[aria-current="page"] { color: var(--link); font-weight: 600; }
+main { max-width: 54rem; margin: 0 auto; padding: 1.3rem 1.5rem 0; }
+.home-intro { max-width: 42rem; margin: 0 0 1.3rem; }
+.home-intro p { font-size: 0.95rem; color: var(--muted); line-height: 1.55; margin: 0 0 0.7rem; }
+.band-head { font-size: 0.68rem; letter-spacing: 0.11em; text-transform: uppercase; color: var(--link); font-weight: 700; margin: 1.7rem 0 0.4rem; }
+.kicker { font-size: 0.68rem; letter-spacing: 0.11em; text-transform: uppercase; color: var(--link); font-weight: 700; margin: 0 0 0.2rem; }
+.crumb { font-size: 0.82rem; color: var(--muted); margin: 0 0 0.4rem; }
+.course-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 1rem; margin: 0.6rem 0 1.2rem; max-width: 44rem; }
+.course-card { display: flex; flex-direction: column; gap: 0.25rem; padding: 1rem 1.1rem; border: 1px solid var(--rule-strong); border-radius: 6px; background: var(--panel); color: var(--ink); }
+.course-card:hover { text-decoration: none; border-color: var(--link); }
+.course-kicker { font-size: 0.66rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--link); font-weight: 700; }
+.course-title { font-size: 1.15rem; font-weight: 700; }
+.course-summary { font-size: 0.9rem; color: var(--muted); line-height: 1.5; }
+.course-meta { font-size: 0.78rem; color: var(--faint); margin-top: 0.3rem; }
+.lesson-list { list-style: none; padding: 0; margin: 0.8rem 0 2rem; max-width: 44rem; }
+.lesson-row { padding: 0.65rem 0; border-top: 1px solid var(--rule); display: grid; grid-template-columns: 1fr; gap: 0.15rem; }
+.lesson-list .lesson-row:last-of-type { border-bottom: 1px solid var(--rule); }
+.lesson-row > a { color: var(--ink); }
+.lesson-row > a:hover { text-decoration: none; color: var(--link); }
+.lesson-num { color: var(--link); font-weight: 700; font-variant-numeric: tabular-nums; margin-right: 0.5rem; }
+.lesson-title { font-weight: 700; }
+.lesson-theme { color: var(--muted); font-size: 0.9rem; line-height: 1.5; }
+.tags { display: inline-flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.25rem; }
+.tag { display: inline-block; font-size: 0.64rem; letter-spacing: 0.05em; text-transform: uppercase; border: 1px solid var(--rule-strong); border-radius: 999px; padding: 0.08rem 0.55rem; line-height: 1.5; background: var(--panel-2); color: var(--muted); }
+.tag-prop { color: var(--link); }
+.tag-closes { color: #2e7d4f; }
+.tag-builds { color: var(--faint); }
+.intro, .page, .lesson { max-width: 42rem; }
+.intro h1, .page h1, .lesson h1 { font-size: 1.9rem; line-height: 1.16; margin: 0 0 1rem; letter-spacing: -0.02em; }
+.intro p, .page p, .lesson p { margin: 0.85rem 0; }
+.lesson { padding-top: 0.4rem; }
+.factor-num { font-size: 2.6rem; font-weight: 800; color: var(--faint); line-height: 1; margin: 0 0 0.2rem; }
+.factor-lead { font-size: 1.15rem; line-height: 1.45; font-weight: 500; color: var(--ink); margin: 0 0 1rem; }
+p.tags { margin: 0 0 1.4rem; padding-bottom: 1.3rem; border-bottom: 1px solid var(--rule); }
+.lesson h2, .page h2, .intro h2 { font-size: 1.05rem; margin: 1.6rem 0 0.4rem; letter-spacing: 0.01em; }
+.lesson h2 { font-size: 0.78rem; letter-spacing: 0.09em; text-transform: uppercase; color: var(--link); }
+.lesson ol, .page ol, .intro ol, .lesson ul, .page ul, .intro ul { padding-left: 1.3rem; }
+.lesson li, .page li, .intro li { margin: 0.3rem 0; }
+code { background: #f4f4f4; padding: 0.05em 0.35em; border-radius: 3px; font-size: 0.9em; }
+pre { background: #f4f4f4; padding: 0.8rem 1rem; border-radius: 4px; overflow-x: auto; font-size: 0.85rem; }
+pre code { background: none; padding: 0; }
+table { border-collapse: collapse; font-size: 0.88rem; margin: 1rem 0; display: block; overflow-x: auto; }
+th, td { border-top: 1px solid var(--rule); padding: 0.45rem 0.7rem 0.45rem 0; vertical-align: top; text-align: left; }
+th { font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+blockquote { margin: 1.1rem 0; padding: 0.2rem 0 0.2rem 1.1rem; border-left: 3px solid var(--rule-strong); color: var(--muted); }
+.pager { display: flex; justify-content: space-between; gap: 1rem; margin: 2.2rem 0 1rem; padding-top: 1rem; border-top: 1px solid var(--rule); font-size: 0.9rem; flex-wrap: wrap; }
+.pager-home { color: var(--muted); }
+.props-more { margin: 1.2rem 0 0; font-size: 0.9rem; }
+.props-more a { font-weight: 600; }
+.site-footer { margin: 3rem 0 2rem; padding-top: 1rem; border-top: 1px solid var(--rule); color: var(--faint); font-size: 0.82rem; max-width: 42rem; }

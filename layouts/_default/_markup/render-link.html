@@ -1,0 +1,18 @@
+{{- $dest := .Destination -}}
+{{- $url := $dest -}}
+{{- if and (not (hasPrefix $dest "http")) (not (hasPrefix $dest "mailto:")) (not (hasPrefix $dest "#")) -}}
+  {{- $path := $dest -}}
+  {{- $frag := "" -}}
+  {{- with (index (split $dest "#") 1) }}{{ $frag = printf "#%s" . }}{{ $path = index (split $dest "#") 0 }}{{ end -}}
+  {{- if or (hasSuffix $path ".md") (hasSuffix $path "/") -}}
+    {{- $target := "" -}}
+    {{- if hasSuffix $path "/" -}}
+      {{- $target = .Page.GetPage (printf "%s_index.md" $path) -}}
+      {{- if not $target }}{{ $target = .Page.GetPage $path }}{{ end -}}
+    {{- else -}}
+      {{- $target = .Page.GetPage $path -}}
+    {{- end -}}
+    {{- with $target }}{{ $url = printf "%s%s" .RelPermalink $frag }}{{ else }}{{ warnf "render-link: unresolved %q in %s" $dest $.Page.File.Path }}{{ end -}}
+  {{- end -}}
+{{- end -}}
+<a href="{{ $url | safeURL }}"{{ with .Title }} title="{{ . }}"{{ end }}>{{ .Text | safeHTML }}</a>

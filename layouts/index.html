@@ -1,0 +1,14 @@
+{{ define "main" }}
+<section class="home-intro">
+  {{ .Content }}
+</section>
+<section class="courses">
+  <h2 class="band-head">Courses</h2>
+  <div class="course-grid">
+    {{ range (site.GetPage "courses").Sections.ByWeight }}
+      {{ partial "course-card.html" . }}
+    {{ end }}
+  </div>
+  <p class="props-more"><a href="{{ "propose-loop/" | relURL }}">The propose loop &rarr;</a> &nbsp; <a href="{{ "docs/" | relURL }}">Design docs &rarr;</a></p>
+</section>
+{{ end }}

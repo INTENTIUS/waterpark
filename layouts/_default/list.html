@@ -1,0 +1,31 @@
+{{ define "main" }}
+<article class="intro">
+  {{ with .Params.kicker }}<p class="kicker">{{ . }}</p>{{ end }}
+  <h1>{{ .Title }}</h1>
+  {{ .Content }}
+</article>
+{{ if and (eq .Section "courses") (eq .Kind "section") (gt (len .Sections) 0) }}
+<div class="course-grid">
+  {{ range .Sections.ByWeight }}{{ partial "course-card.html" . }}{{ end }}
+</div>
+{{ end }}
+{{ if gt (len .RegularPages) 0 }}
+<ol class="lesson-list">
+  {{ range .RegularPages.ByWeight }}
+    {{ if eq $.Section "courses" }}
+      {{ partial "lesson-row.html" . }}
+    {{ else }}
+      <li class="lesson-row"><a href="{{ .RelPermalink }}"><span class="lesson-title">{{ .Title }}</span></a>{{ with .Params.summary }}<span class="lesson-theme">{{ . }}</span>{{ end }}</li>
+    {{ end }}
+  {{ end }}
+</ol>
+{{ end }}
+{{ if and (eq .Section "docs") (gt (len .Sections) 0) }}
+  {{ range .Sections }}
+  <h2 class="band-head">{{ .Title }}</h2>
+  <ol class="lesson-list">
+    {{ range .RegularPages }}<li class="lesson-row"><a href="{{ .RelPermalink }}"><span class="lesson-title">{{ .Title }}</span></a></li>{{ end }}
+  </ol>
+  {{ end }}
+{{ end }}
+{{ end }}

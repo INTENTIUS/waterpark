@@ -1,0 +1,21 @@
+baseURL = "/"
+title = "water park"
+disableKinds = ["taxonomy", "term"]
+enableRobotsTXT = true
+
+[params]
+  description = "Short lessons on running an agent against real infrastructure safely, on Fountain, themed on the Accessible Ops properties."
+  tagline = "Courses on Fountain and the propose loop, applied to org IAM."
+  github = "https://github.com/INTENTIUS/waterpark"
+
+[markup]
+  [markup.goldmark.renderer]
+    unsafe = true
+  [markup.tableOfContents]
+    startLevel = 2
+    endLevel = 2
+
+[outputs]
+  home = ["HTML"]
+  section = ["HTML"]
+  page = ["HTML"]
