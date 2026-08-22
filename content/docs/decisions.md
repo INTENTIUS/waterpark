@@ -35,7 +35,7 @@ it. Reversing one requires editing this file in the same PR.
     `WorkloadRole` live in `@org/waterpark-context`; a satellite is a
     consumer from its first file. Built in lesson I8 (amended under
     decision 26: it ships with the lesson, not "from the start" of a kit).
-    ([plan](plan.md), [week two, shift 8](../weeks/two/08-teams-bring-their-own-rides.md))
+    ([plan](plan.md), [IAM, lesson 8](../courses/iam/08-delegation-and-the-double-refusal.md))
 11. **Account vending is out of scope.** water park references accounts
     (registry, reference-existing); Control Tower / org-formation vend
     them. ([design/multi-account](design/multi-account.md))
@@ -116,16 +116,16 @@ it. Reversing one requires editing this file in the same PR.
     [issues.md](issues.md). Nothing there is "parked" except Track B and
     the org-layer reconcile, which are appendix lessons.
     ([plan](plan.md), [issues](issues.md))
-26. **water park is a course on the propose loop.** Short lessons, each one
-    theme and one check, teaching Fountain and one loop abstracted from
-    Mend, Rounds and dns-desk ([propose loop](../propose-loop.md)) through the Accessible
-    Ops properties, with one scenario, IAM at splashdown, that applies
-    it; Mend, Rounds and dns-desk are worked references inside the
-    lessons, not tracks of their own. Every lesson runs alone or live
-    with a group. IAM is one example and need not cover every property,
-    and it is not forced onto one app: the concierge takes the desk's
-    form, the watcher Rounds', and Mend runs on the access repo as-is.
-    ([plan](plan.md), [demo](demo.md))
+26. **water park is an IAM project repo that comes with courses; the
+    courses are about the Accessible Ops properties.** Two courses, each
+    lesson naming the properties it demonstrates: course 1 is Fountain
+    (the agent side, built up to the propose loop abstracted from Mend,
+    Rounds and dns-desk); course 2 is the IAM repo, where the agent goes
+    to work. The IAM scenario is the worked example because it exercises
+    both vehicles and most of the properties; it need not cover every
+    one. Each lesson is a card, an optional video, one activity; it runs
+    self-paced or live. No onboarding metaphor; titles are plain.
+    ([plan](plan.md), [page model](page-model.md), [properties](../properties.md))
 27. **Solo is Floci; live is real.** The free path deploys to Floci and
     says per lesson what Floci cannot show (Organizations, Identity
     Center, Access Analyzer; `iam:PermissionsBoundary` enforcement
@@ -137,12 +137,12 @@ it. Reversing one requires editing this file in the same PR.
     to declare it; closing unmerged is a no for that finding until
     relabeled; a capped number open at once; never a PR for a foreign
     resource; state lives in the code host. The same rules govern the
-    watcher (I13). ([week two, shift 7](../weeks/two/07-someone-moved-the-ropes.md), Rounds README)
+    watcher (I13). ([IAM, lesson 7](../courses/iam/07-drift.md), Rounds README)
 29. **Containment claims need a hosted sandbox provider.** The
     self-hosted runner is trusted mode: no isolation, no egress policy
     (Fountain ADR 0022). Any lesson that says "default-deny egress" or
     "no credentials can leave" runs on Sprites, E2B or Daytona; on a
-    runner the lesson says so. ([week one, shift 10](../weeks/one/10-working-from-your-own-truck.md))
+    runner the lesson says so. ([Fountain, lesson 10](../courses/fountain/10-self-hosted-runner.md))
 30. **The verb service is a server with policy; Mend, Rounds and dns-desk
     are the reference implementations.** Decision 15's "verb service outside the sandbox"
     is Rounds' server: the agent holds a read-only grant, the server
@@ -151,5 +151,14 @@ it. Reversing one requires editing this file in the same PR.
     objects it reports. Where a human is present, Mend's form (the PR
     opened from the human's browser with the human's token) is enough.
     No chant MCP verb service is built ahead of need.
-    ([propose loop](../propose-loop.md), [week one, shift 8](../weeks/one/08-how-work-gets-done-here.md),
-    [week one, shift 9](../weeks/one/09-the-night-shift.md), [design/agentic](design/agentic.md))
+    ([propose loop](../propose-loop.md), [Fountain, lesson 8](../courses/fountain/08-propose-loop-interactive.md),
+    [Fountain, lesson 9](../courses/fountain/09-propose-loop-ambient.md), [design/agentic](design/agentic.md))
+31. **Terraform is the IaC vehicle for the courses; chant stays the
+    other backend.** Course 2 builds `splashdown/access` in Terraform
+    because that is what the audience has (landscape: the real incumbent
+    is a pile of Terraform); guardrails are tflint/conftest at build and
+    in the editor via terraform-ls; drift is detected by plan and the fix
+    is authored by a person or by the agent; the manifest is plan JSON
+    reduced to the common schema (E1). chant remains first-class per
+    decision 23 and the kit-era docs describe it; switching the course
+    back is an edit to this decision. ([plan](plan.md), [issues](issues.md) E1–E3)

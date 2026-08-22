@@ -1,0 +1,55 @@
+---
+title: "Deploy to Floci"
+id: "I4"
+lesson: 4
+weight: 4
+summary: "`terraform apply` against Floci endpoints; no account, no keys."
+# card — empty renders as TODO
+goal: ""
+done_when: ""
+restart_from: "lesson 3"
+properties: ["XI"]
+closes: ["P6 (part)"]
+# media — provider: youtube | vimeo | file | todo
+video:
+  provider: todo
+  title: ""
+  length: ""
+# activity — kind: hands-on | watch-along | discuss
+activity:
+  kind: hands-on
+  time: ""
+  needs: []
+  solo: true
+  live: true
+---
+
+## Context
+
+- `terraform apply` against Floci endpoints; no account, no keys. Live: a real sandbox account.
+- Floci: IAM/STS/CloudFormation/EC2 SGs in-process; no Organizations, Identity Center, Access Analyzer.
+- Read a role back; the source predicted it.
+
+## Watch
+
+{{< todo "video script or link; optional, drop the section if no video" >}}
+
+## Do
+
+{{< todo "the activity: numbered steps, imperative, one job" >}}
+
+1. {{< todo >}}
+2. {{< todo >}}
+3. {{< todo >}}
+
+## Self-paced
+
+{{< todo "what Floci / your own machine can and cannot show for this lesson" >}}
+
+## Live
+
+{{< todo "what the room sees; timing; the honesty line" >}}
+
+## Back office
+
+[issues](../../docs/issues.md) A13; [multi-account](../../docs/design/multi-account.md) item 3; [upstream](../../docs/upstream.md) (Floci).

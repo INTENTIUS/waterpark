@@ -1,7 +1,6 @@
-{{- /* . is a week section page */ -}}
 <a class="course-card" href="{{ .RelPermalink }}">
   <span class="course-kicker">{{ .Params.kicker }}</span>
   <span class="course-title">{{ .Title }}</span>
   <span class="course-summary">{{ .Params.summary }}</span>
-  <span class="course-meta">{{ len .RegularPages }} shifts</span>
+  <span class="course-meta">{{ len .RegularPages }} lessons</span>
 </a>

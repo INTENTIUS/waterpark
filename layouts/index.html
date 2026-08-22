@@ -1,15 +1,13 @@
 {{ define "main" }}
-<section class="home-intro memo">
+<section class="home-intro">
   {{ .Content }}
   {{ partial "page/video.html" . }}
 </section>
 <section class="courses">
-  <h2 class="band-head">The weeks</h2>
+  <h2 class="band-head">Courses</h2>
   <div class="course-grid">
-    {{ range (site.GetPage "weeks").Sections.ByWeight }}
-      {{ partial "course-card.html" . }}
-    {{ end }}
+    {{ range (site.GetPage "courses").Sections.ByWeight }}{{ partial "course-card.html" . }}{{ end }}
   </div>
-  <p class="props-more"><a href="{{ "propose-loop/" | relURL }}">How work gets done here: the propose loop &rarr;</a> &nbsp; <a href="{{ "docs/" | relURL }}">The back office &rarr;</a></p>
+  <p class="props-more"><a href="{{ "properties/" | relURL }}">The fourteen properties &rarr;</a> &nbsp; <a href="{{ "propose-loop/" | relURL }}">The propose loop &rarr;</a> &nbsp; <a href="{{ "docs/" | relURL }}">The back office &rarr;</a></p>
 </section>
 {{ end }}

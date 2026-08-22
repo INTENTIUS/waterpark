@@ -86,3 +86,4 @@ video { width: 100%; border-radius: 6px; background: #000; }
 .activity-meta { margin: 0 0 0.3rem; display: flex; gap: 0.35rem; flex-wrap: wrap; }
 .needs { font-size: 0.9rem; color: var(--muted); margin: 0.2rem 0 0; }
 .todo { display: inline-block; font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 700; color: #ab741a; background: rgba(171,116,26,0.10); border: 1px solid rgba(171,116,26,0.35); border-radius: 4px; padding: 0.05rem 0.45rem; vertical-align: middle; }
+.props-list .tags a.tag-prop { text-transform: none; letter-spacing: 0; font-size: 0.72rem; }

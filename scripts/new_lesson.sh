@@ -1,23 +1,21 @@
 #!/usr/bin/env bash
-# new_lesson.sh <week> <shift> <id> <title>   e.g. new_lesson.sh two 16 I16 "Title of the shift"
+# new_lesson.sh <course> <lesson> <id> <title>   e.g. new_lesson.sh iam 16 I16 "Title of the lesson"
 set -euo pipefail
-week=$1; shift_n=$2; id=$3; title=$4
-slug=$(printf '%02d-%s' "$shift_n" "$title" | tr '[:upper:]' '[:lower:]' | sed -E "s/[^a-z0-9]+/-/g; s/^-//; s/-$//")
-f="content/weeks/${week}/${slug}.md"
+course=$1; n=$2; id=$3; title=$4
+slug=$(printf '%02d-%s' "$n" "$title" | tr '[:upper:]' '[:lower:]' | sed -E "s/[^a-z0-9]+/-/g; s/^-//; s/-$//")
+f="content/courses/${course}/${slug}.md"
 [ -e "$f" ] && { echo "exists: $f" >&2; exit 1; }
 cat > "$f" <<EOT
 ---
 title: "${title}"
 id: "${id}"
-shift: ${shift_n}
-weight: ${shift_n}
-subtitle: ""
+lesson: ${n}
+weight: ${n}
 summary: ""
-# card — fill in; empty renders as TODO
-today: ""
+# card — empty renders as TODO
+goal: ""
 done_when: ""
-clock_in: "shift $((shift_n-1))"
-rule: ""
+restart_from: "lesson $((n-1))"
 properties: []
 # media — provider: youtube | vimeo | file | todo
 video:
@@ -49,7 +47,7 @@ activity:
 
 {{< todo >}}
 
-## With the shift lead
+## Live
 
 {{< todo >}}
 

@@ -1,0 +1,57 @@
+# Accessible Ops, accessibleops.net — the fourteen properties.
+- roman: I
+  slug: honor-the-lower-layer
+  title: Honor the lower layer
+  summary: A stranger reads the source and predicts the Kubernetes manifest or CloudFormation stack from the text alone, before anything runs.
+- roman: II
+  slug: correctness-left-of-the-commit
+  title: The same check, left of the commit
+  summary: The check that draws a red squiggle for a human hands the same diagnostic to an agent, at the keystroke instead of after the commit.
+- roman: III
+  slug: documentation-is-law
+  title: Documentation is Law
+  summary: The reason the database lives in that region exists as text, because a newcomer, human or agent, has no other way in.
+- roman: IV
+  slug: one-path-to-prod
+  title: One path to prod
+  summary: Every change arrives as a diff in one place where someone can say no, and a change clicked into a console arrives nowhere.
+- roman: V
+  slug: named-secrets-least-privilege
+  title: Named secrets, least privilege
+  summary: An agent holds named credentials scoped to the task, revocable in one step the day something goes wrong.
+- roman: VI
+  slug: bounded-blast-radius
+  title: Bounded blast radius
+  summary: A cap on scope, rate, or environment keeps the worst mistake the size of one namespace rather than the whole account.
+- roman: VII
+  slug: reversible-before-risky
+  title: Reversible before risky
+  summary: A reversible change runs on its own, and dropping a table or deleting a bucket waits for a human.
+- roman: VIII
+  slug: escalate-the-judgment
+  title: Escalate the judgment
+  summary: A privileged change waits for approval before it lands, and an agent unsure of its authority stops and asks.
+- roman: IX
+  slug: attributable
+  title: Attributable
+  summary: Every change records who made it, what changed, and who approved it, whether the author was an engineer or an agent.
+- roman: X
+  slug: secret-rotation-is-cheap
+  title: Secret rotation is cheap
+  summary: Secrets that take effort to rotate end up stale and still in use, or shared.
+- roman: XI
+  slug: truth-lives-live
+  title: The live system is the truth
+  summary: A tool that hosts its own state file signs someone up to reconcile it, and a snapshot kept only as a diff baseline is allowed to go stale.
+- roman: XII
+  slug: adopt-in-place
+  title: Adopt in place
+  summary: Existing infrastructure comes under management a slice at a time, kept in the platform's own format, with one native command to back out.
+- roman: XIII
+  slug: manage-only-what-you-declare
+  title: Manage only what you declare
+  summary: The tool changes only declared fields and deletes only what carries its ownership marker, so an omission is never a purge.
+- roman: XIV
+  slug: verify-the-artifact
+  title: Verify the artifact
+  summary: The artifact carries provenance and a signature, and the check that admits it runs before apply and fails closed.

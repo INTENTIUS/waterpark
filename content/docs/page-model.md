@@ -2,41 +2,40 @@
 title: "Page model"
 ---
 
-What a content page is made of, so shifts can be written, filmed, and
+What a content page is made of, so lessons can be written, filmed, and
 scheduled independently. Everything lives in front matter; the layouts in
 `layouts/partials/page/` render it; an empty field renders as a TODO
-marker rather than disappearing, so a half-written shift is visibly
+marker rather than disappearing, so a half-written lesson is visibly
 half-written.
 
 ## Kinds of page
 
 | Kind | Where | Layout | Has |
 |---|---|---|---|
-| home | `content/_index.md` | `index.html` | memo, optional video, the two week cards |
-| weeks index | `content/weeks/_index.md` | `list.html` | intro, week cards |
-| week | `content/weeks/<week>/_index.md` | `list.html` | the two-minute talk (text or video), optional activity, the shift list |
-| shift | `content/weeks/<week>/NN-slug.md` | `single.html` (shift) | card, optional video, optional activity, body, pager |
+| home | `content/_index.md` | `index.html` | intro, optional video, the course cards |
+| courses index | `content/courses/_index.md` | `list.html` | intro, course cards |
+| course | `content/courses/<course>/_index.md` | `list.html` | intro (text or video), optional activity, the lesson list |
+| lesson | `content/courses/<course>/NN-slug.md` | `single.html` (lesson) | card, optional video, optional activity, body, pager |
+| properties | `content/properties.md` | `properties.html` | the fourteen properties from `data/properties.yaml`, each with the lessons that demonstrate it |
 | page | `content/propose-loop.md`, `content/docs/**` | `single.html` (page) | optional video, optional activity, body |
 
-A shift may have a video, an activity, or both. A shift with neither is a
-read, and should be rare.
+A lesson may have a video, an activity, or both. A lesson with neither is
+a read, and should be rare.
 
-## Shift front matter
+## Lesson front matter
 
 ```yaml
-title: "The wristband"          # themed title
+title: "The egress allowlist"
 id: "F3"                        # stable id used by the back office
-shift: 3                        # number within the week
-weight: 3                       # ordering (= shift)
-subtitle: "the egress allowlist" # the plain name, shown under the title
-summary: "…"                    # meta description
+lesson: 3                       # number within the course
+weight: 3                       # ordering (= lesson)
+summary: "…"                    # one line under the title in lists
 # the card (empty => TODO on the page)
-today: ""                       # one paragraph, imperative, what you'll do
+goal: ""                        # one paragraph, imperative, what you'll do
 done_when: ""                   # the check
-clock_in: "shift 1"             # where to restart
-rule: "Bounded blast radius (handbook VI)."
-properties: ["VI"]              # handbook roman numerals
-closes: ["P4"]                  # prescriptions closed (week two)
+restart_from: "lesson 1"        # where to restart if it breaks
+properties: ["VI"]              # Accessible Ops roman numerals; rendered with names and links
+closes: ["P4"]                  # prescriptions closed (IAM course)
 # media
 video:
   provider: todo                # youtube | vimeo | file | todo
@@ -51,23 +50,23 @@ activity:
   time: ""                      # "10 min"
   needs: []                     # ["a Fountain instance", "a repo you own"]
   solo: true                    # runs self-paced
-  live: true                    # runs with the shift lead
+  live: true                    # runs live with a facilitator
 ```
 
-Omit `video:` or `activity:` entirely when a shift has none; the block is
+Omit `video:` or `activity:` entirely when a lesson has none; the block is
 not rendered. `provider: todo` renders a placeholder frame.
 
-## Shift body
+## Lesson body
 
 Headings in this order; a section may be dropped if it does not apply.
 
 ```
-## Context            short bullets: what's underneath, sources, constraints — not final copy
-## Watch              the video's script or talking points (if there is a video)
-## Do                 the activity: numbered steps, imperative, one job
-## Self-paced         what the practice pool can and cannot show
-## With the shift lead what the crew sees; timing; the line to say
-## Back office        links into content/docs for depth
+## Context       short bullets: what's underneath, sources, constraints — not final copy
+## Watch         the video's script or talking points (if there is a video)
+## Do            the activity: numbered steps, imperative, one job
+## Self-paced    what Floci / your own machine can and cannot show
+## Live          what the room sees; timing; the honesty line
+## Back office   links into content/docs for depth
 ```
 
 ## Markers
@@ -78,5 +77,5 @@ choice, not an accident. `just todos` lists them.
 
 ## Scaffolding
 
-`just new two 16 I16 "Title"` writes a shift file with this front matter
+`just new iam 16 I16 "Title"` writes a lesson file with this front matter
 and these headings.

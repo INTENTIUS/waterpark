@@ -16,7 +16,8 @@
   <header class="topbar">
     <a class="brand" href="{{ site.Home.RelPermalink }}">water park</a>
     <nav class="topnav" aria-label="Site">
-      <a href="{{ "weeks/" | relURL }}"{{ if eq .Section "weeks" }} aria-current="page"{{ end }}>The weeks</a>
+      <a href="{{ "courses/" | relURL }}"{{ if eq .Section "courses" }} aria-current="page"{{ end }}>Courses</a>
+      <a href="{{ "properties/" | relURL }}"{{ if eq .RelPermalink (printf "%sproperties/" site.Home.RelPermalink) }} aria-current="page"{{ end }}>Properties</a>
       <a href="{{ "propose-loop/" | relURL }}"{{ if eq .RelPermalink (printf "%spropose-loop/" site.Home.RelPermalink) }} aria-current="page"{{ end }}>The propose loop</a>
       <a href="{{ "docs/" | relURL }}"{{ if eq .Section "docs" }} aria-current="page"{{ end }}>Back office</a>
       <a href="{{ .Site.Params.github }}">GitHub</a>
@@ -25,7 +26,7 @@
   <main>
     {{ block "main" . }}{{ end }}
     <footer class="site-footer">
-      <p>water park is splashdown's ops onboarding. The handbook is <a href="https://accessibleops.net">Accessible Ops</a>. Runtime: <a href="https://github.com/BinaryBourbon/fountain">Fountain</a>. Toolchain: <a href="https://intentius.io/chant">chant</a>. The propose loop is abstracted from <a href="https://github.com/jhgaylor/mend">Mend</a>, <a href="https://github.com/jhgaylor/rounds">Rounds</a> and <a href="https://github.com/jhgaylor/dns-desk">dns-desk</a>.</p>
+      <p>water park is an IAM project repo with courses in it; the courses demonstrate the <a href="https://accessibleops.net">Accessible Ops</a> properties. Vehicles: <a href="https://github.com/BinaryBourbon/fountain">Fountain</a> and Terraform (<a href="https://intentius.io/chant">chant</a> in the back office). The propose loop is abstracted from <a href="https://github.com/jhgaylor/mend">Mend</a>, <a href="https://github.com/jhgaylor/rounds">Rounds</a> and <a href="https://github.com/jhgaylor/dns-desk">dns-desk</a>.</p>
     </footer>
   </main>
 </body>

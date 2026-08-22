@@ -1,14 +1,10 @@
-<section class="card" aria-label="Shift card">
+{{- $props := .Params.properties -}}
+<section class="card" aria-label="Lesson card">
   <dl>
-    <dt>Today</dt><dd>{{ .Params.today | default "TODO" | markdownify }}</dd>
+    <dt>Properties</dt><dd>{{ if $props }}{{ range $i, $r := $props }}{{ if $i }}, {{ end }}{{ range hugo.Data.properties }}{{ if eq .roman $r }}<a href="https://accessibleops.net/{{ .slug }}/">{{ .roman }} {{ .title }}</a>{{ end }}{{ end }}{{ end }}{{ else }}<span class="todo">TODO: which properties this demonstrates</span>{{ end }}</dd>
+    <dt>Goal</dt><dd>{{ .Params.goal | default "TODO" | markdownify }}</dd>
     <dt>Done when</dt><dd>{{ .Params.done_when | default "TODO" | markdownify }}</dd>
-    <dt>If it goes sideways</dt><dd>{{ with .Params.clock_in }}Clock back in at {{ . | markdownify }}.{{ else }}TODO{{ end }}</dd>
-    <dt>The rule</dt><dd>{{ .Params.rule | default "TODO" | markdownify }}</dd>
+    <dt>Restart from</dt><dd>{{ .Params.restart_from | default "TODO" | markdownify }}</dd>
   </dl>
-  {{ if or .Params.properties .Params.closes }}
-  <p class="tags">
-    {{ range .Params.properties }}<span class="tag tag-prop">handbook {{ . }}</span>{{ end }}
-    {{ range .Params.closes }}<span class="tag tag-closes">closes {{ . }}</span>{{ end }}
-  </p>
-  {{ end }}
+  {{ with .Params.closes }}<p class="tags">{{ range . }}<span class="tag tag-closes">closes {{ . }}</span>{{ end }}</p>{{ end }}
 </section>

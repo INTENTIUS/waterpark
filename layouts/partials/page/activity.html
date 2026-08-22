@@ -4,7 +4,7 @@ activity:
   time: "10 min"
   needs: ["a Fountain instance", "a repo you own"]
   solo: true|false      (runs self-paced)
-  live: true|false      (runs with the shift lead)
+  live: true|false      (runs live)
 */ -}}
 {{- with .Params.activity }}
 <section class="block block-activity" aria-label="Activity">
@@ -12,7 +12,7 @@ activity:
   <p class="activity-meta">
     {{ with .kind }}<span class="tag">{{ . }}</span>{{ end }}
     {{ if .solo }}<span class="tag">self-paced</span>{{ end }}
-    {{ if .live }}<span class="tag">with the shift lead</span>{{ end }}
+    {{ if .live }}<span class="tag">live</span>{{ end }}
   </p>
   {{ with .needs }}<p class="needs"><strong>You need:</strong> {{ delimit . ", " }}.</p>{{ end }}
 </section>

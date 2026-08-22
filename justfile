@@ -34,7 +34,7 @@ ci: check check-md
 syllabus:
     @for c in foundations iam; do \
       echo "== $c"; \
-      for f in content/weeks/$c/*.md; do \
+      for f in content/courses/$c/*.md; do \
         case "$f" in */_index.md) continue;; esac; \
         n=$(sed -n 's/^number: "\(.*\)"/\1/p' "$f"); \
         t=$(sed -n 's/^title: "\(.*\)"/\1/p' "$f"); \
@@ -43,13 +43,13 @@ syllabus:
       done | sort -n | cut -f2-; \
     done
 
-# New shift page from the template: just new two 16 I16 "Title of the shift"
-new week shift id title:
-    scripts/new_lesson.sh {{week}} {{shift}} {{id}} "{{title}}"
+# New lesson page from the template: just new iam 16 I16 "Title of the lesson"
+new course lesson id title:
+    scripts/new_lesson.sh {{course}} {{lesson}} {{id}} "{{title}}"
 
 # List every TODO marker and empty card field across the content
 todos:
-    @grep -rn --include='*.md' -e '{{{{< todo' -e '^today: ""' -e '^done_when: ""' -e 'provider: todo' content | sed 's|^content/||' || true
+    @grep -rn --include='*.md' -e '{{{{< todo' -e '^goal: ""' -e '^done_when: ""' -e 'provider: todo' content | sed 's|^content/||' || true
     @echo; echo "$(grep -rho --include='*.md' '{{{{< todo' content | wc -l | tr -d ' ') todo markers"
 
 # Remove build output

@@ -47,13 +47,14 @@ facilitator. Each lesson file carries the same sections:
   a checkpoint to restart from, the honesty lines to say out loud).
 - **Depth** — the design docs and decisions behind it.
 
-On the site the lessons are **shifts** in two **weeks**
-([weeks/](../weeks/): `one/` is F1–F11, `two/` is I1–I15), framed as
-splashdown's ops onboarding; F0 and I0 are the two-minute talks at the top
-of each week, and IA is [the appendix](appendix.md). Each shift page's
-front matter is its card: today, done when, clock-in point, the handbook
-rule, properties, prescriptions closed. The F/I ids below are the shift
-ids; the tables here are the curriculum map behind them.
+On the site the lessons live in two **courses** ([courses/](../courses/):
+`fountain/` is F1–F11, `iam/` is I1–I15); F0 and I0 are the course intros,
+IA is [the appendix](appendix.md). The courses are about the Accessible Ops
+properties (decision 26); course 2 demonstrates on Terraform (decision
+31), which the tables below, written for chant, do not yet reflect in
+their source columns. Each lesson page's front matter is its card: goal,
+done when, restart from, properties, prescriptions closed. The F/I ids
+below are the lesson ids.
 The stubs there are the spec for each lesson; bodies are written against
 the upstream versions pinned in [upstream.md](upstream.md).
 
