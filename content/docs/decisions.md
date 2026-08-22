@@ -35,7 +35,7 @@ it. Reversing one requires editing this file in the same PR.
     `WorkloadRole` live in `@org/waterpark-context`; a satellite is a
     consumer from its first file. Built in lesson I8 (amended under
     decision 26: it ships with the lesson, not "from the start" of a kit).
-    ([plan](plan.md), [lessons/I8](../courses/iam/i8-delegation.md))
+    ([plan](plan.md), [week two, shift 8](../weeks/two/08-teams-bring-their-own-rides.md))
 11. **Account vending is out of scope.** water park references accounts
     (registry, reference-existing); Control Tower / org-formation vend
     them. ([design/multi-account](design/multi-account.md))
@@ -137,12 +137,12 @@ it. Reversing one requires editing this file in the same PR.
     to declare it; closing unmerged is a no for that finding until
     relabeled; a capped number open at once; never a PR for a foreign
     resource; state lives in the code host. The same rules govern the
-    watcher (I13). ([lessons/I7](../courses/iam/i7-drift.md), Rounds README)
+    watcher (I13). ([week two, shift 7](../weeks/two/07-someone-moved-the-ropes.md), Rounds README)
 29. **Containment claims need a hosted sandbox provider.** The
     self-hosted runner is trusted mode: no isolation, no egress policy
     (Fountain ADR 0022). Any lesson that says "default-deny egress" or
     "no credentials can leave" runs on Sprites, E2B or Daytona; on a
-    runner the lesson says so. ([lessons/F10](../courses/foundations/f10-your-own-machine.md))
+    runner the lesson says so. ([week one, shift 10](../weeks/one/10-working-from-your-own-truck.md))
 30. **The verb service is a server with policy; Mend, Rounds and dns-desk
     are the reference implementations.** Decision 15's "verb service outside the sandbox"
     is Rounds' server: the agent holds a read-only grant, the server
@@ -151,5 +151,5 @@ it. Reversing one requires editing this file in the same PR.
     objects it reports. Where a human is present, Mend's form (the PR
     opened from the human's browser with the human's token) is enough.
     No chant MCP verb service is built ahead of need.
-    ([propose loop](../propose-loop.md), [lessons/F8](../courses/foundations/f8-the-propose-loop-interactive.md),
-    [lessons/F9](../courses/foundations/f9-the-propose-loop-ambient.md), [design/agentic](design/agentic.md))
+    ([propose loop](../propose-loop.md), [week one, shift 8](../weeks/one/08-how-work-gets-done-here.md),
+    [week one, shift 9](../weeks/one/09-the-night-shift.md), [design/agentic](design/agentic.md))

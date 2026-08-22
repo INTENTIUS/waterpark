@@ -41,7 +41,7 @@ read `limited` networking as a hint; it is an allowlist.
 
 | App | What it shows | Lessons |
 |---|---|---|
-| [fountain-demos](https://github.com/jhgaylor/fountain-demos) | the index at demos.inevitable.fyi; apps listed by audience (everyone / engineers / infrastructure / AI engineers) | site layout |
+| [fountain-demos](https://github.com/jhgaylor/fountain-demos) | the index at demos.inevitable.fyi; apps listed by audience | site layout |
 | [Mend](https://github.com/jhgaylor/mend) | `chant audit` → agent mends → per-fix diffs → PR opened from the browser with the user's token; toolkit Environment with chant + ten lexicons; per-repo read-only vault; protocol blocks (`audit-report`, `mend-plan`, `mend-patch`, `mend-fix`, `pr-draft`) | F4, F7, F8, I3, I12 |
 | [Rounds](https://github.com/jhgaylor/rounds) | the unattended sibling: schedule → audit → reconcile against own past PRs → fix and verify → propose through a server that mints a one-repo write token, enforces cap / declined / branch prefix, renders the PR body; agent holds an HMAC grant for a read-only token; `.rounds.yml`; `rounds:reconsider` | F6, F9, I7, I13 |
 | [dns-desk](https://github.com/jhgaylor/dns-desk) | Cloudflare operator teammate; `dns-state` / `dns-plan` / `dns-result`; `APPROVE plan-id`; re-read before apply; token zone list is the blast radius; cites fountain#643 for gates | F7, F8, F11, I12 |

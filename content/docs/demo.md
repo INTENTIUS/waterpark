@@ -1,8 +1,8 @@
 ---
-title: "Live sessions — the facilitator guide"
+title: "The shift lead's guide"
 ---
 
-Every lesson in [the two courses](../courses/) has a *Live* section. This doc is the
+Every shift in [the two weeks](../weeks/) has a *With the shift lead* section. This doc is the
 rest: how to run a room, which lessons to string together, what to have
 ready, and what to say out loud. Live mode is real: real AWS sandbox
 accounts for the scenario, a real repo for the F8 and F9 exercises

@@ -3,7 +3,7 @@ title: "The propose loop"
 weight: 1
 ---
 
-The basis of the course is one loop, abstracted from three Fountain apps
+How work gets done at splashdown is one loop, abstracted from three Fountain apps
 — [Mend](https://github.com/jhgaylor/mend),
 [Rounds](https://github.com/jhgaylor/rounds) and
 [dns-desk](https://github.com/jhgaylor/dns-desk) — and applied to a use
@@ -51,7 +51,7 @@ IAM is the deep scenario: one type per file makes findings addressable by
 path, the PR is propose and gate at once, and the permission boundary
 makes a wrong proposal harmless at apply.
 
-| Form | IAM instance | Build or reuse | Lessons |
+| Form | IAM instance | Build or reuse | Shifts |
 |---|---|---|---|
 | interactive, request-driven | **the concierge**, in the desk's form: the estate on screen (`chant search`), "tickets-api needs read on the receipts bucket", `wp-request` makes one deterministic leaf edit, the plan is the rendered access delta, the PR is opened with a PR-only token, CODEOWNERS approve, the gated job applies; refusals name the enrollment or escalation path | build | I12 |
 | ambient, audit-driven | **the watcher**, in Rounds' form: unused-access findings and expiring grants on a schedule, one PR per finding, capped, declines stick; and the drift reconcile under the same rules | Rounds as-is for the lint tier (enroll `splashdown/access`); IAM projections added | I7, I13 |
@@ -60,7 +60,7 @@ makes a wrong proposal harmless at apply.
 
 The parts, on IAM:
 
-| Part | IAM at splashdown | Lessons |
+| Part | IAM at splashdown | Shifts |
 |---|---|---|
 | target | `splashdown/access` and the live estate it owns; a satellite repo | I1, I8 |
 | read | the lint pack, the drift watch, the Access Analyzer proofs, the unused-access and expiring-grant projections, `chant search` for the estate view | I3, I6, I7, I11 |

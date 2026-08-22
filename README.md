@@ -1,9 +1,12 @@
 # water park
 
-Short lessons on running an agent against real infrastructure safely,
-taught on [Fountain](https://github.com/BinaryBourbon/fountain), themed on
-the [Accessible Ops](https://accessibleops.net) properties. Each lesson
-runs alone, free, or live with a group.
+splashdown's ops onboarding. You've been hired onto the ops team of a
+fictional water-park operator; your co-hire is an agent. Two weeks of
+short shifts, each one job, one way to know you're done, run self-paced
+(free, on Floci) or with a shift lead and a crew (real AWS). Built on
+[Fountain](https://github.com/BinaryBourbon/fountain); the handbook is
+[Accessible Ops](https://accessibleops.net). Live at
+[intentius.io/waterpark](https://intentius.io/waterpark/).
 
 The basis is one loop, abstracted from the Fountain apps Mend, Rounds
 and dns-desk ([docs/propose-loop.md](content/propose-loop.md)): an operator that can only
@@ -21,14 +24,11 @@ then works as its concierge (the desk's form) and its watcher (Rounds'
 form). IAM is one example of the loop; it does not need to hit every
 property.
 
-Solo mode uses Floci for AWS and costs nothing. Live mode uses real AWS,
-real zones, real repos, from checkpoints, with a facilitator.
-
 - [docs/propose-loop.md](content/propose-loop.md) — the basis: the propose loop abstracted from
   Mend, Rounds and dns-desk, and how it lands on IAM
 - [docs/plan.md](content/docs/plan.md) — the curriculum: the lesson template, the
   foundation and scenario tables, modes, what is next
-- [docs/lessons/](content/courses/) — one file per lesson (`F` foundations,
+- [docs/lessons/](content/weeks/) — one file per lesson (`F` foundations,
   `I` the IAM scenario)
 - [docs/demo.md](content/docs/demo.md) — the facilitator guide: session formats,
   playlists, checkpoints, honesty lines

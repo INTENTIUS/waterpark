@@ -64,3 +64,13 @@ blockquote { margin: 1.1rem 0; padding: 0.2rem 0 0.2rem 1.1rem; border-left: 3px
 .props-more { margin: 1.2rem 0 0; font-size: 0.9rem; }
 .props-more a { font-weight: 600; }
 .site-footer { margin: 3rem 0 2rem; padding-top: 1rem; border-top: 1px solid var(--rule); color: var(--faint); font-size: 0.82rem; max-width: 42rem; }
+/* shift card */
+.memo p:first-child { font-size: 1.05rem; color: var(--ink); }
+.muted { color: var(--faint); }
+.card { background: var(--panel); border: 1px solid var(--rule-strong); border-radius: 6px; padding: 0.9rem 1.1rem 0.6rem; margin: 0.4rem 0 1.4rem; }
+.card dl { margin: 0; display: grid; grid-template-columns: 9rem 1fr; column-gap: 1rem; row-gap: 0.45rem; font-size: 0.93rem; }
+.card dt { font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--link); font-weight: 700; padding-top: 0.2rem; }
+.card dd { margin: 0; line-height: 1.5; }
+.card dd p { margin: 0; }
+.card p.tags { margin: 0.7rem 0 0.2rem; padding: 0; border: 0; }
+@media (max-width: 40rem) { .card dl { grid-template-columns: 1fr; row-gap: 0.2rem; } .card dt { margin-top: 0.4rem; } }

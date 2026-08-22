@@ -1,28 +1,37 @@
 {{ define "main" }}
-<article class="{{ if .Params.number }}lesson{{ else }}page{{ end }}">
-  {{ if .Params.number }}
-  <p class="crumb"><a href="{{ .CurrentSection.RelPermalink }}">{{ .CurrentSection.Title }}</a></p>
-  <p class="factor-num">{{ .Params.number }}</p>
-  {{ end }}
+<article class="{{ if .Params.shift }}lesson{{ else }}page{{ end }}">
+  {{ if .Params.shift }}
+  <p class="crumb"><a href="{{ .CurrentSection.RelPermalink }}">{{ .CurrentSection.Title }}</a> &middot; shift {{ .Params.shift }} <span class="muted">({{ .Params.id }})</span></p>
+  <h1>{{ .Title }}</h1>
+  {{ with .Params.subtitle }}<p class="factor-lead">{{ . }}</p>{{ end }}
+  <section class="card" aria-label="Shift card">
+    <dl>
+      <dt>Today</dt><dd>{{ .Params.today | markdownify }}</dd>
+      <dt>Done when</dt><dd>{{ .Params.done_when | markdownify }}</dd>
+      <dt>If it goes sideways</dt><dd>Clock back in at {{ .Params.clock_in | markdownify }}.</dd>
+      <dt>The rule</dt><dd>{{ .Params.rule | markdownify }}</dd>
+    </dl>
+    {{ if or .Params.properties .Params.closes }}
+    <p class="tags">
+      {{ range .Params.properties }}<span class="tag tag-prop">handbook {{ . }}</span>{{ end }}
+      {{ range .Params.closes }}<span class="tag tag-closes">closes {{ . }}</span>{{ end }}
+    </p>
+    {{ end }}
+  </section>
+  {{ else }}
   <h1>{{ .Title }}</h1>
   {{ with .Params.theme }}<p class="factor-lead">{{ . }}</p>{{ end }}
-  {{ if or .Params.properties .Params.closes .Params.builds_on }}
-  <p class="tags">
-    {{ range .Params.properties }}<span class="tag tag-prop">Accessible Ops {{ . }}</span>{{ end }}
-    {{ range .Params.closes }}<span class="tag tag-closes">closes {{ . }}</span>{{ end }}
-    {{ range .Params.builds_on }}<span class="tag tag-builds">builds on {{ . }}</span>{{ end }}
-  </p>
   {{ end }}
   {{ .Content }}
 
-  {{ if .Params.number }}
-  <nav class="pager" aria-label="Between lessons">
+  {{ if .Params.shift }}
+  <nav class="pager" aria-label="Between shifts">
     {{ $ordered := .CurrentSection.RegularPages.ByWeight }}
     {{ range $i, $p := $ordered }}
       {{ if eq $p.RelPermalink $.RelPermalink }}
-        <span class="pager-prev">{{ if gt $i 0 }}{{ $prev := index $ordered (sub $i 1) }}<a href="{{ $prev.RelPermalink }}">&larr; {{ $prev.Params.number }} {{ $prev.Title }}</a>{{ end }}</span>
-        <a class="pager-home" href="{{ $.CurrentSection.RelPermalink }}">All lessons</a>
-        <span class="pager-next">{{ if lt (add $i 1) (len $ordered) }}{{ $next := index $ordered (add $i 1) }}<a href="{{ $next.RelPermalink }}">{{ $next.Params.number }} {{ $next.Title }} &rarr;</a>{{ end }}</span>
+        <span class="pager-prev">{{ if gt $i 0 }}{{ $prev := index $ordered (sub $i 1) }}<a href="{{ $prev.RelPermalink }}">&larr; Shift {{ $prev.Params.shift }}: {{ $prev.Title }}</a>{{ end }}</span>
+        <a class="pager-home" href="{{ $.CurrentSection.RelPermalink }}">All shifts</a>
+        <span class="pager-next">{{ if lt (add $i 1) (len $ordered) }}{{ $next := index $ordered (add $i 1) }}<a href="{{ $next.RelPermalink }}">Shift {{ $next.Params.shift }}: {{ $next.Title }} &rarr;</a>{{ end }}</span>
       {{ end }}
     {{ end }}
   </nav>

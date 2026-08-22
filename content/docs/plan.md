@@ -47,10 +47,13 @@ facilitator. Each lesson file carries the same sections:
   a checkpoint to restart from, the honesty lines to say out loud).
 - **Depth** — the design docs and decisions behind it.
 
-Lesson pages live under [courses/](../courses/): `foundations/` (F0–F11)
-and `iam/` (I0–I15, IA). Each page's front matter carries the number,
-theme, properties, prescriptions closed and lessons built on; the site
-lists them from that.
+On the site the lessons are **shifts** in two **weeks**
+([weeks/](../weeks/): `one/` is F1–F11, `two/` is I1–I15), framed as
+splashdown's ops onboarding; F0 and I0 are the two-minute talks at the top
+of each week, and IA is [the appendix](appendix.md). Each shift page's
+front matter is its card: today, done when, clock-in point, the handbook
+rule, properties, prescriptions closed. The F/I ids below are the shift
+ids; the tables here are the curriculum map behind them.
 The stubs there are the spec for each lesson; bodies are written against
 the upstream versions pinned in [upstream.md](upstream.md).
 

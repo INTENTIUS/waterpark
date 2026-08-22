@@ -4,7 +4,7 @@
   <h1>{{ .Title }}</h1>
   {{ .Content }}
 </article>
-{{ if and (eq .Section "courses") (eq .Kind "section") (gt (len .Sections) 0) }}
+{{ if and (eq .Section "weeks") (eq .Kind "section") (gt (len .Sections) 0) }}
 <div class="course-grid">
   {{ range .Sections.ByWeight }}{{ partial "course-card.html" . }}{{ end }}
 </div>
@@ -12,7 +12,7 @@
 {{ if gt (len .RegularPages) 0 }}
 <ol class="lesson-list">
   {{ range .RegularPages.ByWeight }}
-    {{ if eq $.Section "courses" }}
+    {{ if eq $.Section "weeks" }}
       {{ partial "lesson-row.html" . }}
     {{ else }}
       <li class="lesson-row"><a href="{{ .RelPermalink }}"><span class="lesson-title">{{ .Title }}</span></a>{{ with .Params.summary }}<span class="lesson-theme">{{ . }}</span>{{ end }}</li>

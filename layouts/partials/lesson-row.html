@@ -1,15 +1,15 @@
-{{- /* . is a lesson page */ -}}
+{{- /* . is a shift page */ -}}
 <li class="lesson-row">
   <a href="{{ .RelPermalink }}">
-    <span class="lesson-num">{{ .Params.number }}</span>
+    <span class="lesson-num">Shift {{ .Params.shift }}</span>
     <span class="lesson-title">{{ .Title }}</span>
   </a>
-  <span class="lesson-theme">{{ .Params.theme }}</span>
-  {{ if or .Params.properties .Params.closes .Params.builds_on }}
+  <span class="lesson-theme">{{ .Params.subtitle }}{{ with .Params.rule }} &middot; {{ . }}{{ end }}</span>
+  {{ if or .Params.properties .Params.closes }}
   <span class="tags">
-    {{ range .Params.properties }}<span class="tag tag-prop" title="Accessible Ops property">{{ . }}</span>{{ end }}
+    {{ range .Params.properties }}<span class="tag tag-prop" title="Handbook rule">{{ . }}</span>{{ end }}
     {{ range .Params.closes }}<span class="tag tag-closes" title="Prescription closed">{{ . }}</span>{{ end }}
-    {{ range .Params.builds_on }}<span class="tag tag-builds" title="Builds on">{{ . }}</span>{{ end }}
+    <span class="tag tag-builds" title="Shift id">{{ .Params.id }}</span>
   </span>
   {{ end }}
 </li>

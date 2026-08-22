@@ -34,7 +34,7 @@ ci: check check-md
 syllabus:
     @for c in foundations iam; do \
       echo "== $c"; \
-      for f in content/courses/$c/*.md; do \
+      for f in content/weeks/$c/*.md; do \
         case "$f" in */_index.md) continue;; esac; \
         n=$(sed -n 's/^number: "\(.*\)"/\1/p' "$f"); \
         t=$(sed -n 's/^title: "\(.*\)"/\1/p' "$f"); \
@@ -43,9 +43,9 @@ syllabus:
       done | sort -n | cut -f2-; \
     done
 
-# New lesson page from the template: just new iam I16 "Title of the lesson"
-new course number title:
-    scripts/new_lesson.sh {{course}} {{number}} "{{title}}"
+# New shift page from the template: just new two 16 I16 "Title of the shift"
+new week shift id title:
+    scripts/new_lesson.sh {{week}} {{shift}} {{id}} "{{title}}"
 
 # Remove build output
 clean:

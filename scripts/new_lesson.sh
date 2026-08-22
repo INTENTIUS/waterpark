@@ -1,34 +1,33 @@
 #!/usr/bin/env bash
-# new_lesson.sh <course> <number> <title>   e.g. new_lesson.sh iam I16 "Title of the lesson"
+# new_lesson.sh <week> <shift> <id> <title>   e.g. new_lesson.sh two 16 I16 "Title of the shift"
 set -euo pipefail
-course=$1; number=$2; title=$3
-slug=$(printf '%s-%s' "$number" "$title" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-//; s/-$//')
-f="content/courses/${course}/${slug}.md"
+week=$1; shift_n=$2; id=$3; title=$4
+slug=$(printf '%02d-%s' "$shift_n" "$title" | tr '[:upper:]' '[:lower:]' | sed -E "s/[^a-z0-9]+/-/g; s/^-//; s/-$//")
+f="content/weeks/${week}/${slug}.md"
 [ -e "$f" ] && { echo "exists: $f" >&2; exit 1; }
-w=$(( $(printf '%s' "$number" | tr -dc '0-9') + 1 ))
 cat > "$f" <<EOT
 ---
 title: "${title}"
-number: "${number}"
-weight: ${w}
-theme: ""
+id: "${id}"
+shift: ${shift_n}
+weight: ${shift_n}
+subtitle: ""
 summary: ""
+today: ""
+done_when: ""
+clock_in: "shift $((shift_n-1))"
+rule: ""
 properties: []
-builds_on: []
 ---
-
-## Outcome
 
 ## Steps
 
 1.
 
-## Done when
+## Self-paced
 
-## Solo
+## With the shift lead
 
-## Live
-
-## Depth
+## Back office
 EOT
 echo "$f"
