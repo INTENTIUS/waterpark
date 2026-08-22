@@ -30,17 +30,17 @@ check-md:
 # Everything CI would care about
 ci: check check-md
 
-# Print the syllabus from front matter
-syllabus:
-    @for c in foundations iam; do \
+# Print the lesson list: course, number, id, title
+lessons:
+    @for c in fountain iam; do \
       echo "== $c"; \
       for f in content/courses/$c/*.md; do \
         case "$f" in */_index.md) continue;; esac; \
-        n=$(sed -n 's/^number: "\(.*\)"/\1/p' "$f"); \
+        n=$(sed -n 's/^lesson: \(.*\)/\1/p' "$f"); \
+        i=$(sed -n 's/^id: "\(.*\)"/\1/p' "$f"); \
         t=$(sed -n 's/^title: "\(.*\)"/\1/p' "$f"); \
-        w=$(sed -n 's/^weight: \(.*\)/\1/p' "$f"); \
-        printf '%s\t%s\t%s\n' "$w" "$n" "$t"; \
-      done | sort -n | cut -f2-; \
+        printf '%s\t%s\t%s\n' "$n" "$i" "$t"; \
+      done | sort -n; \
     done
 
 # New lesson page from the template: just new iam 16 I16 "Title of the lesson"
