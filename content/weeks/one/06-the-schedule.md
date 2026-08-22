@@ -1,5 +1,5 @@
 ---
-title: "The rota"
+title: "The schedule"
 id: "F6"
 shift: 6
 weight: 6
@@ -9,7 +9,7 @@ summary: "team schedules"
 today: ""
 done_when: ""
 clock_in: "shift 5"
-rule: "If nobody is watching, the rota is. The night shift (shift 9) depends on this."
+rule: "If nobody is watching, the schedule is. The night shift (shift 9) depends on this."
 # media — provider: youtube | vimeo | file | todo
 video:
   provider: todo
@@ -27,7 +27,7 @@ activity:
 ## Context
 
 - Underneath: team schedules.
-- Rule quoted on the card: If nobody is watching, the rota is. The night shift (shift 9) depends on this.
+- Rule quoted on the card: If nobody is watching, the schedule is. The night shift (shift 9) depends on this.
 - Clock-in point: shift 5.
 
 ## Watch

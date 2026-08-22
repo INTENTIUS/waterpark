@@ -1,8 +1,8 @@
 ---
-title: "Appendix: shifts not on the rota"
+title: "Appendix: shifts not on the schedule"
 ---
 
-Not on the rota. Each becomes a shift when its upstream is ready.
+Not on the schedule. Each becomes a shift when its upstream is ready.
 
 - **The org layer as Ops.** A19: OU tree, SCPs, Identity Center, org trail
   reconciled from typed source on aws-warden's cycle design (decision 16).
