@@ -112,19 +112,28 @@ ships only as a container image. The compose file also runs Postgres
 (`postgres:16`) and the app migrates its own database at boot, so Docker
 is the only thing to install.
 
-1. The Fountain repo is https://github.com/BinaryBourbon/fountain. If it
-   is not reachable, stop and ask the student where their copy is, or go
-   back to 5a with a URL. Do not look elsewhere for it.
-2. **confirm**, then in a Fountain checkout, `cp .env.compose.example .env`,
-   fill the generated keys as the file says, and set one of the two
-   sandbox-provider lines. Without one the app starts and every
-   conversation fails. `SPRITES_TOKEN=` for hosted sandboxes from
-   sprites.dev, the default and the one the egress lesson needs. Or
-   `SANDBOX_PROVIDER=runner`, no credential, and `fountain runner` runs on
-   the same machine once the CLI is in. That is trusted mode on the
-   laptop and lesson 3's containment claims do not hold there. Say so.
-3. `docker compose up -d`. The instance is at `http://localhost:4000`.
-   Same commands in PowerShell or WSL on Windows.
+1. **confirm**, then clone Fountain next to the water park checkout.
+   Do not ask where a checkout is. Make one.
+
+   ```sh
+   git clone https://github.com/BinaryBourbon/fountain ../fountain && cd ../fountain
+   ```
+
+   If a `../fountain` checkout already exists, `git pull` in it instead. If
+   the clone fails because the repo is not reachable, stop, say so, and go
+   back to 5a with a URL from the facilitator. Do not look elsewhere for
+   the repo.
+2. **confirm**, then `cp .env.compose.example .env`, fill the generated
+   keys as the file says, and set one of the two sandbox-provider lines.
+   Without one the app starts and every conversation fails.
+   `SPRITES_TOKEN=` for hosted sandboxes from sprites.dev, the default and
+   the one the egress lesson needs. Or `SANDBOX_PROVIDER=runner`, no
+   credential, and `fountain runner` runs on the same machine once the CLI
+   is in. That is trusted mode on the laptop and lesson 3's containment
+   claims do not hold there. Say so.
+3. `docker compose up -d` in that checkout. The instance is at
+   `http://localhost:4000`. Same commands in PowerShell or WSL on Windows.
+   Then `cd` back to the water park checkout.
 4. Do 5a against `http://localhost:4000`. Register first. The first
    account self-verifies and becomes admin with the compose defaults.
 5. If they chose the runner, start it in a second terminal,
