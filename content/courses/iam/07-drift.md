@@ -54,6 +54,6 @@ activity:
 
 ## Further reading
 
-- [Issues](../../docs/issues.md) A8
+- [Issues](https://github.com/INTENTIUS/waterpark/blob/main/project/archive/issues.md) A8
 - Decision 28
 - [The AWS desk](../../docs/aws-desk.md), the watch

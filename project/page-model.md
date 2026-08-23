@@ -1,7 +1,3 @@
----
-title: "Page model"
----
-
 What a content page is made of, so lessons can be written, filmed, and
 scheduled independently. Everything lives in front matter; the layouts in
 `layouts/partials/page/` render it; an empty field renders as a TODO

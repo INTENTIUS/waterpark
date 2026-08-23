@@ -54,6 +54,6 @@ activity:
 
 ## Further reading
 
-- [Issues](../../docs/issues.md) A1 and A2
+- [Issues](https://github.com/INTENTIUS/waterpark/blob/main/project/archive/issues.md) A1 and A2
 - [The AWS desk](../../docs/aws-desk.md)
 - Decision 31

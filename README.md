@@ -13,10 +13,10 @@ IAM project is the worked example because it exercises both. Live at
 
 - [content/courses/fountain/](content/courses/fountain/) — course 1, the agent side (F1–F11)
 - [content/courses/iam/](content/courses/iam/) — course 2, the IAM repo as plain CloudFormation JSON (I1–I15)
+- [content/docs/](content/docs/) — the student-facing design docs (ledger, rules, prescriptions, threat model, design notes)
 - [content/docs/aws-desk.md](content/docs/aws-desk.md) — the Fountain AWS desk: the agent app the courses build (dns-desk's form on a CloudFormation estate)
 - [content/propose-loop.md](content/propose-loop.md) — how the agent side works: the loop abstracted from Mend, Rounds and dns-desk
-- [content/docs/page-model.md](content/docs/page-model.md) — what a lesson page is made of: card, video, activity, body
-- [content/docs/](content/docs/) — the back office: plan, decisions, principles, prescriptions, live session guide, upstream pins, threat model, design notes
+- [content/docs/page-model.md](project/page-model.md) — what a lesson page is made of: card, video, activity, body
 - [content/start.md](content/start.md) — setup, self-paced vs live, order
 - [compose/](compose/README.md) — the one-shot class stack: Fountain, Postgres, Floci and a containerized sandbox runner (`just up`, `just register`, `just runner`)
 - [skills/](skills/README.md) — one skill per section or lesson, an agent that walks a student through it (`skills/start` first)

@@ -55,6 +55,6 @@ activity:
 
 ## Further reading
 
-- [Issues](../../docs/issues.md) A13
+- [Issues](https://github.com/INTENTIUS/waterpark/blob/main/project/archive/issues.md) A13
 - [Multi-account](../../docs/design/multi-account.md), item 3
-- [Upstream](../../docs/upstream.md), Floci
+- [Upstream](https://github.com/INTENTIUS/waterpark/blob/main/project/upstream.md), Floci

@@ -1,11 +1,7 @@
----
-title: "water park — positioning"
----
-
 **Kit-era doc.** "water park" here names the IAM access-repo kit; under
 decision 26 that kit is the course's IAM scenario, and this doc is
 lesson I0's reading on why the pattern. Derived from the
-[landscape survey](landscape.md), 2026-07-27.
+[landscape survey](../../project/archive/landscape.md), 2026-07-27.
 
 ## The empty box
 
@@ -25,7 +21,7 @@ layer and the app layer the org layer usually neglects.
    a repo you own. The write path is a PR, the audit trail is git, the
    approval is a review. Nothing sits in the credential path: no
    connector, no broker holding standing permissions, no vendor in the
-   blast radius. (The concierge of [design/agentic.md](design/agentic.md)
+   blast radius. (The concierge of [design/agentic.md](../../content/docs/design/agentic.md)
    is no exception — it holds no cloud credentials and never touches the
    grant. It writes a file.)
 2. **Against IAMbic's ghost.** No new format, no vendor lifeline. Typed

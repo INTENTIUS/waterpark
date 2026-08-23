@@ -55,6 +55,6 @@ activity:
 
 ## Further reading
 
-- [Issues](../../docs/issues.md) A20, A17, A12 and A3b
+- [Issues](https://github.com/INTENTIUS/waterpark/blob/main/project/archive/issues.md) A20, A17, A12 and A3b
 - Decisions 21 and 22
 - [The AWS desk](../../docs/aws-desk.md), the apply job

@@ -55,5 +55,5 @@ activity:
 
 ## Further reading
 
-- [Issues](../../docs/issues.md) A3
+- [Issues](https://github.com/INTENTIUS/waterpark/blob/main/project/archive/issues.md) A3
 - [Guardrail rollout](../../docs/design/guardrail-rollout.md)

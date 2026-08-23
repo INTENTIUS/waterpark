@@ -54,5 +54,5 @@ activity:
 
 ## Further reading
 
-- [Issues](../../docs/issues.md) A4 and A5
+- [Issues](https://github.com/INTENTIUS/waterpark/blob/main/project/archive/issues.md) A4 and A5
 - [Personas](../../docs/design/personas.md)

@@ -1,7 +1,3 @@
----
-title: "Upstream: what the lessons use, and what moved"
----
-
 The course consumes four upstreams: [Fountain](https://github.com/BinaryBourbon/fountain)
 (agent runtime), the Fountain apps by jhgaylor (Mend, Rounds, dns-desk,
 fountain-demos), [chant](https://intentius.io/chant) (compiler, lifecycle,

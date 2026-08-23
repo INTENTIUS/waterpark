@@ -52,6 +52,6 @@ activity:
 
 ## Further reading
 
-- [Issues](../../docs/issues.md) A14 and A21
+- [Issues](https://github.com/INTENTIUS/waterpark/blob/main/project/archive/issues.md) A14 and A21
 - Decision 2
-- [Landscape](../../docs/landscape.md), IAMbic
+- [Landscape](https://github.com/INTENTIUS/waterpark/blob/main/project/archive/landscape.md), IAMbic

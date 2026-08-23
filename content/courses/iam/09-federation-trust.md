@@ -56,4 +56,4 @@ activity:
 
 - [Workload identity](../../docs/design/workload-identity.md)
 - Decision 13
-- [Issues](../../docs/issues.md) A17 and A18
+- [Issues](https://github.com/INTENTIUS/waterpark/blob/main/project/archive/issues.md) A17 and A18

@@ -1,7 +1,3 @@
----
-title: "The IAM scenario backlog"
----
-
 **Kit-era doc.** "water park" below names the IAM access-repo kit these
 items were filed for; under decision 26 the kit is the IAM scenario and
 each item is source material for a lesson. The map:
@@ -30,7 +26,7 @@ cross-cloud persona equivalence (Track B, IA), cross-repo reachability
 (A11/C6, I8 and I11), the manifest schema (E1, I14). Acceptance criteria
 below are each lesson's *done when* in long form.
 
-Filed 2026-07-28; amended 2026-08-19 ([upstream.md](upstream.md)) and
+Filed 2026-07-28; amended 2026-08-19 ([upstream.md](../../project/upstream.md)) and
 2026-08-21 (this header). A19–A21, C6, and Track E were never filed on
 GitHub.
 
@@ -188,7 +184,7 @@ grant per leg; offboard removes all legs in one run.
 
 ## Track C — satellite repos + PR automation
 
-Design source: [pr-automation.md](pr-automation.md).
+Design source: [pr-automation.md](../../project/archive/pr-automation.md).
 
 **C1. Refs module spike. needs-design (open question 3)** Hand-written
 vs generated vs chant feature; output is a decision doc and, if
@@ -227,7 +223,7 @@ for whatever the compiled story cannot do, filed on chant when concrete.
 
 ## Track D — agentic
 
-Design source: [design/agentic.md](design/agentic.md). Depends on A15
+Design source: [design/agentic.md](../../content/docs/design/agentic.md). Depends on A15
 and the threat-model agent boundary; D1 unblocks the rest.
 
 **Sequencing: demo-first against a fixture.** The request→PR loop is

@@ -6,25 +6,25 @@ Pinned so they don't get re-litigated. Each links to the doc that argues
 it. Reversing one requires editing this file in the same PR.
 
 1. **The write path is always the PR.** No write GUI, ever. Browsing goes
-   to behold over the graph. ([plan](plan.md), [positioning](positioning.md))
+   to behold over the graph. ([plan](https://github.com/INTENTIUS/waterpark/blob/main/project/plan.md), [positioning](https://github.com/INTENTIUS/waterpark/blob/main/project/archive/positioning.md))
 2. **No new format.** Typed source in, native artifacts out, export bundle
    so the estate outlives the toolchain. The anti-IAMbic clause. Applies
    to both backends: chant emits CloudFormation, Terraform keeps its own
-   plan/state. ([landscape](landscape.md))
+   plan/state. ([landscape](https://github.com/INTENTIUS/waterpark/blob/main/project/archive/landscape.md))
 3. **Manages what it declares, audits what it owns.** Not a CSPM, not a
    CIEM. Estate-wide scanning is the chant-audit funnel. Chat intake is
    not a JIT catalog: a JIT product grants on approval, water park's
    concierge produces a diff a human merges (decision 18).
-   ([positioning](positioning.md), [landscape](landscape.md))
+   ([positioning](https://github.com/INTENTIUS/waterpark/blob/main/project/archive/positioning.md), [landscape](https://github.com/INTENTIUS/waterpark/blob/main/project/archive/landscape.md))
 4. **AWS is the wedge; cross-cloud is act two.** Track B is needs-design
-   until persona equivalence is solved. ([plan](plan.md))
+   until persona equivalence is solved. ([plan](https://github.com/INTENTIUS/waterpark/blob/main/project/plan.md))
 5. **Humans get permission sets, workloads get roles.** No IAM users, no
-   IAM groups. ([landscape](landscape.md), [design/personas](design/personas.md))
+   IAM groups. ([landscape](https://github.com/INTENTIUS/waterpark/blob/main/project/archive/landscape.md), [design/personas](design/personas.md))
 6. **Merge-then-apply is the default.** Apply-from-PR is a later option
-   behind the freshness digest. ([pr-automation](pr-automation.md))
+   behind the freshness digest. ([pr-automation](https://github.com/INTENTIUS/waterpark/blob/main/project/archive/pr-automation.md))
 7. **PR automation is compiled, not served.** A compile target of the CI
    generators; a standing runner is deferred to requirements capture (C5).
-   ([pr-automation](pr-automation.md))
+   ([pr-automation](https://github.com/INTENTIUS/waterpark/blob/main/project/archive/pr-automation.md))
 8. **Break-glass expiry is cloud-side.** Temporal being down can delay
    cleanup, never extend access. TEAM interop documented, not replaced.
    ([design/break-glass](design/break-glass.md))
@@ -35,7 +35,7 @@ it. Reversing one requires editing this file in the same PR.
     `WorkloadRole` live in `@org/waterpark-context`; a satellite is a
     consumer from its first file. Built in lesson I8 (amended under
     decision 26: it ships with the lesson, not "from the start" of a kit).
-    ([plan](plan.md), [IAM, lesson 8](../courses/iam/08-delegation-and-the-double-refusal.md))
+    ([plan](https://github.com/INTENTIUS/waterpark/blob/main/project/plan.md), [IAM, lesson 8](../courses/iam/08-delegation-and-the-double-refusal.md))
 11. **Account vending is out of scope.** water park references accounts
     (registry, reference-existing); Control Tower / org-formation vend
     them. ([design/multi-account](design/multi-account.md))
@@ -61,7 +61,7 @@ it. Reversing one requires editing this file in the same PR.
     org trail, protected break-glass — is adopted on water park's terms:
     typed source instead of a YAML tree, the PR as the write path, the
     cycle design and guardrail set taken verbatim.
-    ([upstream.md](upstream.md))
+    ([upstream.md](https://github.com/INTENTIUS/waterpark/blob/main/project/upstream.md))
 17. **The requester's identity is declared, never asserted.** A chat or
     intake identity earns standing only by appearing in a principal's
     leaf file under the repo's own review. An unmapped identity gets a
@@ -80,7 +80,7 @@ it. Reversing one requires editing this file in the same PR.
     declared and drift-watched because merge rights are grant rights
     (principle 6, threat-model boundary 1); that is the repo protecting
     itself, not a second estate. Cross-cloud legs (Track B) stay parked.
-    ([plan](plan.md), [threat-model](threat-model.md))
+    ([plan](https://github.com/INTENTIUS/waterpark/blob/main/project/plan.md), [threat-model](threat-model.md))
 20. **Satellites create roles; the boundary is what makes that safe.** A
     satellite declares its own workload roles inside a permission boundary
     the central repo owns, enforced by lint at build and by the
@@ -103,19 +103,19 @@ it. Reversing one requires editing this file in the same PR.
     review, evidence, and access-review object; everything
     backend-specific stays behind it. `chant carve` is a chant feature
     documented for orgs that choose to move, never a water park funnel.
-    ([plan](plan.md), [pr-automation](pr-automation.md))
+    ([plan](https://github.com/INTENTIUS/waterpark/blob/main/project/plan.md), [pr-automation](https://github.com/INTENTIUS/waterpark/blob/main/project/archive/pr-automation.md))
 24. **Approval binds to the manifest; the PR is the envelope.** A
     reviewer approves the rendered change manifest, identified by its
     digest; apply refuses when the recompiled manifest or the live
     estate diverges. The manifest is never the system of record —
     declared source in git is (decision 2). Extends decision 6.
-    ([pr-automation](pr-automation.md))
+    ([pr-automation](https://github.com/INTENTIUS/waterpark/blob/main/project/archive/pr-automation.md))
 25. **The IAM kit is the IAM scenario's backlog.** Superseded in framing
     by decision 26: the kit is neither a product nor parked; tracks A–E
     are the source material for lessons I1–I15 and IA, mapped in
-    [issues.md](issues.md). Nothing there is "parked" except Track B and
+    [issues.md](https://github.com/INTENTIUS/waterpark/blob/main/project/archive/issues.md). Nothing there is "parked" except Track B and
     the org-layer reconcile, which are appendix lessons.
-    ([plan](plan.md), [issues](issues.md))
+    ([plan](https://github.com/INTENTIUS/waterpark/blob/main/project/plan.md), [issues](https://github.com/INTENTIUS/waterpark/blob/main/project/archive/issues.md))
 26. **water park is an IAM project repo that comes with courses; the
     courses are about the Accessible Ops properties.** Two courses, each
     lesson naming the properties it demonstrates: course 1 is Fountain
@@ -125,7 +125,7 @@ it. Reversing one requires editing this file in the same PR.
     both vehicles and most of the properties; it need not cover every
     one. Each lesson is a card, an optional video, one activity; it runs
     self-paced or live. No onboarding metaphor; titles are plain.
-    ([plan](plan.md), [page model](page-model.md))
+    ([plan](https://github.com/INTENTIUS/waterpark/blob/main/project/plan.md), [page model](https://github.com/INTENTIUS/waterpark/blob/main/project/page-model.md))
 27. **Solo is Floci; live is real.** The free path deploys to Floci and
     says per lesson what Floci cannot show (Organizations, Identity
     Center, Access Analyzer; `iam:PermissionsBoundary` enforcement
@@ -163,4 +163,4 @@ it. Reversing one requires editing this file in the same PR.
     is dns-desk's posture, repo mode is the course's. chant and Terraform
     remain backends the kit-era docs describe (decision 23) and are not
     named on the site; switching the course to one is an edit to this
-    decision. ([aws-desk](aws-desk.md), [plan](plan.md))
+    decision. ([aws-desk](aws-desk.md), [plan](https://github.com/INTENTIUS/waterpark/blob/main/project/plan.md))

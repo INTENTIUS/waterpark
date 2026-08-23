@@ -55,4 +55,4 @@ activity:
 - [The AWS desk](../../docs/aws-desk.md), the watch
 - Rounds README
 - Decision 28
-- [Issues](../../docs/issues.md) D3
+- [Issues](https://github.com/INTENTIUS/waterpark/blob/main/project/archive/issues.md) D3

@@ -55,7 +55,7 @@ activity:
 
 ## Further reading
 
-- [Issues](../../docs/issues.md) A6 and A7
+- [Issues](https://github.com/INTENTIUS/waterpark/blob/main/project/archive/issues.md) A6 and A7
 - Decisions 11 and 12
 - [Threat model](../../docs/threat-model.md)
 - [Delegation](../../docs/design/delegation.md)

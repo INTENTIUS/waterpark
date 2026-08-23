@@ -1,7 +1,3 @@
----
-title: "Audit: coverage and experience"
----
-
 Taken 2026-08-22 against the current structure (two courses, 26 lesson
 skeletons, the AWS desk design, plain CloudFormation JSON for the IAM repo).
 Two questions: does the material demonstrate the fourteen properties, and
@@ -85,7 +81,7 @@ affordance in body text).
 **Back office for contributors.** The page model is good; the plan's
 tables still describe chant; prescriptions' checks are LSP/chant
 specific. A contributor writing lesson I3 from the back office gets the
-wrong toolchain. *Fix:* phase 7 in [plan](plan.md).
+wrong toolchain. *Fix:* phase 7 in [plan](../plan.md).
 
 ## Time per section, learner
 
@@ -126,7 +122,7 @@ facilitator at a checkpoint and the room watching or following.
 
 About twelve hours self-paced end to end, which is a two-weekend course;
 four hours live, which is the half-day format in the
-[live session guide](demo.md). The 20- and 60-minute live formats pick
+[live session guide](../content/docs/demo.md). The 20- and 60-minute live formats pick
 from F3, F8, I3, I6, I7, I8, I12.
 
 ## Effort per phase, builder

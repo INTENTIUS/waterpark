@@ -1,7 +1,3 @@
----
-title: "AWS IAM / policy management landscape"
----
-
 **Kit-era doc.** "water park" here names the IAM access-repo kit, now
 the course's IAM scenario; this is lesson I0's survey. Surveyed
 2026-07-27. Repo activity verified via the GitHub API.
@@ -76,7 +72,7 @@ authentication, water park does authorization, the seam is **federation
 trust config** — declarable, security-critical estate. SPIFFE IDs are
 the universal workload principal name for cross-cloud (the equivalence
 unknown's workload half). water park never operates the issuer
-([design/workload-identity.md](design/workload-identity.md)). Scope
+([design/workload-identity.md](../../content/docs/design/workload-identity.md)). Scope
 line: **Athenz** bundles authn + policy and overlaps — a docs sentence,
 not an integration.
 

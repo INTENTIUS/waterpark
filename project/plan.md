@@ -1,12 +1,8 @@
----
-title: "plan — the curriculum"
----
-
 water park is an educational site: short lessons that teach how to run an
 agent against real infrastructure safely, on [Fountain](https://github.com/BinaryBourbon/fountain),
 using the [Accessible Ops](https://accessibleops.net) properties as the
 themes. The basis is one loop, abstracted from the Fountain apps Mend,
-Rounds and dns-desk ([the propose loop](../propose-loop.md)), applied to a use case. Every
+Rounds and dns-desk ([the propose loop](../content/docs/propose-loop.md)), applied to a use case. Every
 lesson can be run alone or conducted live with a group (decision 26).
 The lessons are in two parts: **foundations**, which teach Fountain and
 the propose loop, and **the scenario**, org IAM at splashdown, which applies them
@@ -24,7 +20,7 @@ enforced where the write happens; the conversation or the code host as
 record; refusals as outcomes. Interactive or ambient, audit- or
 request-driven: four forms, three existing apps. On IAM the concierge is
 in the desk's form, the watcher is Rounds, and Mend runs on the access repo
-as-is. [the propose loop](../propose-loop.md) has the tables.
+as-is. [the propose loop](../content/docs/propose-loop.md) has the tables.
 
 ## How a lesson is built
 
@@ -39,7 +35,7 @@ facilitator. Each lesson file carries the same sections:
   a Fountain teammate; the steps do not care which author did them (that
   is the thesis, not a convenience).
 - **Done when** — the check. For IAM lessons this is the conformance check
-  from [prescriptions.md](prescriptions.md); for foundations it is an API
+  from [prescriptions.md](../content/docs/prescriptions.md); for foundations it is an API
   call or a page state you can see.
 - **Solo** — how it runs free and alone (Floci, your own machine, no
   accounts beyond Fountain).
@@ -47,12 +43,12 @@ facilitator. Each lesson file carries the same sections:
   a checkpoint to restart from, the honesty lines to say out loud).
 - **Depth** — the design docs and decisions behind it.
 
-On the site the lessons live in two **courses** ([courses/](../courses/):
+On the site the lessons live in two **courses** ([courses/](../content/courses/):
 `fountain/` is F1–F11, `iam/` is I1–I15); F0 and I0 are the course intros,
-IA is [the appendix](appendix.md). The courses are about the Accessible Ops
+IA is [the appendix](../content/docs/appendix.md). The courses are about the Accessible Ops
 properties (decision 26); course 2 is plain CloudFormation JSON with CloudFormation as the applier
 (decision 31), which the tables below, written for chant, do not reflect
-in their source columns; [the AWS desk](aws-desk.md) is the agent app. Each lesson page's front matter is its card: goal,
+in their source columns; [the AWS desk](../content/docs/aws-desk.md) is the agent app. Each lesson page's front matter is its card: goal,
 done when, restart from, properties, prescriptions closed. The F/I ids
 below are the lesson ids.
 The stubs there are the spec for each lesson; bodies are written against
@@ -77,7 +73,7 @@ the upstream versions pinned in [upstream.md](upstream.md).
 
 ## Part II — the scenario: IAM at splashdown
 
-Builds [splashdown/access](demo-org.md) from nothing to a conforming
+Builds [splashdown/access](../content/docs/demo-org.md) from nothing to a conforming
 access repo with a concierge and a watcher. chant is the toolchain
 (decision 23: backends are end states; the course teaches on chant).
 Solo mode deploys to Floci; live mode deploys to real sandbox accounts
@@ -85,23 +81,23 @@ Solo mode deploys to Floci; live mode deploys to real sandbox accounts
 
 | # | Lesson | Theme (Accessible Ops) | Closes | Builds on | Source |
 |---|---|---|---|---|---|
-| I0 | Why a repo, and the rules of the house | III documentation is law; IV one path to prod | — | F0 | [positioning](positioning.md), [landscape](landscape.md), [principles](principles.md), [decisions](decisions.md) |
+| I0 | Why a repo, and the rules of the house | III documentation is law; IV one path to prod | — | F0 | [positioning](../archive/positioning.md), [landscape](../archive/landscape.md), [principles](../content/docs/principles.md), [decisions](../content/docs/decisions.md) |
 | I1 | One type per file, the path is the index | I honor the lower layer | P1, P2 | F1 | A1, A2 |
-| I2 | Personas and principals | V named secrets, least privilege | P2, P3 | I1 | A4, A5, [design/personas](design/personas.md) |
+| I2 | Personas and principals | V named secrets, least privilege | P2, P3 | I1 | A4, A5, [design/personas](../content/docs/design/personas.md) |
 | I3 | The red squiggle | II the same check, left of the commit; Mend as-is on the access repo | P4 | I2, F8 | A3 |
 | I4 | Deploy with no account | XI the live system is the truth (no state file; read back from live) | P6 (part) | I3, F3 | A13 |
-| I5 | The boundary | VI bounded blast radius | P7 | I4 | A6, A7, decision 12, [design/multi-account](design/multi-account.md) |
-| I6 | One path to prod | IV one path to prod; IX attributable; XIV verify the artifact | P5, P6, P7 | I5 | A20, A3b, A12, A17, [threat-model](threat-model.md) |
+| I5 | The boundary | VI bounded blast radius | P7 | I4 | A6, A7, decision 12, [design/multi-account](../content/docs/design/multi-account.md) |
+| I6 | One path to prod | IV one path to prod; IX attributable; XIV verify the artifact | P5, P6, P7 | I5 | A20, A3b, A12, A17, [threat-model](../content/docs/threat-model.md) |
 | I7 | Drift | XI the live system is the truth; XIII manage only what you declare; Rounds' rules | P11 | I6, F9 | A8, decision 28 |
-| I8 | Delegation and the double refusal | VI bounded blast radius | P8, P10 | I5 | C2, C3, C6, [design/delegation](design/delegation.md), [design/guardrail-rollout](design/guardrail-rollout.md) |
-| I9 | Federation trust, short-lived everything | X secret rotation is cheap; V | P12 | I6 | A17, A18, [design/workload-identity](design/workload-identity.md) |
-| I10 | Break-glass | VII reversible before risky; VIII escalate the judgment | P9 | I6 | A9, [design/break-glass](design/break-glass.md) |
+| I8 | Delegation and the double refusal | VI bounded blast radius | P8, P10 | I5 | C2, C3, C6, [design/delegation](../content/docs/design/delegation.md), [design/guardrail-rollout](../content/docs/design/guardrail-rollout.md) |
+| I9 | Federation trust, short-lived everything | X secret rotation is cheap; V | P12 | I6 | A17, A18, [design/workload-identity](../content/docs/design/workload-identity.md) |
+| I10 | Break-glass | VII reversible before risky; VIII escalate the judgment | P9 | I6 | A9, [design/break-glass](../content/docs/design/break-glass.md) |
 | I11 | Offboard and the access review | IX attributable; XIII | — | I7 | A10, A11 |
-| I12 | The concierge | V, VIII, IX — the desk's form on IAM: estate on screen, request in words, plan as the access delta, propose is a PR | P13 | F4, F7, F8, I6 | D0, D1, [design/agentic](design/agentic.md), [propose loop](../propose-loop.md) |
-| I13 | The watcher | XIII — Rounds' form on IAM: Rounds as-is for the lint tier, the same form over the IAM projections | — | F6, F9, I7, I12 | D3, [propose loop](../propose-loop.md) |
-| I14 | Approve the change, not the diff | VIII; XIV | P3 | I6 | [pr-automation](pr-automation.md), decisions 23, 24; gated on chant items 1, 2, 9 |
+| I12 | The concierge | V, VIII, IX — the desk's form on IAM: estate on screen, request in words, plan as the access delta, propose is a PR | P13 | F4, F7, F8, I6 | D0, D1, [design/agentic](../content/docs/design/agentic.md), [propose loop](../content/docs/propose-loop.md) |
+| I13 | The watcher | XIII — Rounds' form on IAM: Rounds as-is for the lint tier, the same form over the IAM projections | — | F6, F9, I7, I12 | D3, [propose loop](../content/docs/propose-loop.md) |
+| I14 | Approve the change, not the diff | VIII; XIV | P3 | I6 | [pr-automation](../archive/pr-automation.md), decisions 23, 24; gated on chant items 1, 2, 9 |
 | I15 | Walk away | I honor the lower layer; XII adopt in place | — | I6 | A21, A14 |
-| IA | Appendix: the org layer; the Terraform backend; cross-cloud; the threat model in full | — | — | — | A19, E, B, [threat-model](threat-model.md) |
+| IA | Appendix: the org layer; the Terraform backend; cross-cloud; the threat model in full | — | — | — | A19, E, B, [threat-model](../content/docs/threat-model.md) |
 
 I14 is last among the numbered lessons because it waits on chant work
 that has not landed; I15 can run on a thin estate and should be written
@@ -126,7 +122,7 @@ and where the solo path stops short of the live one.
 follows along in solo mode or watches. Real AWS sandbox accounts for the
 scenario (the proofs, the IAM-side refusals, Organizations and Identity
 Center all real) and a real repo for the F8 and F9 exercises. The
-facilitator guide is [demo.md](demo.md): session formats, playlists,
+facilitator guide is [demo.md](../content/docs/demo.md): session formats, playlists,
 checkpoints, honesty lines.
 
 ## The pattern, in one paragraph
@@ -136,7 +132,7 @@ type per file, folder structure as the index, anyone PRs their way to the
 access they need. It worked because finding a resource was a path lookup,
 the PR diff was the blast radius, and git blame was the audit trail. The
 worst version was a write GUI. The IAM scenario is those lessons made
-checkable ([prescriptions.md](prescriptions.md)); the foundations are what
+checkable ([prescriptions.md](../content/docs/prescriptions.md)); the foundations are what
 makes an agent safe to hand them to.
 
 ## What is next: the phases
@@ -168,15 +164,15 @@ timing and the line; properties tagged; zero TODO chips.
    `aws-result`. Then F7–F9 (the protocol, the loop interactive, the watch).
 4. **IAM course bodies.** I1–I11 from the reference repo checkpoints; then
    the desk v1 (repo mode, the watch, the digest job) and I12–I15.
-5. **The live layer.** Rewrite the [live session guide](demo.md) as
+5. **The live layer.** Rewrite the [live session guide](../content/docs/demo.md) as
    playlists over lessons (20 / 60 / half-day); checkpoint drills; recorded
    runs; the solo path walked end to end on a clean machine.
 6. **Media.** Script the Watch sections; record the two course intros and
    the five marquee lessons (egress denial, guardrail in the editor, the
    double refusal, drift, the desk request); fill the `video:` blocks.
 7. **Polish and back office.** The tables in this doc and
-   [prescriptions](prescriptions.md) restated for the CloudFormation path;
-   [issues](issues.md) mapped to it; the home video; an Education link on
+   [prescriptions](../content/docs/prescriptions.md) restated for the CloudFormation path;
+   [issues](archive/issues.md) mapped to it; the home video; an Education link on
    accessibleops.net pointing here; the appendix written or retired.
 
 Order is by dependency: 0 gates 1, 3, 4; 1 gates 4; 3 gates F7–F9 and
@@ -196,4 +192,4 @@ I12–I13. Phase 2 can start today.
 - **manifest** — the rendered change set a reviewer approves, bound by
   digest (decision 24).
 - **kit** — the IAM access-repo product the kit-era docs designed; now the
-  IAM scenario's backlog ([issues.md](issues.md)).
+  IAM scenario's backlog ([issues.md](archive/issues.md)).

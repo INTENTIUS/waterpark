@@ -54,4 +54,4 @@ activity:
 
 - Fountain ADR 0016
 - Decision 14
-- [Upstream](../../docs/upstream.md)
+- [Upstream](https://github.com/INTENTIUS/waterpark/blob/main/project/upstream.md)

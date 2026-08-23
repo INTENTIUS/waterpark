@@ -1,7 +1,3 @@
----
-title: "Pull request automation"
----
-
 chant needs a first-class PR automation story; water park is its proving
 ground. This doc studies the prior art, names the primitives, and pins
 what the reviewer actually approves.

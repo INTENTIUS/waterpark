@@ -52,4 +52,4 @@ activity:
 
 ## Further reading
 
-- [Issues](../../docs/issues.md) A10 and A11
+- [Issues](https://github.com/INTENTIUS/waterpark/blob/main/project/archive/issues.md) A10 and A11

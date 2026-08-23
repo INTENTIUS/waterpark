@@ -56,5 +56,5 @@ activity:
 ## Further reading
 
 - Decisions 6, 23 and 24
-- [PR automation](../../docs/pr-automation.md)
+- [PR automation](https://github.com/INTENTIUS/waterpark/blob/main/project/archive/pr-automation.md)
 - [The AWS desk](../../docs/aws-desk.md), the digest
