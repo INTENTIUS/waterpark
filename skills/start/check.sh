@@ -5,24 +5,26 @@ set -u
 have() { command -v "$1" >/dev/null 2>&1; }
 first() { "$@" 2>/dev/null | head -1; }
 FOUNTAIN_URL="${FOUNTAIN_URL:-http://localhost:4000}"
+# floci env sets AWS_ENDPOINT_URL to http://localhost.floci.io:4566, which resolves to 127.0.0.1. either works
 FLOCI_URL="${AWS_ENDPOINT_URL:-http://localhost:4566}"
 TOOLS="docker fountain floci aws jq gh"
 
 version_of() {
   case "$1" in
-    docker) first docker --version;; fountain) first fountain version;; floci) first floci --version;;
+    docker) first docker --version;; fountain) first fountain --version;; floci) first floci --version;;
     aws) first aws --version;; jq) first jq --version;; gh) first gh --version;;
   esac
 }
-reach() { local c; c=$(curl -s -o /dev/null -m 5 -w '%{http_code}' "$1" 2>/dev/null || echo 000); [ "$c" != "000" ] && echo true || echo false; }
+# any HTTP status means something answered. a refused connection gives 000 and a non-zero exit
+reach() { local c; c=$(curl -s -o /dev/null -m 5 -w '%{http_code}' "$1" 2>/dev/null) || c=000; [ "$c" != "000" ] && echo true || echo false; }
 
 wp_root=$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || true)
 wp_checkout=false; wp_commit=""
 if [ -n "$wp_root" ] && [ -f "$wp_root/skills/start/SKILL.md" ] && [ -f "$wp_root/hugo.toml" ]; then
   wp_checkout=true; wp_commit=$(git -C "$wp_root" rev-parse --short HEAD 2>/dev/null || true)
 fi
-fountain_reachable=$(reach "$FOUNTAIN_URL/api/health")
-floci_reachable=$(reach "$FLOCI_URL/_floci/health")
+fountain_reachable=$(reach "$FOUNTAIN_URL/health")
+floci_reachable=$(reach "$FLOCI_URL/")
 fountain_logged_in=false; have fountain && fountain auth status >/dev/null 2>&1 && fountain_logged_in=true
 # the URL the CLI will actually use, env first, then the profile in ~/.fountain/credentials
 profile="${FOUNTAIN_PROFILE:-default}"

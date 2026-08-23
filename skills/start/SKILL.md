@@ -66,6 +66,18 @@ cp .env.compose.example .env      # fill the generated keys as the file says
 docker compose up -d
 ```
 
+Two lines in `.env` decide whether conversations can run at all. The app
+starts without them and every conversation fails, so set one before the
+student gets to lesson 1.
+
+- `SPRITES_TOKEN=` for hosted sandboxes from sprites.dev. This is the
+  default provider and the one the egress lesson needs.
+- Or `SANDBOX_PROVIDER=runner`, which needs no credential. The student
+  then runs `fountain runner` on the same machine after the CLI is
+  installed (4.3). Sandboxes are directories on their laptop, trusted
+  mode, and lesson 3's containment claims do not hold there. Fine for a
+  class with no sprites.dev account. Say so.
+
 The instance is at `http://localhost:4000`. On Windows run these in
 PowerShell or WSL. Same commands.
 
@@ -77,8 +89,8 @@ PowerShell or WSL. Same commands.
 | Linux | the `fountain-linux-amd64` / `-arm64` binary from the GitHub release, on the PATH |
 | Windows | no native build yet. Use the Linux binary inside WSL 2, or skip the CLI. Everything the CLI does is the web UI or `curl` against `/api`, and the lessons say which. |
 
-**confirm** before installing. Then log in once with the URL in front of
-the command. The CLI writes the URL into `~/.fountain/credentials` next to
+**confirm** before installing. Register in the browser first (4.4), then
+log in once with the URL in front of the command. The CLI writes the URL into `~/.fountain/credentials` next to
 the key, so every later `fountain` call uses it with nothing else set.
 The student types their credentials, not you.
 
@@ -94,13 +106,16 @@ A student who also uses a hosted Fountain keeps both with profiles.
 Add `--profile local` to the login, then set `FOUNTAIN_PROFILE=local`
 for the lessons.
 
-4.4 Ask the student to open `http://localhost:4000` once and finish
-onboarding. Fountain asks for an inference key there. Never ask for the
-key and never store it.
+4.4 A fresh instance has no accounts. Before the login in 4.3 the student
+opens `http://localhost:4000` in a browser and registers. With the
+compose defaults the first account self-verifies and becomes admin. Then
+`fountain auth login` with those credentials. Onboarding in the browser
+asks for an inference key. Never ask for the key and never store it.
 
 Re-run the check and confirm `fountain.reachable` and
 `fountain.logged_in` (or, with no CLI, `fountain.reachable` alone) before
-moving on.
+moving on. If the student chose the runner, start it now in a second
+terminal, `fountain runner`, and leave it running.
 
 ## 5. Self-paced extras
 
@@ -115,7 +130,10 @@ the Docker path needs nothing else.
 | macOS, Linux | `brew install floci-io/floci/floci`, or `curl -fsSL https://floci.io/install.sh \| sh` |
 | Windows | `iwr https://floci.io/install.ps1 \| iex` in PowerShell, or `scoop bucket add floci https://github.com/floci-io/scoop-floci` then `scoop install floci` |
 
-Then `floci start`, and put the AWS variables in the shell.
+Then `floci start`, and put the AWS variables in the shell. `floci env`
+sets `AWS_ENDPOINT_URL` to `http://localhost.floci.io:4566`, a name that
+resolves to the local machine. The check reads that variable, so either
+name is fine.
 
 ```sh
 eval $(floci env)                                  # bash, zsh

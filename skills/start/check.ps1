@@ -15,7 +15,7 @@ if ($root -and (Test-Path "$root/skills/start/SKILL.md") -and (Test-Path "$root/
 $tools = @{}
 foreach ($t in "docker","fountain","floci","aws","jq","gh") {
   if (Have $t) {
-    $v = switch ($t) { "docker" { Ver { docker --version } } "fountain" { Ver { fountain version } } "floci" { Ver { floci --version } } "aws" { Ver { aws --version } } "jq" { Ver { jq --version } } "gh" { Ver { gh --version } } }
+    $v = switch ($t) { "docker" { Ver { docker --version } } "fountain" { Ver { fountain --version } } "floci" { Ver { floci --version } } "aws" { Ver { aws --version } } "jq" { Ver { jq --version } } "gh" { Ver { gh --version } } }
     $tools[$t] = @{ installed = $true; version = "$v" }
   } else { $tools[$t] = @{ installed = $false } }
 }
@@ -37,7 +37,7 @@ $cliUrl = if ($env:FOUNTAIN_BASE_URL) { $env:FOUNTAIN_BASE_URL } else { $credUrl
 [ordered]@{
   waterpark = @{ checkout = $checkout; root = "$root"; commit = "$commit" }
   tools = $tools
-  fountain = @{ url = $fountainUrl; reachable = (Reach "$fountainUrl/api/health"); logged_in = $loggedIn; cli_url = "$cliUrl"; profile = $profile }
-  floci = @{ url = $flociUrl; reachable = (Reach "$flociUrl/_floci/health") }
+  fountain = @{ url = $fountainUrl; reachable = (Reach "$fountainUrl/health"); logged_in = $loggedIn; cli_url = "$cliUrl"; profile = $profile }
+  floci = @{ url = $flociUrl; reachable = (Reach "$flociUrl/") }
   github = @{ logged_in = $ghLoggedIn }
 } | ConvertTo-Json -Depth 4
