@@ -29,7 +29,16 @@ fountain_logged_in=false; have fountain && fountain auth status >/dev/null 2>&1 
 # the URL the CLI will actually use, env first, then the profile in ~/.fountain/credentials
 profile="${FOUNTAIN_PROFILE:-default}"
 cred_url=$(awk -v p="[$profile]" '$0==p{f=1;next} /^\[/{f=0} f && $1=="base_url"{gsub(/"/,"",$3); print $3}' "$HOME/.fountain/credentials" 2>/dev/null | head -1)
+cred_key=$(awk -v p="[$profile]" '$0==p{f=1;next} /^\[/{f=0} f && $1=="api_key"{gsub(/"/,"",$3); print $3}' "$HOME/.fountain/credentials" 2>/dev/null | head -1)
 cli_url="${FOUNTAIN_BASE_URL:-${cred_url:-}}"
+# set or not-set per provider. values are write-only server-side, nothing secret crosses here
+inference_set=false; onboarded=false
+if [ -n "${cred_key:-}" ] && [ -n "$cli_url" ]; then
+  creds=$(curl -fs -m 5 -H "Authorization: Bearer $cred_key" "$cli_url/api/account/inference-credentials" 2>/dev/null || true)
+  echo "$creds" | grep -q true && inference_set=true
+  me=$(curl -fs -m 5 -H "Authorization: Bearer $cred_key" "$cli_url/api/auth/me" 2>/dev/null || true)
+  echo "$me" | grep -q '"onboarding_completed":true' && onboarded=true
+fi
 gh_logged_in=false; have gh && gh auth status >/dev/null 2>&1 && gh_logged_in=true
 os_name=$(uname -s 2>/dev/null || echo unknown)
 pkg=""; for m in brew apt-get dnf pacman zypper winget scoop choco; do have "$m" && pkg="$pkg $m"; done; pkg=${pkg# }
