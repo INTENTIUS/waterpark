@@ -54,9 +54,17 @@ not guess at anything it can report.
 
 ## 4. Get Fountain
 
+Say this to the student before doing anything, in two sentences. The
+Fountain server ships only as a container image, so that part is Docker on
+every OS and there is no choice to make. The choices are for the CLI (4.3)
+and for Floci (5), each of which has an OS install (Homebrew on macOS,
+winget or Scoop on Windows, a package or script on Linux) and a no-package-
+manager path. Then ask, as one question, which they want for the CLI and
+for Floci. Do not infer it from what the check found. The check tells you
+what is possible, the student tells you what they want.
+
 Ask whether the student already has a Fountain instance. If yes, take its
-URL and go to the login in 4.3. If no, run one. Fountain's server ships
-only as a container image, so the server path is Docker on every OS.
+URL and go to the login in 4.3. If no, run one.
 
 4.1 **Docker is the prerequisite.** Docker Desktop on macOS and Windows,
 Docker Engine on Linux. On Windows, Docker Desktop with the WSL 2 backend.
@@ -95,7 +103,8 @@ student gets to lesson 1.
 The instance is at `http://localhost:4000`. On Windows run these in
 PowerShell or WSL. Same commands.
 
-4.3 **Install the CLI and log in.** Offer the path for their OS.
+4.3 **Install the CLI and log in.** Use the answer from the question at
+the top of this step. If they did not answer, ask now.
 
 | OS | CLI |
 |---|---|
@@ -133,8 +142,8 @@ terminal, `fountain runner`, and leave it running.
 
 ## 5. Self-paced extras
 
-For live, skip this step. For self-paced, Floci. Offer two paths and let
-the student pick. Both need Docker for the Docker-backed services, and
+For live, skip this step. For self-paced, Floci. Use the answer from the
+question at the top of step 4. If they did not answer, ask now. Both need Docker for the Docker-backed services, and
 the Docker path needs nothing else.
 
 **OS install, the `floci` CLI.** **confirm**, then
