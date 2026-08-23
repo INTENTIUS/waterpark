@@ -101,8 +101,11 @@ FOUNTAIN_BASE_URL=https://the.instance fountain auth login       # bash, zsh, WS
 $env:FOUNTAIN_BASE_URL = "https://the.instance"; fountain auth login   # PowerShell, if a CLI is present
 ```
 
-Two instances are kept apart with `--profile <name>` on the login and
-`FOUNTAIN_PROFILE=<name>` afterwards. Onboarding in the browser asks for
+Look at the check's `fountain.profile` and `fountain.cli_url` before the
+login. If a `default` profile already exists and points at a different
+host than the one being logged in to, say so and offer `--profile <name>`
+on the login with `FOUNTAIN_PROFILE=<name>` afterwards, so the existing
+login is kept. Otherwise the login overwrites `[default]`, which is fine. Onboarding in the browser asks for
 an inference key. Never ask for the key and never store it.
 
 ### 5b. Without a URL. Self-host. Docker.
@@ -130,7 +133,9 @@ is the only thing to install.
    the one the egress lesson needs. Or `SANDBOX_PROVIDER=runner`, no
    credential, and `fountain runner` runs on the same machine once the CLI
    is in. That is trusted mode on the laptop and lesson 3's containment
-   claims do not hold there. Say so.
+   claims do not hold there. Say so. If the instance is already running
+   when `.env` changes, `docker compose up -d` again recreates the app with
+   the new setting.
 3. `docker compose up -d` in that checkout. The instance is at
    `http://localhost:4000`. Same commands in PowerShell or WSL on Windows.
    Then `cd` back to the water park checkout.
