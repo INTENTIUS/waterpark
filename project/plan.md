@@ -2,7 +2,7 @@ water park is an educational site: short lessons that teach how to run an
 agent against real infrastructure safely, on [Fountain](https://github.com/BinaryBourbon/fountain),
 using the [Accessible Ops](https://accessibleops.net) properties as the
 themes. The basis is one loop, abstracted from the Fountain apps Mend,
-Rounds and dns-desk ([the propose loop](../content/docs/propose-loop.md)), applied to a use case. Every
+Rounds and dns-desk ([the propose loop](../content/propose-loop.md)), applied to a use case. Every
 lesson can be run alone or conducted live with a group (decision 26).
 The lessons are in two parts: **foundations**, which teach Fountain and
 the propose loop, and **the scenario**, org IAM at splashdown, which applies them
@@ -20,7 +20,7 @@ enforced where the write happens; the conversation or the code host as
 record; refusals as outcomes. Interactive or ambient, audit- or
 request-driven: four forms, three existing apps. On IAM the concierge is
 in the desk's form, the watcher is Rounds, and Mend runs on the access repo
-as-is. [the propose loop](../content/docs/propose-loop.md) has the tables.
+as-is. [the propose loop](../content/propose-loop.md) has the tables.
 
 ## How a lesson is built
 
@@ -93,8 +93,8 @@ Solo mode deploys to Floci; live mode deploys to real sandbox accounts
 | I9 | Federation trust, short-lived everything | X secret rotation is cheap; V | P12 | I6 | A17, A18, [design/workload-identity](../content/docs/design/workload-identity.md) |
 | I10 | Break-glass | VII reversible before risky; VIII escalate the judgment | P9 | I6 | A9, [design/break-glass](../content/docs/design/break-glass.md) |
 | I11 | Offboard and the access review | IX attributable; XIII | — | I7 | A10, A11 |
-| I12 | The concierge | V, VIII, IX — the desk's form on IAM: estate on screen, request in words, plan as the access delta, propose is a PR | P13 | F4, F7, F8, I6 | D0, D1, [design/agentic](../content/docs/design/agentic.md), [propose loop](../content/docs/propose-loop.md) |
-| I13 | The watcher | XIII — Rounds' form on IAM: Rounds as-is for the lint tier, the same form over the IAM projections | — | F6, F9, I7, I12 | D3, [propose loop](../content/docs/propose-loop.md) |
+| I12 | The concierge | V, VIII, IX — the desk's form on IAM: estate on screen, request in words, plan as the access delta, propose is a PR | P13 | F4, F7, F8, I6 | D0, D1, [design/agentic](../content/docs/design/agentic.md), [propose loop](../content/propose-loop.md) |
+| I13 | The watcher | XIII — Rounds' form on IAM: Rounds as-is for the lint tier, the same form over the IAM projections | — | F6, F9, I7, I12 | D3, [propose loop](../content/propose-loop.md) |
 | I14 | Approve the change, not the diff | VIII; XIV | P3 | I6 | [pr-automation](archive/pr-automation.md), decisions 23, 24; gated on chant items 1, 2, 9 |
 | I15 | Walk away | I honor the lower layer; XII adopt in place | — | I6 | A21, A14 |
 | IA | Appendix: the org layer; the Terraform backend; cross-cloud; the threat model in full | — | — | — | A19, E, B, [threat-model](../content/docs/threat-model.md) |
