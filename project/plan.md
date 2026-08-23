@@ -81,7 +81,7 @@ Solo mode deploys to Floci; live mode deploys to real sandbox accounts
 
 | # | Lesson | Theme (Accessible Ops) | Closes | Builds on | Source |
 |---|---|---|---|---|---|
-| I0 | Why a repo, and the rules of the house | III documentation is law; IV one path to prod | — | F0 | [positioning](../archive/positioning.md), [landscape](../archive/landscape.md), [principles](../content/docs/principles.md), [decisions](../content/docs/decisions.md) |
+| I0 | Why a repo, and the rules of the house | III documentation is law; IV one path to prod | — | F0 | [positioning](archive/positioning.md), [landscape](archive/landscape.md), [principles](../content/docs/principles.md), [decisions](../content/docs/decisions.md) |
 | I1 | One type per file, the path is the index | I honor the lower layer | P1, P2 | F1 | A1, A2 |
 | I2 | Personas and principals | V named secrets, least privilege | P2, P3 | I1 | A4, A5, [design/personas](../content/docs/design/personas.md) |
 | I3 | The red squiggle | II the same check, left of the commit; Mend as-is on the access repo | P4 | I2, F8 | A3 |
@@ -95,7 +95,7 @@ Solo mode deploys to Floci; live mode deploys to real sandbox accounts
 | I11 | Offboard and the access review | IX attributable; XIII | — | I7 | A10, A11 |
 | I12 | The concierge | V, VIII, IX — the desk's form on IAM: estate on screen, request in words, plan as the access delta, propose is a PR | P13 | F4, F7, F8, I6 | D0, D1, [design/agentic](../content/docs/design/agentic.md), [propose loop](../content/docs/propose-loop.md) |
 | I13 | The watcher | XIII — Rounds' form on IAM: Rounds as-is for the lint tier, the same form over the IAM projections | — | F6, F9, I7, I12 | D3, [propose loop](../content/docs/propose-loop.md) |
-| I14 | Approve the change, not the diff | VIII; XIV | P3 | I6 | [pr-automation](../archive/pr-automation.md), decisions 23, 24; gated on chant items 1, 2, 9 |
+| I14 | Approve the change, not the diff | VIII; XIV | P3 | I6 | [pr-automation](archive/pr-automation.md), decisions 23, 24; gated on chant items 1, 2, 9 |
 | I15 | Walk away | I honor the lower layer; XII adopt in place | — | I6 | A21, A14 |
 | IA | Appendix: the org layer; the Terraform backend; cross-cloud; the threat model in full | — | — | — | A19, E, B, [threat-model](../content/docs/threat-model.md) |
 
