@@ -81,7 +81,7 @@ affordance in body text).
 **Back office for contributors.** The page model is good; the plan's
 tables still describe chant; prescriptions' checks are LSP/chant
 specific. A contributor writing lesson I3 from the back office gets the
-wrong toolchain. *Fix:* phase 7 in [plan](../plan.md).
+wrong toolchain. *Fix:* phase 7 in [plan](plan.md).
 
 ## Time per section, learner
 
