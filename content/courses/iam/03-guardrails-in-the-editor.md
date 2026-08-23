@@ -28,7 +28,7 @@ activity:
 
 - The six guardrails as native checks: JSON Schema in the editor for shape (boundary required, no inline policy, owner tag present, SG references not CIDRs), `accessanalyzer validate-policy` for the policy documents (wildcard action, open ingress, best-practice findings), mapped to parliament/cloudsplaining ids.
 - The same checks run by the agent at the keystroke and in the PR job; the diagnostic is the same.
-- No third-party linter on the site; the back office lists cfn-lint and chant as options.
+- No third-party linter on the site; the design docs list cfn-lint and chant as options.
 
 ## Watch
 
