@@ -17,7 +17,6 @@
     <a class="brand" href="{{ site.Home.RelPermalink }}">water park</a>
     <nav class="topnav" aria-label="Site">
       <a href="{{ "courses/" | relURL }}"{{ if eq .Section "courses" }} aria-current="page"{{ end }}>Courses</a>
-      <a href="{{ "properties/" | relURL }}"{{ if eq .RelPermalink (printf "%sproperties/" site.Home.RelPermalink) }} aria-current="page"{{ end }}>Properties</a>
       <a href="{{ "propose-loop/" | relURL }}"{{ if eq .RelPermalink (printf "%spropose-loop/" site.Home.RelPermalink) }} aria-current="page"{{ end }}>The propose loop</a>
       <a href="{{ "docs/" | relURL }}"{{ if eq .Section "docs" }} aria-current="page"{{ end }}>Back office</a>
       <a href="{{ .Site.Params.github }}">GitHub</a>

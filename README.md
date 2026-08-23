@@ -13,7 +13,6 @@ because it exercises both. Live at
 
 - [content/courses/fountain/](content/courses/fountain/) — course 1, the agent side (F1–F11)
 - [content/courses/iam/](content/courses/iam/) — course 2, the IAM repo in Terraform (I1–I15)
-- [content/properties.md](content/properties.md) — the fourteen properties and the lessons that demonstrate each (`data/properties.yaml`)
 - [content/propose-loop.md](content/propose-loop.md) — how the agent side works: the loop abstracted from Mend, Rounds and dns-desk
 - [content/docs/page-model.md](content/docs/page-model.md) — what a lesson page is made of: card, video, activity, body
 - [content/docs/](content/docs/) — the back office: plan, decisions, principles, prescriptions, live session guide, upstream pins, threat model, design notes

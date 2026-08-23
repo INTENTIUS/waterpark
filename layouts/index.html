@@ -8,6 +8,6 @@
   <div class="course-grid">
     {{ range (site.GetPage "courses").Sections.ByWeight }}{{ partial "course-card.html" . }}{{ end }}
   </div>
-  <p class="props-more"><a href="{{ "properties/" | relURL }}">The fourteen properties &rarr;</a> &nbsp; <a href="{{ "propose-loop/" | relURL }}">The propose loop &rarr;</a> &nbsp; <a href="{{ "docs/" | relURL }}">The back office &rarr;</a></p>
+  <p class="props-more"><a href="https://accessibleops.net">The fourteen properties &rarr;</a> &nbsp; <a href="{{ "propose-loop/" | relURL }}">The propose loop &rarr;</a> &nbsp; <a href="{{ "docs/" | relURL }}">The back office &rarr;</a></p>
 </section>
 {{ end }}

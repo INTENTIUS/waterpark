@@ -16,7 +16,6 @@ half-written.
 | courses index | `content/courses/_index.md` | `list.html` | intro, course cards |
 | course | `content/courses/<course>/_index.md` | `list.html` | intro (text or video), optional activity, the lesson list |
 | lesson | `content/courses/<course>/NN-slug.md` | `single.html` (lesson) | card, optional video, optional activity, body, pager |
-| properties | `content/properties.md` | `properties.html` | the fourteen properties from `data/properties.yaml`, each with the lessons that demonstrate it |
 | page | `content/propose-loop.md`, `content/docs/**` | `single.html` (page) | optional video, optional activity, body |
 
 A lesson may have a video, an activity, or both. A lesson with neither is

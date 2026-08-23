@@ -125,7 +125,7 @@ it. Reversing one requires editing this file in the same PR.
     both vehicles and most of the properties; it need not cover every
     one. Each lesson is a card, an optional video, one activity; it runs
     self-paced or live. No onboarding metaphor; titles are plain.
-    ([plan](plan.md), [page model](page-model.md), [properties](../properties.md))
+    ([plan](plan.md), [page model](page-model.md))
 27. **Solo is Floci; live is real.** The free path deploys to Floci and
     says per lesson what Floci cannot show (Organizations, Identity
     Center, Access Analyzer; `iam:PermissionsBoundary` enforcement
