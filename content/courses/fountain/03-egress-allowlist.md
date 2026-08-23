@@ -4,6 +4,8 @@ id: "F3"
 lesson: 3
 weight: 3
 summary: "Limited networking denies all egress except the listed hosts."
+# skill. a directory in this repo with a SKILL.md that drives the lesson. empty renders nothing
+skill: ""
 # card. empty renders as TODO
 goal: ""
 done_when: ""

@@ -4,6 +4,8 @@ id: "I11"
 lesson: 11
 weight: 11
 summary: "Offboarding removes every reference in one PR and the review reads the estate."
+# skill. a directory in this repo with a SKILL.md that drives the lesson. empty renders nothing
+skill: ""
 # card. empty renders as TODO
 goal: ""
 done_when: ""

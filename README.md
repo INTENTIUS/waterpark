@@ -18,6 +18,7 @@ IAM project is the worked example because it exercises both. Live at
 - [content/docs/page-model.md](content/docs/page-model.md) — what a lesson page is made of: card, video, activity, body
 - [content/docs/](content/docs/) — the back office: plan, decisions, principles, prescriptions, live session guide, upstream pins, threat model, design notes
 - [content/start.md](content/start.md) — setup, self-paced vs live, order
+- [skills/](skills/README.md) — one skill per section or lesson, an agent that walks a student through it (`skills/start` first)
 - `just serve` · `just ci` · `just lessons` · `just todos` · `just new iam 16 I16 "Title"`
 
 Naming: *water park* is the project (this repo, `waterpark`); in the

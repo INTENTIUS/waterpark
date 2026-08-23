@@ -4,6 +4,8 @@ id: "F7"
 lesson: 7
 weight: 7
 summary: "An app drives a teammate through fenced blocks and the team stream."
+# skill. a directory in this repo with a SKILL.md that drives the lesson. empty renders nothing
+skill: ""
 # card. empty renders as TODO
 goal: ""
 done_when: ""

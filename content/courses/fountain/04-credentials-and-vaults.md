@@ -4,6 +4,8 @@ id: "F4"
 lesson: 4
 weight: 4
 summary: "A vault binds one credential to one conversation."
+# skill. a directory in this repo with a SKILL.md that drives the lesson. empty renders nothing
+skill: ""
 # card. empty renders as TODO
 goal: ""
 done_when: ""

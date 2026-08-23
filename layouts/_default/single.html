@@ -5,6 +5,7 @@
   <p class="crumb"><a href="{{ .CurrentSection.RelPermalink }}">{{ .CurrentSection.Params.kicker }}: {{ .CurrentSection.Title }}</a> &middot; lesson {{ .Params.lesson }} <span class="muted">({{ .Params.id }})</span></p>
   <h1>{{ .Title }}</h1>
   {{ partial "page/card.html" . }}
+  {{ partial "page/skill.html" . }}
   {{ partial "page/video.html" . }}
   {{ partial "page/activity.html" . }}
   {{ .Content }}
@@ -20,6 +21,7 @@
   </nav>
   {{ else }}
   <h1>{{ .Title }}</h1>
+  {{ partial "page/skill.html" . }}
   {{ partial "page/video.html" . }}
   {{ partial "page/activity.html" . }}
   {{ .Content }}

@@ -4,6 +4,8 @@ id: "F6"
 lesson: 6
 weight: 6
 summary: "A schedule runs a teammate with a prompt on a cron."
+# skill. a directory in this repo with a SKILL.md that drives the lesson. empty renders nothing
+skill: ""
 # card. empty renders as TODO
 goal: ""
 done_when: ""

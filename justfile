@@ -52,6 +52,16 @@ todos:
     @grep -rn --include='*.md' -e '{{{{< todo' -e '^goal: ""' -e '^done_when: ""' -e 'provider: todo' content | sed 's|^content/||' || true
     @echo; echo "$(grep -rho --include='*.md' '{{{{< todo' content | wc -l | tr -d ' ') todo markers"
 
+# List skills and check each SKILL.md has name and description frontmatter
+skills:
+    @for d in skills/*/; do \
+      f="$d/SKILL.md"; \
+      if [ ! -f "$f" ]; then echo "MISSING $f"; continue; fi; \
+      n=$(sed -n 's/^name: //p' "$f" | head -1); \
+      grep -q '^description: ' "$f" && ok=ok || ok="NO DESCRIPTION"; \
+      printf '%s\t%s\t%s\n' "$d" "$n" "$ok"; \
+    done
+
 # Remove build output
 clean:
     rm -rf public resources .hugo_build.lock

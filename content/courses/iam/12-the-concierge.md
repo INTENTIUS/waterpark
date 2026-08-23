@@ -4,6 +4,8 @@ id: "I12"
 lesson: 12
 weight: 12
 summary: "The AWS desk turns a request into a one-file PR."
+# skill. a directory in this repo with a SKILL.md that drives the lesson. empty renders nothing
+skill: ""
 # card. empty renders as TODO
 goal: ""
 done_when: ""

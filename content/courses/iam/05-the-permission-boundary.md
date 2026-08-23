@@ -4,6 +4,8 @@ id: "I5"
 lesson: 5
 weight: 5
 summary: "The permission boundary caps every role and the apply role itself."
+# skill. a directory in this repo with a SKILL.md that drives the lesson. empty renders nothing
+skill: ""
 # card. empty renders as TODO
 goal: ""
 done_when: ""

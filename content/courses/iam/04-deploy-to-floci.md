@@ -4,6 +4,8 @@ id: "I4"
 lesson: 4
 weight: 4
 summary: "The estate deploys to Floci with no account."
+# skill. a directory in this repo with a SKILL.md that drives the lesson. empty renders nothing
+skill: ""
 # card. empty renders as TODO
 goal: ""
 done_when: ""

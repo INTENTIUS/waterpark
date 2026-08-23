@@ -4,6 +4,8 @@ id: "I6"
 lesson: 6
 weight: 6
 summary: "The PR is the only path to the estate."
+# skill. a directory in this repo with a SKILL.md that drives the lesson. empty renders nothing
+skill: ""
 # card. empty renders as TODO
 goal: ""
 done_when: ""

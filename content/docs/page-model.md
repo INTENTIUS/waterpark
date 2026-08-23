@@ -16,7 +16,7 @@ half-written.
 | start | `content/start.md` | `single.html` (page) | setup, self-paced vs live, order |
 | courses index | `content/courses/_index.md` | `list.html` | intro, course cards |
 | course | `content/courses/<course>/_index.md` | `list.html` | intro (text or video), optional activity, the lesson list |
-| lesson | `content/courses/<course>/NN-slug.md` | `single.html` (lesson) | card (properties, goal, done when, restart from, mode + time), optional video, optional activity, body, pager |
+| lesson | `content/courses/<course>/NN-slug.md` | `single.html` (lesson) | card (properties, goal, done when, restart from, mode + time), optional skill link, optional video, optional activity, body, pager |
 | page | `content/propose-loop.md`, `content/docs/**` | `single.html` (page) | optional video, optional activity, body |
 
 A lesson may have a video, an activity, or both. A lesson with neither is
@@ -30,6 +30,7 @@ id: "F3"                        # stable id used by the back office
 lesson: 3                       # number within the course
 weight: 3                       # ordering (= lesson)
 summary: "…"                    # one line under the title in lists
+skill: "skills/f3"              # optional. a directory in this repo with a SKILL.md that walks a student through the lesson
 # the card (empty => TODO on the page)
 goal: ""                        # one paragraph, imperative, what you'll do
 done_when: ""                   # the check
@@ -79,3 +80,10 @@ choice, not an accident. `just todos` lists them.
 
 `just new iam 16 I16 "Title"` writes a lesson file with this front matter
 and these headings.
+
+## Skills
+
+A page with `skill:` set shows a "Run with an agent" block linking the
+skill directory and the install commands. Skills live in [`skills/`](https://github.com/INTENTIUS/waterpark/tree/main/skills),
+one per section or lesson, each a `SKILL.md` and its scripts, following the
+contract there. `just skills` lists them and checks the frontmatter.

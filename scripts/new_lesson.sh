@@ -12,6 +12,8 @@ id: "${id}"
 lesson: ${n}
 weight: ${n}
 summary: ""
+# skill. a directory in this repo with a SKILL.md that drives the lesson. empty renders nothing
+skill: ""
 # card — empty renders as TODO
 goal: ""
 done_when: ""

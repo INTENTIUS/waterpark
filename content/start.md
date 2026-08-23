@@ -2,6 +2,7 @@
 title: "Start here"
 summary: "What you need, how long it takes, self-paced or live."
 weight: 0
+skill: "skills/start"
 ---
 
 ## What you need

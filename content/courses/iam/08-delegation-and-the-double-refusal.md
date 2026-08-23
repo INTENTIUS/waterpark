@@ -4,6 +4,8 @@ id: "I8"
 lesson: 8
 weight: 8
 summary: "A satellite may create roles only inside the boundary, checked twice."
+# skill. a directory in this repo with a SKILL.md that drives the lesson. empty renders nothing
+skill: ""
 # card. empty renders as TODO
 goal: ""
 done_when: ""

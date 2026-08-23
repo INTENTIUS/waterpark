@@ -4,6 +4,8 @@ id: "I1"
 lesson: 1
 weight: 1
 summary: "The repo is CloudFormation JSON with one resource per file."
+# skill. a directory in this repo with a SKILL.md that drives the lesson. empty renders nothing
+skill: ""
 # card. empty renders as TODO
 goal: ""
 done_when: ""

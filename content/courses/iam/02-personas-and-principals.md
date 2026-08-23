@@ -4,6 +4,8 @@ id: "I2"
 lesson: 2
 weight: 2
 summary: "Humans get permission sets and workloads get roles."
+# skill. a directory in this repo with a SKILL.md that drives the lesson. empty renders nothing
+skill: ""
 # card. empty renders as TODO
 goal: ""
 done_when: ""

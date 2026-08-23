@@ -4,6 +4,8 @@ id: "I14"
 lesson: 14
 weight: 14
 summary: "The reviewer approves the rendered plan, bound by a digest."
+# skill. a directory in this repo with a SKILL.md that drives the lesson. empty renders nothing
+skill: ""
 # card. empty renders as TODO
 goal: ""
 done_when: ""

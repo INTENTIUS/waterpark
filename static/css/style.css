@@ -91,3 +91,7 @@ video { width: 100%; border-radius: 6px; background: #000; }
 .start-cta { margin: 0.4rem 0 0.8rem; font-size: 1rem; } .start-cta a { font-weight: 700; }
 .legend { font-size: 0.8rem; }
 .course-total { font-size: 0.88rem; margin: 0.2rem 0 0; }
+
+.block-skill { border-left: 3px solid #2e7d4f; padding: 0.2rem 0 0.2rem 1rem; }
+.block-skill p { margin: 0 0 0.4rem; }
+.block-skill pre { margin: 0; font-size: 0.8rem; }

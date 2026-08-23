@@ -4,6 +4,8 @@ id: "F5"
 lesson: 5
 weight: 5
 summary: "A teammate is one conversation on the team channel."
+# skill. a directory in this repo with a SKILL.md that drives the lesson. empty renders nothing
+skill: ""
 # card. empty renders as TODO
 goal: ""
 done_when: ""

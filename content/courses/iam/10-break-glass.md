@@ -4,6 +4,8 @@ id: "I10"
 lesson: 10
 weight: 10
 summary: "Break-glass access expires cloud-side whatever else fails."
+# skill. a directory in this repo with a SKILL.md that drives the lesson. empty renders nothing
+skill: ""
 # card. empty renders as TODO
 goal: ""
 done_when: ""

@@ -4,6 +4,8 @@ id: "I3"
 lesson: 3
 weight: 3
 summary: "The guardrails run in the editor, for the agent and in the PR job alike."
+# skill. a directory in this repo with a SKILL.md that drives the lesson. empty renders nothing
+skill: ""
 # card. empty renders as TODO
 goal: ""
 done_when: ""

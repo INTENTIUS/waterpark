@@ -4,6 +4,8 @@ id: "F8"
 lesson: 8
 weight: 8
 summary: "Mend and dns-desk run the propose loop with a person as the propose step."
+# skill. a directory in this repo with a SKILL.md that drives the lesson. empty renders nothing
+skill: ""
 # card. empty renders as TODO
 goal: ""
 done_when: ""

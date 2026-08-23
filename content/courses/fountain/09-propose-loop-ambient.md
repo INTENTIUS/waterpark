@@ -4,6 +4,8 @@ id: "F9"
 lesson: 9
 weight: 9
 summary: "Rounds runs the propose loop with nobody watching."
+# skill. a directory in this repo with a SKILL.md that drives the lesson. empty renders nothing
+skill: ""
 # card. empty renders as TODO
 goal: ""
 done_when: ""

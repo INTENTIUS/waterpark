@@ -4,6 +4,8 @@ id: "I7"
 lesson: 7
 weight: 7
 summary: "CloudFormation detects drift and a PR restores the declared state."
+# skill. a directory in this repo with a SKILL.md that drives the lesson. empty renders nothing
+skill: ""
 # card. empty renders as TODO
 goal: ""
 done_when: ""

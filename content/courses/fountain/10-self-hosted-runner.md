@@ -4,6 +4,8 @@ id: "F10"
 lesson: 10
 weight: 10
 summary: "A self-hosted runner serves sandboxes from your own machine with no isolation."
+# skill. a directory in this repo with a SKILL.md that drives the lesson. empty renders nothing
+skill: ""
 # card. empty renders as TODO
 goal: ""
 done_when: ""
