@@ -3,18 +3,18 @@ title: "Adopt in place"
 id: "I15"
 lesson: 15
 weight: 15
-summary: "Bring a pre-existing role and SG under management with CloudFormation resource import: write the file, `import` the resource into the stack, nothing touched on day one; back out by removing the resource with a retain policy."
-# card — empty renders as TODO
+summary: "Existing resources come under management by import with nothing touched."
+# card. empty renders as TODO
 goal: ""
 done_when: ""
 restart_from: "lesson 6"
 properties: ["I", "XII"]
-# media — provider: youtube | vimeo | file | todo
+# media. provider is youtube, vimeo, file or todo
 video:
   provider: todo
   title: ""
   length: ""
-# activity — kind: hands-on | watch-along | discuss
+# activity. kind is hands-on, watch-along or discuss
 activity:
   kind: hands-on
   time: "20 min"
@@ -25,16 +25,16 @@ activity:
 
 ## Context
 
-- Bring a pre-existing role and SG under management with CloudFormation resource import: write the file, `import` the resource into the stack, nothing touched on day one; back out by removing the resource with a retain policy.
-- The estate is native (CloudFormation and IAM JSON, not a vendor format); the kit-era export bundle (A21) is moot here.
+- CloudFormation resource import brings a pre-existing role and security group under a stack. You write the file and import. Nothing changes on day one. A retain policy backs a resource out.
+- The estate stays in native form. The kit-era export bundle (A21) has no counterpart here.
 
 ## Watch
 
-{{< todo "video script or link; optional, drop the section if no video" >}}
+{{< todo "Video script or link. Optional." >}}
 
 ## Do
 
-{{< todo "the activity: numbered steps, imperative, one job" >}}
+{{< todo "Numbered steps. Imperative. One job." >}}
 
 1. {{< todo >}}
 2. {{< todo >}}
@@ -42,12 +42,14 @@ activity:
 
 ## Self-paced
 
-{{< todo "what Floci / your own machine can and cannot show for this lesson" >}}
+{{< todo "What Floci or your own machine can and cannot show." >}}
 
 ## Live
 
-{{< todo "what the room sees; timing; the honesty line" >}}
+{{< todo "What the room sees. Timing. The line to say." >}}
 
 ## Further reading
 
-[issues](../../docs/issues.md) A14, A21; decision 2; [landscape](../../docs/landscape.md) (IAMbic).
+- [Issues](../../docs/issues.md) A14 and A21
+- Decision 2
+- [Landscape](../../docs/landscape.md), IAMbic

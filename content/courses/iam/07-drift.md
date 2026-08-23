@@ -3,19 +3,19 @@ title: "Drift"
 id: "I7"
 lesson: 7
 weight: 7
-summary: "`detect-stack-drift` + `describe-stack-resource-drifts` on a schedule over owned stacks; SG and trust drift page-worthy."
-# card — empty renders as TODO
+summary: "CloudFormation detects drift and a PR restores the declared state."
+# card. empty renders as TODO
 goal: ""
 done_when: ""
-restart_from: "lesson 6; Fountain course, lesson 9"
+restart_from: "lesson 6 and Fountain lesson 9"
 properties: ["XI", "XIII"]
 closes: ["P11"]
-# media — provider: youtube | vimeo | file | todo
+# media. provider is youtube, vimeo, file or todo
 video:
   provider: todo
   title: ""
   length: ""
-# activity — kind: hands-on | watch-along | discuss
+# activity. kind is hands-on, watch-along or discuss
 activity:
   kind: hands-on
   time: "25 min"
@@ -26,17 +26,17 @@ activity:
 
 ## Context
 
-- `detect-stack-drift` + `describe-stack-resource-drifts` on a schedule over owned stacks; SG and trust drift page-worthy.
-- CloudFormation detects; the reconcile PR restores the declared state (the template already says what it should be) under Rounds' rules (decision 28); the watcher (lesson 13) is who opens it.
+- `detect-stack-drift` and `describe-stack-resource-drifts` run on a schedule over owned stacks. Security group and trust drift pages someone. Other drift opens a PR.
+- The reconcile PR restores the declared state under Rounds' rules (decision 28). The watcher in lesson 13 opens it.
 - Expired grants surface in the same watch.
 
 ## Watch
 
-{{< todo "video script or link; optional, drop the section if no video" >}}
+{{< todo "Video script or link. Optional." >}}
 
 ## Do
 
-{{< todo "the activity: numbered steps, imperative, one job" >}}
+{{< todo "Numbered steps. Imperative. One job." >}}
 
 1. {{< todo >}}
 2. {{< todo >}}
@@ -44,12 +44,14 @@ activity:
 
 ## Self-paced
 
-{{< todo "what Floci / your own machine can and cannot show for this lesson" >}}
+{{< todo "What Floci or your own machine can and cannot show." >}}
 
 ## Live
 
-{{< todo "what the room sees; timing; the honesty line" >}}
+{{< todo "What the room sees. Timing. The line to say." >}}
 
 ## Further reading
 
-[issues](../../docs/issues.md) A8; decision 28; [the AWS desk](../../docs/aws-desk.md) (the watch).
+- [Issues](../../docs/issues.md) A8
+- Decision 28
+- [The AWS desk](../../docs/aws-desk.md), the watch

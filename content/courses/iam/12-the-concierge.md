@@ -3,19 +3,19 @@ title: "The concierge"
 id: "I12"
 lesson: 12
 weight: 12
-summary: "The AWS desk in repo mode: a request in words, one file edit, `assemble`, a changeset, `check-no-new-access`, the plan rendered as the access delta, a PR opened with a PR-only token; the merge is the approval (decision 18)."
-# card — empty renders as TODO
+summary: "The AWS desk turns a request into a one-file PR."
+# card. empty renders as TODO
 goal: ""
 done_when: ""
-restart_from: "Fountain course, lessons 4, 7, 8; lesson 6"
+restart_from: "Fountain lessons 4, 7 and 8 and lesson 6"
 properties: ["V", "VIII", "IX"]
 closes: ["P13"]
-# media — provider: youtube | vimeo | file | todo
+# media. provider is youtube, vimeo, file or todo
 video:
   provider: todo
   title: ""
   length: ""
-# activity — kind: hands-on | watch-along | discuss
+# activity. kind is hands-on, watch-along or discuss
 activity:
   kind: hands-on
   time: "45 min"
@@ -26,17 +26,17 @@ activity:
 
 ## Context
 
-- The AWS desk in repo mode: a request in words, one file edit, `assemble`, a changeset, `check-no-new-access`, the plan rendered as the access delta, a PR opened with a PR-only token; the merge is the approval (decision 18). No cloud credential in the sandbox.
-- Unmapped requester: refusal naming the enrollment path; boundary exception: directed refusal.
-- Add its rows to the credential table from Fountain lesson 4; fill the parts table.
+- The desk in repo mode takes a request in words, edits one file, runs `assemble`, creates a changeset, runs `check-no-new-access`, renders the access delta and opens a PR with a PR-only token. The merge is the approval (decision 18). The sandbox holds no cloud credential.
+- An unmapped requester gets a refusal that names the enrollment path. A boundary exception gets a refusal that names the platform path.
+- The desk's rows join the credential table from Fountain lesson 4. The parts table is filled from the propose loop page.
 
 ## Watch
 
-{{< todo "video script or link; optional, drop the section if no video" >}}
+{{< todo "Video script or link. Optional." >}}
 
 ## Do
 
-{{< todo "the activity: numbered steps, imperative, one job" >}}
+{{< todo "Numbered steps. Imperative. One job." >}}
 
 1. {{< todo >}}
 2. {{< todo >}}
@@ -44,12 +44,15 @@ activity:
 
 ## Self-paced
 
-{{< todo "what Floci / your own machine can and cannot show for this lesson" >}}
+{{< todo "What Floci or your own machine can and cannot show." >}}
 
 ## Live
 
-{{< todo "what the room sees; timing; the honesty line" >}}
+{{< todo "What the room sees. Timing. The line to say." >}}
 
 ## Further reading
 
-[the AWS desk](../../docs/aws-desk.md); [the propose loop](../../propose-loop.md); [agentic](../../docs/design/agentic.md); decisions 14, 15, 17, 18, 30.
+- [The AWS desk](../../docs/aws-desk.md)
+- [The propose loop](../../propose-loop.md)
+- [Agentic](../../docs/design/agentic.md)
+- Decisions 14, 15, 17, 18 and 30

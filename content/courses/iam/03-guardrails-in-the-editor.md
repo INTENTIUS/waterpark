@@ -3,19 +3,19 @@ title: "Guardrails in the editor"
 id: "I3"
 lesson: 3
 weight: 3
-summary: "The six guardrails as native checks: JSON Schema in the editor for shape (boundary required, no inline policy, owner tag present, SG references not CIDRs), `accessanalyzer validate-policy` for the policy documents (wildcard action, open ingress, best-practice findings), mapped to parliament/cloudsplaining ids."
-# card — empty renders as TODO
+summary: "The guardrails run in the editor, for the agent and in the PR job alike."
+# card. empty renders as TODO
 goal: ""
 done_when: ""
 restart_from: "lesson 2"
 properties: ["II"]
 closes: ["P4"]
-# media — provider: youtube | vimeo | file | todo
+# media. provider is youtube, vimeo, file or todo
 video:
   provider: todo
   title: ""
   length: ""
-# activity — kind: hands-on | watch-along | discuss
+# activity. kind is hands-on, watch-along or discuss
 activity:
   kind: hands-on
   time: "30 min"
@@ -26,17 +26,18 @@ activity:
 
 ## Context
 
-- The six guardrails as native checks: JSON Schema in the editor for shape (boundary required, no inline policy, owner tag present, SG references not CIDRs), `accessanalyzer validate-policy` for the policy documents (wildcard action, open ingress, best-practice findings), mapped to parliament/cloudsplaining ids.
-- The same checks run by the agent at the keystroke and in the PR job; the diagnostic is the same.
-- No third-party linter on the site; the design docs list cfn-lint and chant as options.
+- JSON Schema checks shape in the editor. It requires the boundary, forbids inline policies, requires the owner tag and forbids CIDR sources on security groups.
+- Access Analyzer `validate-policy` checks policy documents for wildcard actions and open access. Rule ids map to the parliament and cloudsplaining taxonomies.
+- The agent and the PR job run the same checks and get the same diagnostic.
+- The design docs list cfn-lint and chant as alternatives. The site names neither.
 
 ## Watch
 
-{{< todo "video script or link; optional, drop the section if no video" >}}
+{{< todo "Video script or link. Optional." >}}
 
 ## Do
 
-{{< todo "the activity: numbered steps, imperative, one job" >}}
+{{< todo "Numbered steps. Imperative. One job." >}}
 
 1. {{< todo >}}
 2. {{< todo >}}
@@ -44,12 +45,13 @@ activity:
 
 ## Self-paced
 
-{{< todo "what Floci / your own machine can and cannot show for this lesson" >}}
+{{< todo "What Floci or your own machine can and cannot show." >}}
 
 ## Live
 
-{{< todo "what the room sees; timing; the honesty line" >}}
+{{< todo "What the room sees. Timing. The line to say." >}}
 
 ## Further reading
 
-[issues](../../docs/issues.md) A3; [guardrail rollout](../../docs/design/guardrail-rollout.md).
+- [Issues](../../docs/issues.md) A3
+- [Guardrail rollout](../../docs/design/guardrail-rollout.md)

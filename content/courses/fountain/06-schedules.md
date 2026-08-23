@@ -3,18 +3,18 @@ title: "Schedules"
 id: "F6"
 lesson: 6
 weight: 6
-summary: "A cron (five fields, UTC) that runs a teammate with a prompt; `run now`; `one_off`; `enabled`; a `schedule` stream event."
-# card — empty renders as TODO
+summary: "A schedule runs a teammate with a prompt on a cron."
+# card. empty renders as TODO
 goal: ""
 done_when: ""
 restart_from: "lesson 5"
 properties: []
-# media — provider: youtube | vimeo | file | todo
+# media. provider is youtube, vimeo, file or todo
 video:
   provider: todo
   title: ""
   length: ""
-# activity — kind: hands-on | watch-along | discuss
+# activity. kind is hands-on, watch-along or discuss
 activity:
   kind: hands-on
   time: "10 min"
@@ -25,16 +25,17 @@ activity:
 
 ## Context
 
-- A cron (five fields, UTC) that runs a teammate with a prompt; `run now`; `one_off`; `enabled`; a `schedule` stream event.
-- Foundation for the ambient form of the propose loop (lesson 9).
+- A schedule is a five-field UTC cron plus a prompt. `run now` queues a turn. `one_off` and `enabled` are flags.
+- The team stream sends a `schedule` event when a schedule changes or fires.
+- Schedules are the basis of the ambient propose loop in lesson 9.
 
 ## Watch
 
-{{< todo "video script or link; optional, drop the section if no video" >}}
+{{< todo "Video script or link. Optional." >}}
 
 ## Do
 
-{{< todo "the activity: numbered steps, imperative, one job" >}}
+{{< todo "Numbered steps. Imperative. One job." >}}
 
 1. {{< todo >}}
 2. {{< todo >}}
@@ -42,12 +43,13 @@ activity:
 
 ## Self-paced
 
-{{< todo "what Floci / your own machine can and cannot show for this lesson" >}}
+{{< todo "What Floci or your own machine can and cannot show." >}}
 
 ## Live
 
-{{< todo "what the room sees; timing; the honesty line" >}}
+{{< todo "What the room sees. Timing. The line to say." >}}
 
 ## Further reading
 
-Fountain `docs/api.md` (Schedules); Rounds README.
+- Fountain `docs/api.md`, schedules
+- Rounds README

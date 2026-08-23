@@ -3,18 +3,18 @@ title: "The self-hosted runner"
 id: "F10"
 lesson: 10
 weight: 10
-summary: "`fountain runner` on a machine you own; sandboxes are directories; trusted mode only: no isolation, no egress policy, daemon must be online (ADR 0022)."
-# card — empty renders as TODO
+summary: "A self-hosted runner serves sandboxes from your own machine with no isolation."
+# card. empty renders as TODO
 goal: ""
 done_when: ""
 restart_from: "lesson 3"
 properties: ["VI"]
-# media — provider: youtube | vimeo | file | todo
+# media. provider is youtube, vimeo, file or todo
 video:
   provider: todo
   title: ""
   length: ""
-# activity — kind: hands-on | watch-along | discuss
+# activity. kind is hands-on, watch-along or discuss
 activity:
   kind: hands-on
   time: "30 min"
@@ -25,17 +25,17 @@ activity:
 
 ## Context
 
-- `fountain runner` on a machine you own; sandboxes are directories; trusted mode only: no isolation, no egress policy, daemon must be online (ADR 0022).
-- Re-run lesson 3 here and watch the allowlist not apply.
-- The counterexample for property VI: a runner has no bound; every containment claim from lesson 3 is void here.
+- `fountain runner` runs on a machine you own. Sandboxes are directories and processes stay alive between turns.
+- A runner is trusted mode. It has no VM isolation and no egress policy and must be online to be reachable (ADR 0022).
+- Lesson 3 rerun here shows the allowlist not applying. A runner is the counterexample for bounded blast radius.
 
 ## Watch
 
-{{< todo "video script or link; optional, drop the section if no video" >}}
+{{< todo "Video script or link. Optional." >}}
 
 ## Do
 
-{{< todo "the activity: numbered steps, imperative, one job" >}}
+{{< todo "Numbered steps. Imperative. One job." >}}
 
 1. {{< todo >}}
 2. {{< todo >}}
@@ -43,12 +43,14 @@ activity:
 
 ## Self-paced
 
-{{< todo "what Floci / your own machine can and cannot show for this lesson" >}}
+{{< todo "What Floci or your own machine can and cannot show." >}}
 
 ## Live
 
-{{< todo "what the room sees; timing; the honesty line" >}}
+{{< todo "What the room sees. Timing. The line to say." >}}
 
 ## Further reading
 
-Fountain ADR 0022; ADR 0018; decision 29.
+- Fountain ADR 0022
+- Fountain ADR 0018
+- Decision 29

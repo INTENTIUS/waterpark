@@ -3,18 +3,18 @@ title: "No approval gate in Fountain"
 id: "F11"
 lesson: 11
 weight: 11
-summary: "Runtimes run with permission prompts bypassed; the audit trail is retrospective; ADR 0016 is proposed and unbuilt."
-# card — empty renders as TODO
+summary: "Fountain has no approval gate inside the agent loop."
+# card. empty renders as TODO
 goal: ""
 done_when: ""
 restart_from: "lesson 8"
 properties: ["VIII"]
-# media — provider: youtube | vimeo | file | todo
+# media. provider is youtube, vimeo, file or todo
 video:
   provider: todo
   title: ""
   length: ""
-# activity — kind: hands-on | watch-along | discuss
+# activity. kind is hands-on, watch-along or discuss
 activity:
   kind: hands-on
   time: "10 min"
@@ -25,16 +25,16 @@ activity:
 
 ## Context
 
-- Runtimes run with permission prompts bypassed; the audit trail is retrospective; ADR 0016 is proposed and unbuilt.
-- So the gate lives where the write lands: the PR merge, the approve message, the server that refuses.
+- Every runtime runs with its permission prompt bypassed. The audit trail records after the fact. ADR 0016 is proposed and unbuilt.
+- The gate lives where the write lands. That is the PR merge, the approve message or the server that refuses.
 
 ## Watch
 
-{{< todo "video script or link; optional, drop the section if no video" >}}
+{{< todo "Video script or link. Optional." >}}
 
 ## Do
 
-{{< todo "the activity: numbered steps, imperative, one job" >}}
+{{< todo "Numbered steps. Imperative. One job." >}}
 
 1. {{< todo >}}
 2. {{< todo >}}
@@ -42,12 +42,14 @@ activity:
 
 ## Self-paced
 
-{{< todo "what Floci / your own machine can and cannot show for this lesson" >}}
+{{< todo "What Floci or your own machine can and cannot show." >}}
 
 ## Live
 
-{{< todo "what the room sees; timing; the honesty line" >}}
+{{< todo "What the room sees. Timing. The line to say." >}}
 
 ## Further reading
 
-Fountain ADR 0016; decision 14; [upstream](../../docs/upstream.md).
+- Fountain ADR 0016
+- Decision 14
+- [Upstream](../../docs/upstream.md)

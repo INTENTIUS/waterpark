@@ -3,18 +3,18 @@ title: "The egress allowlist"
 id: "F3"
 lesson: 3
 weight: 3
-summary: "`networking_type: limited` with `allowed_hosts` is default-deny; an empty list denies everything."
-# card — empty renders as TODO
+summary: "Limited networking denies all egress except the listed hosts."
+# card. empty renders as TODO
 goal: ""
 done_when: ""
 restart_from: "lesson 1"
 properties: ["VI"]
-# media — provider: youtube | vimeo | file | todo
+# media. provider is youtube, vimeo, file or todo
 video:
   provider: todo
   title: ""
   length: ""
-# activity — kind: hands-on | watch-along | discuss
+# activity. kind is hands-on, watch-along or discuss
 activity:
   kind: hands-on
   time: "15 min"
@@ -25,17 +25,17 @@ activity:
 
 ## Context
 
-- `networking_type: limited` with `allowed_hosts` is default-deny; an empty list denies everything.
-- Holds only on a hosted sandbox provider; a self-hosted runner has no egress policy (lesson 10).
-- The first containment claim any scenario makes.
+- `networking_type` set to `limited` with `allowed_hosts` is a default-deny egress allowlist. An empty list denies everything.
+- The allowlist holds only on a hosted sandbox provider. A self-hosted runner has no egress policy (lesson 10).
+- The allowlist is the first containment claim a scenario makes.
 
 ## Watch
 
-{{< todo "video script or link; optional, drop the section if no video" >}}
+{{< todo "Video script or link. Optional." >}}
 
 ## Do
 
-{{< todo "the activity: numbered steps, imperative, one job" >}}
+{{< todo "Numbered steps. Imperative. One job." >}}
 
 1. {{< todo >}}
 2. {{< todo >}}
@@ -43,12 +43,14 @@ activity:
 
 ## Self-paced
 
-{{< todo "what Floci / your own machine can and cannot show for this lesson" >}}
+{{< todo "What Floci or your own machine can and cannot show." >}}
 
 ## Live
 
-{{< todo "what the room sees; timing; the honesty line" >}}
+{{< todo "What the room sees. Timing. The line to say." >}}
 
 ## Further reading
 
-Fountain `docs/primitives.md` (networking); [threat model](../../docs/threat-model.md) boundary 5; decision 29.
+- Fountain `docs/primitives.md`, networking
+- [Threat model](../../docs/threat-model.md), boundary 5
+- Decision 29

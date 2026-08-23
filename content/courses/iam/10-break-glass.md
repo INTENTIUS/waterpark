@@ -3,19 +3,19 @@ title: "Break-glass"
 id: "I10"
 lesson: 10
 weight: 10
-summary: "The grant carries cloud-side expiry (a time-conditioned policy or a temporary Identity Center assignment, 2h TTL); a scheduled cleanup removes the artifact; the watch flags leftovers."
-# card — empty renders as TODO
+summary: "Break-glass access expires cloud-side whatever else fails."
+# card. empty renders as TODO
 goal: ""
 done_when: ""
 restart_from: "lesson 6"
 properties: ["VII", "VIII"]
 closes: ["P9"]
-# media — provider: youtube | vimeo | file | todo
+# media. provider is youtube, vimeo, file or todo
 video:
   provider: todo
   title: ""
   length: ""
-# activity — kind: hands-on | watch-along | discuss
+# activity. kind is hands-on, watch-along or discuss
 activity:
   kind: hands-on
   time: "30 min"
@@ -26,17 +26,17 @@ activity:
 
 ## Context
 
-- The grant carries cloud-side expiry (a time-conditioned policy or a temporary Identity Center assignment, 2h TTL); a scheduled cleanup removes the artifact; the watch flags leftovers.
-- The gate is a second human in the workflow; revocation never depends on it.
-- Kill the cleanup mid-grant; access still ends at the TTL.
+- The grant carries cloud-side expiry through a time-conditioned policy or a temporary Identity Center assignment with a two-hour TTL. A scheduled cleanup removes the artifact. The watch flags leftovers.
+- The gate is a second human in the workflow. Revocation never depends on the gate.
+- Killing the cleanup mid-grant still ends access at the TTL.
 
 ## Watch
 
-{{< todo "video script or link; optional, drop the section if no video" >}}
+{{< todo "Video script or link. Optional." >}}
 
 ## Do
 
-{{< todo "the activity: numbered steps, imperative, one job" >}}
+{{< todo "Numbered steps. Imperative. One job." >}}
 
 1. {{< todo >}}
 2. {{< todo >}}
@@ -44,12 +44,13 @@ activity:
 
 ## Self-paced
 
-{{< todo "what Floci / your own machine can and cannot show for this lesson" >}}
+{{< todo "What Floci or your own machine can and cannot show." >}}
 
 ## Live
 
-{{< todo "what the room sees; timing; the honesty line" >}}
+{{< todo "What the room sees. Timing. The line to say." >}}
 
 ## Further reading
 
-[break-glass](../../docs/design/break-glass.md); decision 8.
+- [Break-glass](../../docs/design/break-glass.md)
+- Decision 8

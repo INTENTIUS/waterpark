@@ -3,18 +3,18 @@ title: "Offboard and the access review"
 id: "I11"
 lesson: 11
 weight: 11
-summary: "Offboard: remove a principal's files and every reference in one PR + deploy; zero remaining references."
-# card — empty renders as TODO
+summary: "Offboarding removes every reference in one PR and the review reads the estate."
+# card. empty renders as TODO
 goal: ""
 done_when: ""
 restart_from: "lesson 7"
 properties: ["IX", "XIII"]
-# media — provider: youtube | vimeo | file | todo
+# media. provider is youtube, vimeo, file or todo
 video:
   provider: todo
   title: ""
   length: ""
-# activity — kind: hands-on | watch-along | discuss
+# activity. kind is hands-on, watch-along or discuss
 activity:
   kind: hands-on
   time: "25 min"
@@ -25,16 +25,16 @@ activity:
 
 ## Context
 
-- Offboard: remove a principal's files and every reference in one PR + deploy; zero remaining references.
-- The quarterly artifact from declared JSON plus live reads (`get-role`, `list-attached-role-policies`, Access Analyzer unused-access findings): every principal, what it can reach, what is expiring.
+- Offboard removes a principal's files and every reference in one PR and one deploy. Zero references remain.
+- The quarterly artifact combines declared JSON with live reads from `get-role`, `list-attached-role-policies` and Access Analyzer unused-access findings. It lists every principal, what it can reach and what expires.
 
 ## Watch
 
-{{< todo "video script or link; optional, drop the section if no video" >}}
+{{< todo "Video script or link. Optional." >}}
 
 ## Do
 
-{{< todo "the activity: numbered steps, imperative, one job" >}}
+{{< todo "Numbered steps. Imperative. One job." >}}
 
 1. {{< todo >}}
 2. {{< todo >}}
@@ -42,12 +42,12 @@ activity:
 
 ## Self-paced
 
-{{< todo "what Floci / your own machine can and cannot show for this lesson" >}}
+{{< todo "What Floci or your own machine can and cannot show." >}}
 
 ## Live
 
-{{< todo "what the room sees; timing; the honesty line" >}}
+{{< todo "What the room sees. Timing. The line to say." >}}
 
 ## Further reading
 
-[issues](../../docs/issues.md) A10, A11.
+- [Issues](../../docs/issues.md) A10 and A11

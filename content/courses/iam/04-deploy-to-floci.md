@@ -3,19 +3,19 @@ title: "Deploy to Floci"
 id: "I4"
 lesson: 4
 weight: 4
-summary: "`scripts/assemble` then `aws cloudformation deploy` against Floci endpoints; no account, no keys; live: a real sandbox account."
-# card — empty renders as TODO
+summary: "The estate deploys to Floci with no account."
+# card. empty renders as TODO
 goal: ""
 done_when: ""
 restart_from: "lesson 3"
 properties: ["XI", "I", "VII"]
 closes: ["P6 (part)"]
-# media — provider: youtube | vimeo | file | todo
+# media. provider is youtube, vimeo, file or todo
 video:
   provider: todo
   title: ""
   length: ""
-# activity — kind: hands-on | watch-along | discuss
+# activity. kind is hands-on, watch-along or discuss
 activity:
   kind: hands-on
   time: "20 min"
@@ -26,18 +26,18 @@ activity:
 
 ## Context
 
-- `scripts/assemble` then `aws cloudformation deploy` against Floci endpoints; no account, no keys; live: a real sandbox account.
-- Floci: CloudFormation, IAM, STS, EC2 SGs in-process; no Organizations, Identity Center, Access Analyzer (recorded verdicts for those).
-- Read a role back with `get-role`; the file predicted it.
-- Rollback is native (property VII): a failed update rolls the stack back on its own; a `replacement: true` change is the risky case and waits for a person (lesson 14).
+- `scripts/assemble` then `aws cloudformation deploy` against Floci endpoints needs no account and no keys. Live sessions use a real sandbox account.
+- Floci runs CloudFormation, IAM, STS and EC2 security groups in process. It has no Organizations, Identity Center or Access Analyzer. Those verdicts are recorded.
+- `get-role` reads a role back. The file predicted it.
+- A failed update rolls the stack back on its own. A change marked `replacement` is the risky case and waits for a person in lesson 14.
 
 ## Watch
 
-{{< todo "video script or link; optional, drop the section if no video" >}}
+{{< todo "Video script or link. Optional." >}}
 
 ## Do
 
-{{< todo "the activity: numbered steps, imperative, one job" >}}
+{{< todo "Numbered steps. Imperative. One job." >}}
 
 1. {{< todo >}}
 2. {{< todo >}}
@@ -45,12 +45,14 @@ activity:
 
 ## Self-paced
 
-{{< todo "what Floci / your own machine can and cannot show for this lesson" >}}
+{{< todo "What Floci or your own machine can and cannot show." >}}
 
 ## Live
 
-{{< todo "what the room sees; timing; the honesty line" >}}
+{{< todo "What the room sees. Timing. The line to say." >}}
 
 ## Further reading
 
-[issues](../../docs/issues.md) A13; [multi-account](../../docs/design/multi-account.md) item 3; [upstream](../../docs/upstream.md) (Floci).
+- [Issues](../../docs/issues.md) A13
+- [Multi-account](../../docs/design/multi-account.md), item 3
+- [Upstream](../../docs/upstream.md), Floci

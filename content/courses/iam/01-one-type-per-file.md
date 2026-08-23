@@ -3,19 +3,19 @@ title: "One resource type per file"
 id: "I1"
 lesson: 1
 weight: 1
-summary: "Scaffold `splashdown/access` as plain CloudFormation JSON: `stacks/<stack>/<Type>/<LogicalId>."
-# card — empty renders as TODO
+summary: "The repo is CloudFormation JSON with one resource per file."
+# card. empty renders as TODO
 goal: ""
 done_when: ""
-restart_from: "Fountain course, lesson 1"
+restart_from: "Fountain lesson 1"
 properties: ["I"]
 closes: ["P1", "P2"]
-# media — provider: youtube | vimeo | file | todo
+# media. provider is youtube, vimeo, file or todo
 video:
   provider: todo
   title: ""
   length: ""
-# activity — kind: hands-on | watch-along | discuss
+# activity. kind is hands-on, watch-along or discuss
 activity:
   kind: hands-on
   time: "30 min"
@@ -26,17 +26,17 @@ activity:
 
 ## Context
 
-- Scaffold `splashdown/access` as plain CloudFormation JSON: `stacks/<stack>/<Type>/<LogicalId>.json`, one resource per file, the path as the index; `scripts/assemble` (a `jq` merge) makes one template per stack.
-- Layout checks: a JSON Schema per resource type (from the CloudFormation resource spec) for the editor, and a tiny check that file name equals logical id.
-- No toolchain: a stranger reads a file and predicts the template ([the AWS desk](../../docs/aws-desk.md), the target).
+- `splashdown/access` holds CloudFormation resources at `stacks/<stack>/<Type>/<LogicalId>.json`. `scripts/assemble` merges one directory into one template with `jq`.
+- A JSON Schema per resource type checks shape in the editor. A small check requires the file name to equal the logical id.
+- A reader predicts the template from the file. No toolchain is involved.
 
 ## Watch
 
-{{< todo "video script or link; optional, drop the section if no video" >}}
+{{< todo "Video script or link. Optional." >}}
 
 ## Do
 
-{{< todo "the activity: numbered steps, imperative, one job" >}}
+{{< todo "Numbered steps. Imperative. One job." >}}
 
 1. {{< todo >}}
 2. {{< todo >}}
@@ -44,12 +44,14 @@ activity:
 
 ## Self-paced
 
-{{< todo "what Floci / your own machine can and cannot show for this lesson" >}}
+{{< todo "What Floci or your own machine can and cannot show." >}}
 
 ## Live
 
-{{< todo "what the room sees; timing; the honesty line" >}}
+{{< todo "What the room sees. Timing. The line to say." >}}
 
 ## Further reading
 
-[issues](../../docs/issues.md) A1, A2; [the AWS desk](../../docs/aws-desk.md); decision 31.
+- [Issues](../../docs/issues.md) A1 and A2
+- [The AWS desk](../../docs/aws-desk.md)
+- Decision 31

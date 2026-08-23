@@ -3,19 +3,19 @@ title: "Personas and principals"
 id: "I2"
 lesson: 2
 weight: 2
-summary: "Humans get `AWS::SSO::PermissionSet` + `AWS::SSO::Assignment`, workloads get `AWS::IAM::Role`; no IAM users or groups (decision 5)."
-# card — empty renders as TODO
+summary: "Humans get permission sets and workloads get roles."
+# card. empty renders as TODO
 goal: ""
 done_when: ""
 restart_from: "lesson 1"
 properties: ["V"]
 closes: ["P2", "P3"]
-# media — provider: youtube | vimeo | file | todo
+# media. provider is youtube, vimeo, file or todo
 video:
   provider: todo
   title: ""
   length: ""
-# activity — kind: hands-on | watch-along | discuss
+# activity. kind is hands-on, watch-along or discuss
 activity:
   kind: hands-on
   time: "25 min"
@@ -26,17 +26,17 @@ activity:
 
 ## Context
 
-- Humans get `AWS::SSO::PermissionSet` + `AWS::SSO::Assignment`, workloads get `AWS::IAM::Role`; no IAM users or groups (decision 5).
-- Personas as a small set of permission-set and role files copied by convention; one principal per file; `tickets-api`, `tickets`, `rides-board`.
-- `expires` on a grant is a date in the policy `Condition` (`aws:CurrentTime`) plus a tag; `scripts/proofs` flags the ones past due.
+- Humans are `AWS::SSO::PermissionSet` and `AWS::SSO::Assignment` resources. Workloads are `AWS::IAM::Role` resources. There are no IAM users or groups (decision 5).
+- A persona is a permission set or role file copied by convention. Each principal is one file. The examples are `tickets-api`, `tickets` and `rides-board`.
+- A grant's `expires` is a date in the policy `Condition` on `aws:CurrentTime` plus a tag. `scripts/proofs` flags expired grants.
 
 ## Watch
 
-{{< todo "video script or link; optional, drop the section if no video" >}}
+{{< todo "Video script or link. Optional." >}}
 
 ## Do
 
-{{< todo "the activity: numbered steps, imperative, one job" >}}
+{{< todo "Numbered steps. Imperative. One job." >}}
 
 1. {{< todo >}}
 2. {{< todo >}}
@@ -44,12 +44,13 @@ activity:
 
 ## Self-paced
 
-{{< todo "what Floci / your own machine can and cannot show for this lesson" >}}
+{{< todo "What Floci or your own machine can and cannot show." >}}
 
 ## Live
 
-{{< todo "what the room sees; timing; the honesty line" >}}
+{{< todo "What the room sees. Timing. The line to say." >}}
 
 ## Further reading
 
-[issues](../../docs/issues.md) A4, A5; [personas](../../docs/design/personas.md).
+- [Issues](../../docs/issues.md) A4 and A5
+- [Personas](../../docs/design/personas.md)

@@ -3,18 +3,18 @@ title: "The propose loop, interactive"
 id: "F8"
 lesson: 8
 weight: 8
-summary: "Mend (audit-driven) and dns-desk (request-driven) as the worked references; the parts table from [the propose loop](."
-# card — empty renders as TODO
+summary: "Mend and dns-desk run the propose loop with a person as the propose step."
+# card. empty renders as TODO
 goal: ""
 done_when: ""
 restart_from: "lessons 4 and 7"
 properties: ["IV", "VIII", "XI"]
-# media — provider: youtube | vimeo | file | todo
+# media. provider is youtube, vimeo, file or todo
 video:
   provider: todo
   title: ""
   length: ""
-# activity — kind: hands-on | watch-along | discuss
+# activity. kind is hands-on, watch-along or discuss
 activity:
   kind: hands-on
   time: "45 min"
@@ -25,17 +25,17 @@ activity:
 
 ## Context
 
-- Mend (audit-driven) and dns-desk (request-driven) as the worked references; the parts table from [the propose loop](../../propose-loop.md).
-- The agent reads; a person is the propose step; the browser refuses a stale patch.
-- Re-read before apply is property XI on the agent side: the desk re-plans instead of applying a stale diff.
+- Mend is the audit-driven form. dns-desk is the request-driven form. The parts table is on the propose loop page.
+- The agent reads. A person is the propose step. The browser refuses a stale patch.
+- The desk re-reads the zone before it applies and re-plans if the zone moved.
 
 ## Watch
 
-{{< todo "video script or link; optional, drop the section if no video" >}}
+{{< todo "Video script or link. Optional." >}}
 
 ## Do
 
-{{< todo "the activity: numbered steps, imperative, one job" >}}
+{{< todo "Numbered steps. Imperative. One job." >}}
 
 1. {{< todo >}}
 2. {{< todo >}}
@@ -43,12 +43,15 @@ activity:
 
 ## Self-paced
 
-{{< todo "what Floci / your own machine can and cannot show for this lesson" >}}
+{{< todo "What Floci or your own machine can and cannot show." >}}
 
 ## Live
 
-{{< todo "what the room sees; timing; the honesty line" >}}
+{{< todo "What the room sees. Timing. The line to say." >}}
 
 ## Further reading
 
-[the propose loop](../../propose-loop.md); Mend and dns-desk READMEs; decisions 14, 15, 18, 30.
+- [The propose loop](../../propose-loop.md)
+- Mend README
+- dns-desk README
+- Decisions 14, 15, 18 and 30

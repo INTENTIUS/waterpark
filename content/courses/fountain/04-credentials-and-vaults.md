@@ -3,18 +3,18 @@ title: "Credentials and vaults"
 id: "F4"
 lesson: 4
 weight: 4
-summary: "Env vars merge environment secrets then vault secrets; the vault wins."
-# card — empty renders as TODO
+summary: "A vault binds one credential to one conversation."
+# card. empty renders as TODO
 goal: ""
 done_when: ""
 restart_from: "lesson 3"
 properties: ["V", "VI", "X"]
-# media — provider: youtube | vimeo | file | todo
+# media. provider is youtube, vimeo, file or todo
 video:
   provider: todo
   title: ""
   length: ""
-# activity — kind: hands-on | watch-along | discuss
+# activity. kind is hands-on, watch-along or discuss
 activity:
   kind: hands-on
   time: "20 min"
@@ -25,18 +25,19 @@ activity:
 
 ## Context
 
-- Env vars merge environment secrets then vault secrets; the vault wins.
-- A vault binds to one conversation at creation; `allowed_environment_ids` / `allowed_vault_ids` bound what a caller may attach.
-- Mend's split: read token in the repo's vault, write token in the browser, never the sandbox. The credential table (who / holds / can) is reused by lessons 8 and 12 of the IAM course.
-- Revocation is removing the vault (property X): no rotation ceremony, nothing shared.
+- Fountain merges environment secrets first and vault secrets second. The vault wins.
+- A vault binds to one conversation at creation. `allowed_environment_ids` and `allowed_vault_ids` limit what a caller may attach.
+- Mend keeps the read token in the repo's vault and the write token in the browser. The sandbox never holds the write token.
+- Removing the vault revokes the credential. No rotation ceremony is needed.
+- The table of who holds which credential and what it can do is reused in Fountain lesson 8 and IAM lesson 12.
 
 ## Watch
 
-{{< todo "video script or link; optional, drop the section if no video" >}}
+{{< todo "Video script or link. Optional." >}}
 
 ## Do
 
-{{< todo "the activity: numbered steps, imperative, one job" >}}
+{{< todo "Numbered steps. Imperative. One job." >}}
 
 1. {{< todo >}}
 2. {{< todo >}}
@@ -44,12 +45,14 @@ activity:
 
 ## Self-paced
 
-{{< todo "what Floci / your own machine can and cannot show for this lesson" >}}
+{{< todo "What Floci or your own machine can and cannot show." >}}
 
 ## Live
 
-{{< todo "what the room sees; timing; the honesty line" >}}
+{{< todo "What the room sees. Timing. The line to say." >}}
 
 ## Further reading
 
-[workload identity](../../docs/design/workload-identity.md); decision 15; Mend README.
+- [Workload identity](../../docs/design/workload-identity.md)
+- Decision 15
+- Mend README

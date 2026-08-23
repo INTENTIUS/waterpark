@@ -3,18 +3,18 @@ title: "Driving an agent from an app"
 id: "F7"
 lesson: 7
 weight: 7
-summary: "Protocol blocks parsed out of replies; the conversation is the system of record; one SSE connection while live."
-# card — empty renders as TODO
+summary: "An app drives a teammate through fenced blocks and the team stream."
+# card. empty renders as TODO
 goal: ""
 done_when: ""
 restart_from: "lesson 5"
 properties: ["IX"]
-# media — provider: youtube | vimeo | file | todo
+# media. provider is youtube, vimeo, file or todo
 video:
   provider: todo
   title: ""
   length: ""
-# activity — kind: hands-on | watch-along | discuss
+# activity. kind is hands-on, watch-along or discuss
 activity:
   kind: hands-on
   time: "45 min"
@@ -25,18 +25,18 @@ activity:
 
 ## Context
 
-- Protocol blocks parsed out of replies; the conversation is the system of record; one SSE connection while live.
-- Sign in with Fountain (OAuth code + PKCE; token is an API key); `API_CORS_ORIGINS`, `OAUTH_CLIENTS`.
-- Client patterns from dns-desk / Mend.
-- The conversation is the record (property IX): the page derives its view from turns and blocks; nothing is stored elsewhere.
+- The app and the agent share fenced blocks parsed out of replies. The blocks are defined in one file and pinned in the prompt in another.
+- The conversation is the record. The app rebuilds its view from turns and blocks on load and reads one SSE stream while live.
+- Sign in with Fountain uses OAuth code with PKCE and yields an API key. The server needs `API_CORS_ORIGINS` and `OAUTH_CLIENTS`.
+- dns-desk and Mend carry the client code to copy.
 
 ## Watch
 
-{{< todo "video script or link; optional, drop the section if no video" >}}
+{{< todo "Video script or link. Optional." >}}
 
 ## Do
 
-{{< todo "the activity: numbered steps, imperative, one job" >}}
+{{< todo "Numbered steps. Imperative. One job." >}}
 
 1. {{< todo >}}
 2. {{< todo >}}
@@ -44,12 +44,13 @@ activity:
 
 ## Self-paced
 
-{{< todo "what Floci / your own machine can and cannot show for this lesson" >}}
+{{< todo "What Floci or your own machine can and cannot show." >}}
 
 ## Live
 
-{{< todo "what the room sees; timing; the honesty line" >}}
+{{< todo "What the room sees. Timing. The line to say." >}}
 
 ## Further reading
 
-dns-desk README; Mend README.
+- dns-desk README
+- Mend README

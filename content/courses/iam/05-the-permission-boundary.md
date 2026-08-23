@@ -3,19 +3,19 @@ title: "The permission boundary"
 id: "I5"
 lesson: 5
 weight: 5
-summary: "The baseline stack: the boundary `AWS::IAM::ManagedPolicy` every role references by name; the apply role's own boundary (decision 12); the org policy set (live only); default-deny `AWS::EC2::SecurityGroup`s."
-# card — empty renders as TODO
+summary: "The permission boundary caps every role and the apply role itself."
+# card. empty renders as TODO
 goal: ""
 done_when: ""
 restart_from: "lesson 4"
 properties: ["VI", "III"]
 closes: ["P7"]
-# media — provider: youtube | vimeo | file | todo
+# media. provider is youtube, vimeo, file or todo
 video:
   provider: todo
   title: ""
   length: ""
-# activity — kind: hands-on | watch-along | discuss
+# activity. kind is hands-on, watch-along or discuss
 activity:
   kind: hands-on
   time: "30 min"
@@ -26,18 +26,18 @@ activity:
 
 ## Context
 
-- The baseline stack: the boundary `AWS::IAM::ManagedPolicy` every role references by name; the apply role's own boundary (decision 12); the org policy set (live only); default-deny `AWS::EC2::SecurityGroup`s.
-- Boundary contents lean from [delegation](../../docs/design/delegation.md).
-- Every other stack references the boundary by deterministic name.
-- The why lives in the repo (property III): a `Description` on the boundary and the baseline README say why each deny is there; a grant carries its rationale beside `expires`; the [decisions ledger](../../docs/decisions.md) is the long form.
+- The baseline stack holds the boundary as an `AWS::IAM::ManagedPolicy`. Every role references it by name.
+- The apply role carries its own boundary so the system cannot escalate itself (decision 12). The org policy set deploys live only. Default-deny security groups live in the baseline too.
+- The boundary contents follow the lean in the delegation note.
+- The why lives in the repo. The boundary `Description` and the baseline README say why each deny exists. A grant carries its rationale beside `expires`. The decisions ledger is the long form.
 
 ## Watch
 
-{{< todo "video script or link; optional, drop the section if no video" >}}
+{{< todo "Video script or link. Optional." >}}
 
 ## Do
 
-{{< todo "the activity: numbered steps, imperative, one job" >}}
+{{< todo "Numbered steps. Imperative. One job." >}}
 
 1. {{< todo >}}
 2. {{< todo >}}
@@ -45,12 +45,15 @@ activity:
 
 ## Self-paced
 
-{{< todo "what Floci / your own machine can and cannot show for this lesson" >}}
+{{< todo "What Floci or your own machine can and cannot show." >}}
 
 ## Live
 
-{{< todo "what the room sees; timing; the honesty line" >}}
+{{< todo "What the room sees. Timing. The line to say." >}}
 
 ## Further reading
 
-[issues](../../docs/issues.md) A6, A7; decisions 11, 12; [threat model](../../docs/threat-model.md).
+- [Issues](../../docs/issues.md) A6 and A7
+- Decisions 11 and 12
+- [Threat model](../../docs/threat-model.md)
+- [Delegation](../../docs/design/delegation.md)

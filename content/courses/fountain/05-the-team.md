@@ -3,18 +3,18 @@ title: "The team"
 id: "F5"
 lesson: 5
 weight: 5
-summary: "A teammate is a conversation bound to `fountain:team`; one thread per agent; the roster, presence, `/api/team/stream`."
-# card — empty renders as TODO
+summary: "A teammate is one conversation on the team channel."
+# card. empty renders as TODO
 goal: ""
 done_when: ""
 restart_from: "lesson 2"
 properties: ["IX"]
-# media — provider: youtube | vimeo | file | todo
+# media. provider is youtube, vimeo, file or todo
 video:
   provider: todo
   title: ""
   length: ""
-# activity — kind: hands-on | watch-along | discuss
+# activity. kind is hands-on, watch-along or discuss
 activity:
   kind: hands-on
   time: "10 min"
@@ -25,17 +25,17 @@ activity:
 
 ## Context
 
-- A teammate is a conversation bound to `fountain:team`; one thread per agent; the roster, presence, `/api/team/stream`.
-- Not a fifth primitive.
-- One thread per agent is what makes a teammate's work attributable (property IX): you can always find what it did.
+- A teammate is a conversation bound to `fountain:team`. Each agent has one thread.
+- The roster, presence and `/api/team/stream` are views over that conversation. There is no fifth primitive.
+- One thread per agent makes a teammate's work attributable.
 
 ## Watch
 
-{{< todo "video script or link; optional, drop the section if no video" >}}
+{{< todo "Video script or link. Optional." >}}
 
 ## Do
 
-{{< todo "the activity: numbered steps, imperative, one job" >}}
+{{< todo "Numbered steps. Imperative. One job." >}}
 
 1. {{< todo >}}
 2. {{< todo >}}
@@ -43,12 +43,13 @@ activity:
 
 ## Self-paced
 
-{{< todo "what Floci / your own machine can and cannot show for this lesson" >}}
+{{< todo "What Floci or your own machine can and cannot show." >}}
 
 ## Live
 
-{{< todo "what the room sees; timing; the honesty line" >}}
+{{< todo "What the room sees. Timing. The line to say." >}}
 
 ## Further reading
 
-Fountain `docs/primitives.md` (the team page); `docs/api.md` (`/api/team`).
+- Fountain `docs/primitives.md`, the team page
+- Fountain `docs/api.md`, `/api/team`

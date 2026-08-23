@@ -3,18 +3,18 @@ title: "Four primitives"
 id: "F1"
 lesson: 1
 weight: 1
-summary: "Environment, Vault, Agent, Conversation; nothing else exists."
-# card — empty renders as TODO
+summary: "Fountain is made of four objects."
+# card. empty renders as TODO
 goal: ""
 done_when: ""
-restart_from: "none; first lesson"
+restart_from: "none, this is the first lesson"
 properties: ["III"]
-# media — provider: youtube | vimeo | file | todo
+# media. provider is youtube, vimeo, file or todo
 video:
   provider: todo
   title: ""
   length: ""
-# activity — kind: hands-on | watch-along | discuss
+# activity. kind is hands-on, watch-along or discuss
 activity:
   kind: hands-on
   time: "20 min"
@@ -25,17 +25,17 @@ activity:
 
 ## Context
 
-- Environment, Vault, Agent, Conversation; nothing else exists.
-- `fountain apply -f` over `apiVersion: fountain.dev/v1`; secrets are write-only in the API.
-- Three surfaces: UI, API, CLI (a wrapper over the API).
+- Environment, Vault, Agent and Conversation are the only objects in Fountain.
+- `fountain apply -f` applies documents with `apiVersion` `fountain.dev/v1`. The API never returns a secret value.
+- The UI, the API and the CLI expose the same objects. The CLI wraps the API.
 
 ## Watch
 
-{{< todo "video script or link; optional, drop the section if no video" >}}
+{{< todo "Video script or link. Optional." >}}
 
 ## Do
 
-{{< todo "the activity: numbered steps, imperative, one job" >}}
+{{< todo "Numbered steps. Imperative. One job." >}}
 
 1. {{< todo >}}
 2. {{< todo >}}
@@ -43,12 +43,13 @@ activity:
 
 ## Self-paced
 
-{{< todo "what Floci / your own machine can and cannot show for this lesson" >}}
+{{< todo "What Floci or your own machine can and cannot show." >}}
 
 ## Live
 
-{{< todo "what the room sees; timing; the honesty line" >}}
+{{< todo "What the room sees. Timing. The line to say." >}}
 
 ## Further reading
 
-Fountain `docs/primitives.md`; `cli/README.md`.
+- Fountain `docs/primitives.md`
+- Fountain `cli/README.md`

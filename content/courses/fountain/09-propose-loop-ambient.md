@@ -3,18 +3,18 @@ title: "The propose loop, ambient"
 id: "F9"
 lesson: 9
 weight: 9
-summary: "Rounds: schedule, reconcile against own past work, cap, server as propose step, declines stick, state in GitHub."
-# card — empty renders as TODO
+summary: "Rounds runs the propose loop with nobody watching."
+# card. empty renders as TODO
 goal: ""
 done_when: ""
 restart_from: "lessons 6 and 8"
 properties: ["XIII"]
-# media — provider: youtube | vimeo | file | todo
+# media. provider is youtube, vimeo, file or todo
 video:
   provider: todo
   title: ""
   length: ""
-# activity — kind: hands-on | watch-along | discuss
+# activity. kind is hands-on, watch-along or discuss
 activity:
   kind: hands-on
   time: "30 min"
@@ -25,16 +25,16 @@ activity:
 
 ## Context
 
-- Rounds: schedule, reconcile against own past work, cap, server as propose step, declines stick, state in GitHub.
-- Which rules live in the server and which only in the prompt.
+- Rounds runs on a schedule. It reconciles against its own past PRs before it acts. A server is the propose step. Declines stick. State lives in GitHub.
+- Some rules are enforced in the server and some only in the prompt. The lesson draws that line.
 
 ## Watch
 
-{{< todo "video script or link; optional, drop the section if no video" >}}
+{{< todo "Video script or link. Optional." >}}
 
 ## Do
 
-{{< todo "the activity: numbered steps, imperative, one job" >}}
+{{< todo "Numbered steps. Imperative. One job." >}}
 
 1. {{< todo >}}
 2. {{< todo >}}
@@ -42,12 +42,14 @@ activity:
 
 ## Self-paced
 
-{{< todo "what Floci / your own machine can and cannot show for this lesson" >}}
+{{< todo "What Floci or your own machine can and cannot show." >}}
 
 ## Live
 
-{{< todo "what the room sees; timing; the honesty line" >}}
+{{< todo "What the room sees. Timing. The line to say." >}}
 
 ## Further reading
 
-[the propose loop](../../propose-loop.md); Rounds README; decision 28.
+- [The propose loop](../../propose-loop.md)
+- Rounds README
+- Decision 28

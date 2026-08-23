@@ -3,18 +3,18 @@ title: "The watcher"
 id: "I13"
 lesson: 13
 weight: 13
-summary: "The AWS desk on a schedule: drift, expired grants and unused-access findings become reconcile and burndown PRs, one per finding, capped, declines stick (Rounds' rules)."
-# card — empty renders as TODO
+summary: "The desk on a schedule turns findings into capped PRs."
+# card. empty renders as TODO
 goal: ""
 done_when: ""
-restart_from: "lessons 7 and 12; Fountain course, lesson 9"
+restart_from: "lessons 7 and 12 and Fountain lesson 9"
 properties: ["XIII"]
-# media — provider: youtube | vimeo | file | todo
+# media. provider is youtube, vimeo, file or todo
 video:
   provider: todo
   title: ""
   length: ""
-# activity — kind: hands-on | watch-along | discuss
+# activity. kind is hands-on, watch-along or discuss
 activity:
   kind: hands-on
   time: "30 min"
@@ -25,16 +25,16 @@ activity:
 
 ## Context
 
-- The AWS desk on a schedule: drift, expired grants and unused-access findings become reconcile and burndown PRs, one per finding, capped, declines stick (Rounds' rules).
-- Rounds as-is can enroll the repo for what its catalogs cover; the IAM projections ride the same form.
+- The desk on a schedule turns drift, expired grants and unused-access findings into reconcile and burndown PRs. One PR per finding. A cap on open PRs. Declines stick under Rounds' rules.
+- Rounds as-is can enroll the repo for what its catalogs cover. The IAM projections use the same form.
 
 ## Watch
 
-{{< todo "video script or link; optional, drop the section if no video" >}}
+{{< todo "Video script or link. Optional." >}}
 
 ## Do
 
-{{< todo "the activity: numbered steps, imperative, one job" >}}
+{{< todo "Numbered steps. Imperative. One job." >}}
 
 1. {{< todo >}}
 2. {{< todo >}}
@@ -42,12 +42,15 @@ activity:
 
 ## Self-paced
 
-{{< todo "what Floci / your own machine can and cannot show for this lesson" >}}
+{{< todo "What Floci or your own machine can and cannot show." >}}
 
 ## Live
 
-{{< todo "what the room sees; timing; the honesty line" >}}
+{{< todo "What the room sees. Timing. The line to say." >}}
 
 ## Further reading
 
-[the AWS desk](../../docs/aws-desk.md) (the watch); Rounds README; decision 28; [issues](../../docs/issues.md) D3.
+- [The AWS desk](../../docs/aws-desk.md), the watch
+- Rounds README
+- Decision 28
+- [Issues](../../docs/issues.md) D3
