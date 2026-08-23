@@ -91,6 +91,8 @@ key and never store it. Skip to step 5.
 ### 4b. Without a URL, self-host
 
 The server ships only as a container image, so this path needs Docker.
+The compose file also runs Postgres (`postgres:16`) and the app migrates
+its own database at boot, so there is nothing else to install.
 
 1. If `docker` is missing, **confirm**, then. macOS `brew install --cask docker`,
    or the Docker Desktop `.dmg` from https://www.docker.com/products/docker-desktop/
