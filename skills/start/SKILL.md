@@ -110,10 +110,6 @@ so the egress lesson (Fountain lesson 3) needs a hosted sandbox provider,
 `SPRITES_TOKEN` in `compose/.env` and `SANDBOX_PROVIDER=sprites`, then
 `just up` again.
 
-Last, the inference key. The student opens `http://localhost:4000`, signs
-in, and finishes onboarding, which asks for the key. Never ask for the
-key and never store it.
-
 The CLI is optional with the stack (the web UI covers the lessons until
 the CLI appears in one). When wanted, install it as in 5b.
 
@@ -156,14 +152,50 @@ with `floci start` managing its own container. Live students skip Floci.
 A machine that cannot run Docker uses Floci's native binary from its
 releases page, listening on 4566, with the same four variables.
 
-## 7. Verify done when
+## 7. The inference key
+
+Conversations run on the student's own provider token (Fountain never
+sees inference traffic), so nothing works until one key is set. Say
+that, and that the key is the one thing you will never see or type.
+Anthropic is the one the runtimes ask for first, and a key comes from
+https://console.anthropic.com (or the facilitator hands them out).
+
+Two ways, the student picks.
+
+- **Browser.** Open the instance URL, sign in with the account from
+  step 5, and the onboarding wizard asks for the key.
+- **Terminal, theirs.** Print this command with `PASTE-KEY-HERE` left in
+  it, and have the student replace the placeholder and run it in their
+  own terminal. Do not run it for them and do not watch for the value.
+
+  ```sh
+  curl -X PUT "$FOUNTAIN_URL/api/account/inference-credentials/anthropic_api_key" \
+    -H "Authorization: Bearer $(awk -F'"' '/api_key/{print $2; exit}' ~/.fountain/credentials)" \
+    -H 'Content-Type: application/json' -d '{"value":"PASTE-KEY-HERE"}'
+  ```
+
+  A `200` means stored and validated against the provider. A `422` means
+  the provider rejected it, re-paste. Then close the wizard so a later
+  browser visit does not re-enter it.
+
+  ```sh
+  curl -X POST "$FOUNTAIN_URL/api/account/onboarding/complete" \
+    -H "Authorization: Bearer $(awk -F'"' '/api_key/{print $2; exit}' ~/.fountain/credentials)"
+  ```
+
+You may verify either way yourself. `GET /api/account/inference-credentials`
+reports only set or not-set per provider, never a value, and the check
+script reports it as `fountain.inference_set`.
+
+## 8. Verify done when
 
 Done when the check shows a water park checkout, Fountain reachable and
-logged in (reachable alone on Windows without a CLI), and, for
-self-paced, Floci reachable. If anything is false, say which and stop.
-Nothing in the lessons works around a missing Fountain.
+logged in (reachable alone on Windows without a CLI), `inference_set`
+true, and, for self-paced, Floci reachable. If anything is false, say
+which and stop. Nothing in the lessons works around a missing Fountain
+or a missing key.
 
-## 8. Record and hand off
+## 9. Record and hand off
 
 **confirm**, then write `.waterpark/profile.json` at the checkout root.
 

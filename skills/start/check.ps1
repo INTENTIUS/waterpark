@@ -33,6 +33,20 @@ if (Test-Path $credFile) {
   }
 }
 $cliUrl = if ($env:FOUNTAIN_BASE_URL) { $env:FOUNTAIN_BASE_URL } else { $credUrl }
+$credKey = ""
+if (Test-Path $credFile) {
+  $inProfile = $false
+  foreach ($line in Get-Content $credFile) {
+    if ($line -eq "[$profile]") { $inProfile = $true; continue }
+    if ($line -match '^\[') { $inProfile = $false }
+    if ($inProfile -and $line -match '^api_key\s*=\s*"?([^"]+)"?') { $credKey = $Matches[1] }
+  }
+}
+$inferenceSet = $false; $onboarded = $false
+if ($credKey -and $cliUrl) {
+  try { $c = Invoke-RestMethod -Uri "$cliUrl/api/account/inference-credentials" -Headers @{Authorization = "Bearer $credKey"} -TimeoutSec 5; if (($c | ConvertTo-Json) -match "true") { $inferenceSet = $true } } catch {}
+  try { $m = Invoke-RestMethod -Uri "$cliUrl/api/auth/me" -Headers @{Authorization = "Bearer $credKey"} -TimeoutSec 5; if ($m.onboarding_completed) { $onboarded = $true } } catch {}
+}
 
 $pkgs = @(); foreach ($m in "winget","scoop","choco") { if (Have $m) { $pkgs += $m } }
 [ordered]@{
@@ -40,7 +54,7 @@ $pkgs = @(); foreach ($m in "winget","scoop","choco") { if (Have $m) { $pkgs += 
   os = "Windows"
   package_managers = $pkgs
   tools = $tools
-  fountain = @{ url = $fountainUrl; reachable = (Reach "$fountainUrl/health"); logged_in = $loggedIn; cli_url = "$cliUrl"; profile = $profile }
+  fountain = @{ url = $fountainUrl; reachable = (Reach "$fountainUrl/health"); logged_in = $loggedIn; cli_url = "$cliUrl"; profile = $profile; inference_set = $inferenceSet; onboarded = $onboarded }
   floci = @{ url = $flociUrl; reachable = (Reach "$flociUrl/") }
   github = @{ logged_in = $ghLoggedIn }
 } | ConvertTo-Json -Depth 4

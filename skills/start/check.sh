@@ -41,14 +41,14 @@ if have jq; then
     else tools=$(jq -c --arg t "$t" '. + {($t):{installed:false}}' <<<"$tools"); fi
   done
   jq -n --argjson tools "$tools" --argjson wp_checkout "$wp_checkout" --arg wp_root "$wp_root" --arg wp_commit "$wp_commit" \
-    --arg fountain_url "$FOUNTAIN_URL" --argjson fountain_reachable "$fountain_reachable" --argjson fountain_logged_in "$fountain_logged_in" --arg cli_url "$cli_url" --arg profile "$profile" \
+    --arg fountain_url "$FOUNTAIN_URL" --argjson fountain_reachable "$fountain_reachable" --argjson fountain_logged_in "$fountain_logged_in" --arg cli_url "$cli_url" --arg profile "$profile" --argjson inference_set "$inference_set" --argjson onboarded "$onboarded" \
     --arg floci_url "$FLOCI_URL" --argjson floci_reachable "$floci_reachable" --argjson gh_logged_in "$gh_logged_in" --arg os "$os_name" --arg pkg "$pkg" \
-    '{waterpark:{checkout:$wp_checkout,root:$wp_root,commit:$wp_commit}, os:$os, package_managers:($pkg|split(" ")|map(select(.!=""))), tools:$tools, fountain:{url:$fountain_url,reachable:$fountain_reachable,logged_in:$fountain_logged_in,cli_url:$cli_url,profile:$profile}, floci:{url:$floci_url,reachable:$floci_reachable}, github:{logged_in:$gh_logged_in}}'
+    '{waterpark:{checkout:$wp_checkout,root:$wp_root,commit:$wp_commit}, os:$os, package_managers:($pkg|split(" ")|map(select(.!=""))), tools:$tools, fountain:{url:$fountain_url,reachable:$fountain_reachable,logged_in:$fountain_logged_in,cli_url:$cli_url,profile:$profile,inference_set:$inference_set,onboarded:$onboarded}, floci:{url:$floci_url,reachable:$floci_reachable}, github:{logged_in:$gh_logged_in}}'
 else
   echo "waterpark_checkout=$wp_checkout root=$wp_root commit=$wp_commit"
   echo "os=$os_name package_managers=$pkg"
   for t in $TOOLS; do if have "$t"; then echo "$t=true $(version_of "$t")"; else echo "$t=false"; fi; done
-  echo "fountain_url=$FOUNTAIN_URL reachable=$fountain_reachable logged_in=$fountain_logged_in cli_url=$cli_url profile=$profile"
+  echo "fountain_url=$FOUNTAIN_URL reachable=$fountain_reachable logged_in=$fountain_logged_in cli_url=$cli_url profile=$profile inference_set=$inference_set onboarded=$onboarded"
   echo "floci_url=$FLOCI_URL reachable=$floci_reachable"
   echo "gh_logged_in=$gh_logged_in"
 fi
