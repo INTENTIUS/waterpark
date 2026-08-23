@@ -46,7 +46,8 @@ Every skill follows the same shape so a student knows what to expect.
 
 ## Link from a page
 
-A lesson's front matter names its skill and the page renders the link.
+A lesson's front matter names its skill. The page links the raw `SKILL.md`
+so an agent can read it directly, and shows the one line to paste.
 
 ```yaml
 skill: "skills/start"

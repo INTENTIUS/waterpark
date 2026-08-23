@@ -1,10 +1,16 @@
 {{- /* Front matter: skill: "skills/<id>"  (a directory in this repo with a SKILL.md) */ -}}
 {{- with .Params.skill }}
+{{- $raw := printf "https://raw.githubusercontent.com/INTENTIUS/waterpark/main/%s/SKILL.md" . }}
+{{- $blob := printf "%s/blob/main/%s/SKILL.md" $.Site.Params.github . }}
 <section class="block block-skill" aria-label="Run with an agent">
   <h2 class="block-head">Run with an agent</h2>
-  <p>An agent can walk you through this page. The skill is <a href="{{ $.Site.Params.github }}/tree/main/{{ . }}"><code>{{ . }}</code></a>.</p>
-  <pre><code>npx skills add INTENTIUS/waterpark      # any skills-aware agent
-cp -r {{ . }} ~/.claude/skills/           # Claude Code
-# Fountain agent: spec.skills: [{source: "INTENTIUS/waterpark"}]</code></pre>
+  <p>Give your agent this skill and it walks you through the page. <a href="{{ $raw }}"><code>SKILL.md</code></a> (<a href="{{ $blob }}">view on GitHub</a>).</p>
+  <pre><code># paste to your agent
+Read {{ $raw }} and follow it step by step.
+
+# or install it
+npx skills add INTENTIUS/waterpark          # skills-aware agents
+cp -r {{ . }} ~/.claude/skills/             # Claude Code, from a checkout
+# Fountain agent spec.skills  [{source "INTENTIUS/waterpark"}]</code></pre>
 </section>
 {{- end }}

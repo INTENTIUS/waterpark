@@ -19,8 +19,14 @@ brings accounts). Default to self-paced.
 
 ## 2. Get water park
 
-Run `bash check.sh` from this skill's directory. If `waterpark.checkout`
-is false, clone it and move there.
+Run the check script. From a checkout that is `bash skills/start/check.sh`.
+Without a checkout, fetch it first.
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/INTENTIUS/waterpark/main/skills/start/check.sh -o check.sh && bash check.sh
+```
+
+If `waterpark.checkout` is false, clone it and move there.
 
 ```sh
 git clone https://github.com/INTENTIUS/waterpark && cd waterpark
@@ -49,7 +55,7 @@ If no, self-host one.
    for an inference key there (Anthropic first, other providers when a
    model needs them). Do not ask the student for the key and never store it.
 
-Re-run `check.sh` and confirm `fountain.reachable` and
+Re-run `bash skills/start/check.sh` and confirm `fountain.reachable` and
 `fountain.logged_in` are both true before moving on.
 
 ## 4. Self-paced extras
