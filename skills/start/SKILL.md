@@ -35,57 +35,112 @@ a repo of their own.
 
 ## 3. Run the check
 
-Run `bash skills/start/check.sh` from the checkout and show the output.
-The script only reads. It reports, as JSON, whether this is a water park
-checkout, which of `docker`, `fountain`, `floci`, `aws`, `jq` and `gh`
-are installed with versions, whether the Fountain URL answers and the CLI
-is logged in, and whether Floci answers. Read it before you run it if you
-want. Do not guess at anything it can report.
+Find out the student's OS and shell first. macOS and Linux use
+`bash skills/start/check.sh`. Windows uses
+`powershell -ExecutionPolicy Bypass -File skills/start/check.ps1`, or the
+bash script inside WSL or Git Bash. Show the output. Both scripts only
+read. They report, as JSON, whether this is a water park checkout, which
+of `docker`, `fountain`, `floci`, `aws`, `jq` and `gh` are installed with
+versions, whether the Fountain URL answers and the CLI is logged in, and
+whether Floci answers. Read a script before you run it if you want. Do
+not guess at anything it can report.
 
 ## 4. Get Fountain
 
 Ask whether the student already has a Fountain instance. If yes, take its
-URL and log in with it as in step 4 below. If no, self-host one.
+URL and go to the login in 4.3. If no, run one. Fountain's server ships
+only as a container image, so the server path is Docker on every OS.
 
-1. The Fountain repo is https://github.com/BinaryBourbon/fountain. If it
-   is not reachable, stop and ask the student where their copy is or for
-   an instance URL. Do not look elsewhere for it.
-2. **confirm**, then in a Fountain checkout, `cp .env.compose.example .env`,
-   fill the generated keys as the file says, and `docker compose up -d`.
-   The instance is at `http://localhost:4000`.
-3. **confirm**, then install the CLI with `brew install BinaryBourbon/tap/fountain`
-   on macOS, or the release binary from that tap.
-4. Log in once with the URL in front of the command. The CLI writes the
-   URL into `~/.fountain/credentials` next to the key, so every later
-   `fountain` call uses it with nothing else set. The student types their
-   credentials, not you.
+4.1 **Docker is the prerequisite.** Docker Desktop on macOS and Windows,
+Docker Engine on Linux. On Windows, Docker Desktop with the WSL 2 backend.
+If `docker` is missing, **confirm**, then point the student at the
+installer for their OS and wait.
 
-   ```sh
-   FOUNTAIN_BASE_URL=http://localhost:4000 fountain auth login
-   ```
+4.2 **Run the server.** The Fountain repo is
+https://github.com/BinaryBourbon/fountain. If it is not reachable, stop
+and ask the student where their copy is or for an instance URL. Do not
+look elsewhere for it. **confirm**, then in a Fountain checkout
 
-   A student who also uses a hosted Fountain keeps both with profiles.
-   `FOUNTAIN_BASE_URL=http://localhost:4000 fountain auth login --profile local`,
-   then `export FOUNTAIN_PROFILE=local` for the lessons.
-5. Ask the student to open the instance in a browser once and finish
-   onboarding. Fountain asks for an inference key there. Never ask for
-   the key and never store it.
+```sh
+cp .env.compose.example .env      # fill the generated keys as the file says
+docker compose up -d
+```
 
-Re-run `bash skills/start/check.sh` and confirm `fountain.reachable` and
-`fountain.logged_in` are both true before moving on.
+The instance is at `http://localhost:4000`. On Windows run these in
+PowerShell or WSL. Same commands.
+
+4.3 **Install the CLI and log in.** Offer the path for their OS.
+
+| OS | CLI |
+|---|---|
+| macOS | `brew install BinaryBourbon/tap/fountain`, or the `fountain-darwin-arm64` / `-amd64` binary from the GitHub release |
+| Linux | the `fountain-linux-amd64` / `-arm64` binary from the GitHub release, on the PATH |
+| Windows | no native build yet. Use the Linux binary inside WSL 2, or skip the CLI. Everything the CLI does is the web UI or `curl` against `/api`, and the lessons say which. |
+
+**confirm** before installing. Then log in once with the URL in front of
+the command. The CLI writes the URL into `~/.fountain/credentials` next to
+the key, so every later `fountain` call uses it with nothing else set.
+The student types their credentials, not you.
+
+```sh
+FOUNTAIN_BASE_URL=http://localhost:4000 fountain auth login        # bash, zsh, WSL
+```
+
+```powershell
+$env:FOUNTAIN_BASE_URL = "http://localhost:4000"; fountain auth login   # PowerShell, if a CLI is present
+```
+
+A student who also uses a hosted Fountain keeps both with profiles.
+Add `--profile local` to the login, then set `FOUNTAIN_PROFILE=local`
+for the lessons.
+
+4.4 Ask the student to open `http://localhost:4000` once and finish
+onboarding. Fountain asks for an inference key there. Never ask for the
+key and never store it.
+
+Re-run the check and confirm `fountain.reachable` and
+`fountain.logged_in` (or, with no CLI, `fountain.reachable` alone) before
+moving on.
 
 ## 5. Self-paced extras
 
-For self-paced, if `tools.floci.installed` is false, **confirm**, then
-install Floci, `floci start`, and `eval $(floci env)`. Confirm
-`floci.reachable`. If `aws`, `jq` or `gh` are missing, **confirm**, then
-install them with the package manager the student already uses. For
-live, skip this step.
+For live, skip this step. For self-paced, Floci. Offer two paths and let
+the student pick. Both need Docker for the Docker-backed services, and
+the Docker path needs nothing else.
+
+**OS install, the `floci` CLI.** **confirm**, then
+
+| OS | Install |
+|---|---|
+| macOS, Linux | `brew install floci-io/floci/floci`, or `curl -fsSL https://floci.io/install.sh \| sh` |
+| Windows | `iwr https://floci.io/install.ps1 \| iex` in PowerShell, or `scoop bucket add floci https://github.com/floci-io/scoop-floci` then `scoop install floci` |
+
+Then `floci start`, and put the AWS variables in the shell.
+
+```sh
+eval $(floci env)                                  # bash, zsh
+floci env --shell powershell | Invoke-Expression   # PowerShell
+```
+
+**Docker only.** **confirm**, then
+
+```sh
+docker run -d --name floci -p 4566:4566 floci/floci:latest
+```
+
+and set the variables by hand, `AWS_ENDPOINT_URL=http://localhost:4566`,
+`AWS_DEFAULT_REGION=us-east-1`, `AWS_ACCESS_KEY_ID=test`,
+`AWS_SECRET_ACCESS_KEY=test` (PowerShell uses `$env:NAME = "value"`).
+
+Either way, confirm `floci.reachable` with the check. If `aws`, `jq` or
+`gh` are missing, **confirm**, then install them with the package manager
+the student already uses (Homebrew, apt, winget or scoop).
 
 ## 6. Verify done when
 
 Done when the check shows a water park checkout, Fountain reachable and
-logged in, and, for self-paced, Floci reachable. If anything is false,
+logged in (reachable alone on Windows without a CLI), and, for
+self-paced, Floci reachable. If anything is false,
 say which and stop. Nothing in the lessons works around a missing
 Fountain.
 

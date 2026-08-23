@@ -46,6 +46,9 @@ Every skill follows the same shape so a student knows what to expect.
    scripts from the checkout, and say in the skill what each script does.
 6. Never ask the agent to discover a repo location from a web page. Name
    the location. If it is unreachable, stop and ask the student.
+7. Ask the student's OS and shell before giving a command. Offer the OS
+   install and the Docker path where both exist. Give the PowerShell
+   form where it differs. Ship a `.ps1` beside any `.sh` the skill runs.
 7. Verify *done when*. If it fails, name the restart point from the card.
 8. Write progress to `.waterpark/profile.json` in the student's working
    directory so the next skill can pick up.
@@ -64,4 +67,4 @@ skill: "skills/start"
 
 | Skill | Drives | State |
 |---|---|---|
-| `start` | Start here. Clone water park, install and log in to Fountain, Floci for self-paced. | first draft |
+| `start` | Start here. Clone water park, install and log in to Fountain, Floci for self-paced. macOS, Linux and Windows, OS install or Docker where both exist. `check.sh` and `check.ps1`. | first draft |
