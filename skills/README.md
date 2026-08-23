@@ -56,4 +56,4 @@ skill: "skills/start"
 
 | Skill | Drives | State |
 |---|---|---|
-| `start` | Start here | first draft |
+| `start` | Start here: clone water park, install and log in to Fountain, Floci for self-paced | first draft |

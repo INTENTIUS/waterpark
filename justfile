@@ -62,6 +62,14 @@ skills:
       printf '%s\t%s\t%s\n' "$d" "$n" "$ok"; \
     done
 
+# Build the site image locally
+docker-build:
+    docker build -t waterpark:local .
+
+# Run the site from the image at http://localhost:8080
+docker-run:
+    docker run --rm -p 8080:80 waterpark:local
+
 # Remove build output
 clean:
     rm -rf public resources .hugo_build.lock

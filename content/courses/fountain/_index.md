@@ -13,7 +13,7 @@ video:
 
 - Demonstrates the properties on the agent runtime: an agent is the newest hire; what its sandbox can reach, what it holds, what it may do.
 - Builds up to [the propose loop](../../propose-loop/), abstracted from Mend, Rounds and dns-desk (lessons 8 and 9; the page is their depth).
-- Needs: a Fountain instance (self-hosted is fine), an inference key, a repo you own; a hosted sandbox provider for containment claims.
+- Needs a Fountain instance (self-hosted is fine) with an inference key, and the water park checkout. Containment claims need a hosted sandbox provider.
 
 ## Intro
 

@@ -16,6 +16,11 @@ version_of() {
 }
 reach() { local c; c=$(curl -s -o /dev/null -m 5 -w '%{http_code}' "$1" 2>/dev/null || echo 000); [ "$c" != "000" ] && echo true || echo false; }
 
+wp_root=$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || true)
+wp_checkout=false; wp_commit=""
+if [ -n "$wp_root" ] && [ -f "$wp_root/skills/start/SKILL.md" ] && [ -f "$wp_root/hugo.toml" ]; then
+  wp_checkout=true; wp_commit=$(git -C "$wp_root" rev-parse --short HEAD 2>/dev/null || true)
+fi
 fountain_reachable=$(reach "$FOUNTAIN_URL/api/health")
 floci_reachable=$(reach "$FLOCI_URL/_floci/health")
 fountain_logged_in=false; have fountain && fountain auth status >/dev/null 2>&1 && fountain_logged_in=true
@@ -27,11 +32,12 @@ if have jq; then
     if have "$t"; then tools=$(jq -c --arg t "$t" --arg v "$(version_of "$t")" '. + {($t):{installed:true,version:$v}}' <<<"$tools")
     else tools=$(jq -c --arg t "$t" '. + {($t):{installed:false}}' <<<"$tools"); fi
   done
-  jq -n --argjson tools "$tools" \
+  jq -n --argjson tools "$tools" --argjson wp_checkout "$wp_checkout" --arg wp_root "$wp_root" --arg wp_commit "$wp_commit" \
     --arg fountain_url "$FOUNTAIN_URL" --argjson fountain_reachable "$fountain_reachable" --argjson fountain_logged_in "$fountain_logged_in" \
     --arg floci_url "$FLOCI_URL" --argjson floci_reachable "$floci_reachable" --argjson gh_logged_in "$gh_logged_in" \
-    '{tools:$tools, fountain:{url:$fountain_url,reachable:$fountain_reachable,logged_in:$fountain_logged_in}, floci:{url:$floci_url,reachable:$floci_reachable}, github:{logged_in:$gh_logged_in}}'
+    '{waterpark:{checkout:$wp_checkout,root:$wp_root,commit:$wp_commit}, tools:$tools, fountain:{url:$fountain_url,reachable:$fountain_reachable,logged_in:$fountain_logged_in}, floci:{url:$floci_url,reachable:$floci_reachable}, github:{logged_in:$gh_logged_in}}'
 else
+  echo "waterpark_checkout=$wp_checkout root=$wp_root commit=$wp_commit"
   for t in $TOOLS; do if have "$t"; then echo "$t=true $(version_of "$t")"; else echo "$t=false"; fi; done
   echo "fountain_url=$FOUNTAIN_URL reachable=$fountain_reachable logged_in=$fountain_logged_in"
   echo "floci_url=$FLOCI_URL reachable=$floci_reachable"

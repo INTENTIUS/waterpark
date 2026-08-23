@@ -9,8 +9,8 @@ skill: "skills/start"
 
 {{< todo "setup list, verified on a clean machine" >}}
 
-- A Fountain instance (self-hosted is fine; `docker compose up`) and an inference key.
-- A GitHub repo you own (for the Fountain course) and a clone of `splashdown/access` (for the IAM course).
+- A checkout of this repo (`git clone https://github.com/INTENTIUS/waterpark`). The skills, the check scripts, your progress file and the exercises live in it. You do not need a repo of your own. The site also runs offline with `docker run --rm -p 8080:80 ghcr.io/intentius/waterpark`.
+- A Fountain instance you are logged in to (self-hosted is fine, `docker compose up -d`, then `fountain auth login`) and an inference key entered in its onboarding.
 - Self-paced: Floci (`floci start`); no AWS account. Live: a facilitator brings real sandbox accounts.
 - About ten minutes, once.
 
