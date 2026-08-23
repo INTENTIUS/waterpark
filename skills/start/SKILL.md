@@ -45,8 +45,7 @@ want. Do not guess at anything it can report.
 ## 4. Get Fountain
 
 Ask whether the student already has a Fountain instance. If yes, take its
-URL and set `FOUNTAIN_URL` for the rest of the session. If no, self-host
-one.
+URL and log in with it as in step 4 below. If no, self-host one.
 
 1. The Fountain repo is https://github.com/BinaryBourbon/fountain. If it
    is not reachable, stop and ask the student where their copy is or for
@@ -56,8 +55,18 @@ one.
    The instance is at `http://localhost:4000`.
 3. **confirm**, then install the CLI with `brew install BinaryBourbon/tap/fountain`
    on macOS, or the release binary from that tap.
-4. `fountain auth login` against the URL. The student types their
+4. Log in once with the URL in front of the command. The CLI writes the
+   URL into `~/.fountain/credentials` next to the key, so every later
+   `fountain` call uses it with nothing else set. The student types their
    credentials, not you.
+
+   ```sh
+   FOUNTAIN_BASE_URL=http://localhost:4000 fountain auth login
+   ```
+
+   A student who also uses a hosted Fountain keeps both with profiles.
+   `FOUNTAIN_BASE_URL=http://localhost:4000 fountain auth login --profile local`,
+   then `export FOUNTAIN_PROFILE=local` for the lessons.
 5. Ask the student to open the instance in a browser once and finish
    onboarding. Fountain asks for an inference key there. Never ask for
    the key and never store it.

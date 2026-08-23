@@ -24,6 +24,10 @@ fi
 fountain_reachable=$(reach "$FOUNTAIN_URL/api/health")
 floci_reachable=$(reach "$FLOCI_URL/_floci/health")
 fountain_logged_in=false; have fountain && fountain auth status >/dev/null 2>&1 && fountain_logged_in=true
+# the URL the CLI will actually use, env first, then the profile in ~/.fountain/credentials
+profile="${FOUNTAIN_PROFILE:-default}"
+cred_url=$(awk -v p="[$profile]" '$0==p{f=1;next} /^\[/{f=0} f && $1=="base_url"{gsub(/"/,"",$3); print $3}' "$HOME/.fountain/credentials" 2>/dev/null | head -1)
+cli_url="${FOUNTAIN_BASE_URL:-${cred_url:-}}"
 gh_logged_in=false; have gh && gh auth status >/dev/null 2>&1 && gh_logged_in=true
 
 if have jq; then
@@ -33,13 +37,13 @@ if have jq; then
     else tools=$(jq -c --arg t "$t" '. + {($t):{installed:false}}' <<<"$tools"); fi
   done
   jq -n --argjson tools "$tools" --argjson wp_checkout "$wp_checkout" --arg wp_root "$wp_root" --arg wp_commit "$wp_commit" \
-    --arg fountain_url "$FOUNTAIN_URL" --argjson fountain_reachable "$fountain_reachable" --argjson fountain_logged_in "$fountain_logged_in" \
+    --arg fountain_url "$FOUNTAIN_URL" --argjson fountain_reachable "$fountain_reachable" --argjson fountain_logged_in "$fountain_logged_in" --arg cli_url "$cli_url" --arg profile "$profile" \
     --arg floci_url "$FLOCI_URL" --argjson floci_reachable "$floci_reachable" --argjson gh_logged_in "$gh_logged_in" \
-    '{waterpark:{checkout:$wp_checkout,root:$wp_root,commit:$wp_commit}, tools:$tools, fountain:{url:$fountain_url,reachable:$fountain_reachable,logged_in:$fountain_logged_in}, floci:{url:$floci_url,reachable:$floci_reachable}, github:{logged_in:$gh_logged_in}}'
+    '{waterpark:{checkout:$wp_checkout,root:$wp_root,commit:$wp_commit}, tools:$tools, fountain:{url:$fountain_url,reachable:$fountain_reachable,logged_in:$fountain_logged_in,cli_url:$cli_url,profile:$profile}, floci:{url:$floci_url,reachable:$floci_reachable}, github:{logged_in:$gh_logged_in}}'
 else
   echo "waterpark_checkout=$wp_checkout root=$wp_root commit=$wp_commit"
   for t in $TOOLS; do if have "$t"; then echo "$t=true $(version_of "$t")"; else echo "$t=false"; fi; done
-  echo "fountain_url=$FOUNTAIN_URL reachable=$fountain_reachable logged_in=$fountain_logged_in"
+  echo "fountain_url=$FOUNTAIN_URL reachable=$fountain_reachable logged_in=$fountain_logged_in cli_url=$cli_url profile=$profile"
   echo "floci_url=$FLOCI_URL reachable=$floci_reachable"
   echo "gh_logged_in=$gh_logged_in"
 fi

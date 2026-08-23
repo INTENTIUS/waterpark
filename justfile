@@ -70,6 +70,10 @@ docker-build:
 docker-run:
     docker run --rm -p 8080:80 waterpark:local
 
+# Log the fountain CLI in to a local instance once. The URL is saved in ~/.fountain/credentials
+fountain-login url="http://localhost:4000":
+    FOUNTAIN_BASE_URL={{url}} fountain auth login
+
 # Remove build output
 clean:
     rm -rf public resources .hugo_build.lock
