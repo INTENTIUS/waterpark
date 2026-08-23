@@ -35,7 +35,14 @@ a repo of their own.
 
 ## 3. Run the check
 
-Find out the student's OS and shell first. macOS and Linux use
+Find out the student's OS and shell first. The check also reports `os`
+and `package_managers` (brew, apt, winget, scoop and so on). Every install
+command below assumes one of those. If the list is empty on macOS, offer
+Homebrew before anything else. **confirm**, then send the student to
+https://brew.sh and have them run the one-line installer themselves, or
+take the no-Homebrew path named at each step. On Windows with nothing
+listed, winget ships with current Windows. Otherwise offer Scoop from
+https://scoop.sh, the same way. macOS and Linux use
 `bash skills/start/check.sh`. Windows uses
 `powershell -ExecutionPolicy Bypass -File skills/start/check.ps1`, or the
 bash script inside WSL or Git Bash. Show the output. Both scripts only
@@ -53,8 +60,15 @@ only as a container image, so the server path is Docker on every OS.
 
 4.1 **Docker is the prerequisite.** Docker Desktop on macOS and Windows,
 Docker Engine on Linux. On Windows, Docker Desktop with the WSL 2 backend.
-If `docker` is missing, **confirm**, then point the student at the
-installer for their OS and wait.
+If `docker` is missing, **confirm**, then
+
+| OS | Docker |
+|---|---|
+| macOS | `brew install --cask docker`, or the Docker Desktop `.dmg` from https://www.docker.com/products/docker-desktop/ with no Homebrew |
+| Windows | `winget install Docker.DockerDesktop`, or the installer from the same page. Enable the WSL 2 backend when asked |
+| Linux | the distribution's `docker` packages, or Docker's install docs for the engine |
+
+Wait until `docker version` answers before going on.
 
 4.2 **Run the server.** The Fountain repo is
 https://github.com/BinaryBourbon/fountain. If it is not reachable, stop
@@ -85,7 +99,7 @@ PowerShell or WSL. Same commands.
 
 | OS | CLI |
 |---|---|
-| macOS | `brew install BinaryBourbon/tap/fountain`, or the `fountain-darwin-arm64` / `-amd64` binary from the GitHub release |
+| macOS | `brew install BinaryBourbon/tap/fountain`, or with no Homebrew the `fountain-darwin-arm64` / `-amd64` binary from the GitHub release, made executable and put on the PATH |
 | Linux | the `fountain-linux-amd64` / `-arm64` binary from the GitHub release, on the PATH |
 | Windows | no native build yet. Use the Linux binary inside WSL 2, or skip the CLI. Everything the CLI does is the web UI or `curl` against `/api`, and the lessons say which. |
 
@@ -127,7 +141,7 @@ the Docker path needs nothing else.
 
 | OS | Install |
 |---|---|
-| macOS, Linux | `brew install floci-io/floci/floci`, or `curl -fsSL https://floci.io/install.sh \| sh` |
+| macOS, Linux | `brew install floci-io/floci/floci`, or with no Homebrew the install script, `curl -fsSL https://floci.io/install.sh \| sh`, which the student runs themselves |
 | Windows | `iwr https://floci.io/install.ps1 \| iex` in PowerShell, or `scoop bucket add floci https://github.com/floci-io/scoop-floci` then `scoop install floci` |
 
 Then `floci start`, and put the AWS variables in the shell. `floci env`
@@ -151,8 +165,10 @@ and set the variables by hand, `AWS_ENDPOINT_URL=http://localhost:4566`,
 `AWS_SECRET_ACCESS_KEY=test` (PowerShell uses `$env:NAME = "value"`).
 
 Either way, confirm `floci.reachable` with the check. If `aws`, `jq` or
-`gh` are missing, **confirm**, then install them with the package manager
-the student already uses (Homebrew, apt, winget or scoop).
+`gh` are missing, **confirm**, then install them with a package manager
+from the check's list. With none, the AWS CLI, `jq` and `gh` each have an
+installer or a binary on their own sites, and the Docker-only Floci path
+plus the web UI for Fountain needs none of the three for this step.
 
 ## 6. Verify done when
 

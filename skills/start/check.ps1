@@ -34,8 +34,11 @@ if (Test-Path $credFile) {
 }
 $cliUrl = if ($env:FOUNTAIN_BASE_URL) { $env:FOUNTAIN_BASE_URL } else { $credUrl }
 
+$pkgs = @(); foreach ($m in "winget","scoop","choco") { if (Have $m) { $pkgs += $m } }
 [ordered]@{
   waterpark = @{ checkout = $checkout; root = "$root"; commit = "$commit" }
+  os = "Windows"
+  package_managers = $pkgs
   tools = $tools
   fountain = @{ url = $fountainUrl; reachable = (Reach "$fountainUrl/health"); logged_in = $loggedIn; cli_url = "$cliUrl"; profile = $profile }
   floci = @{ url = $flociUrl; reachable = (Reach "$flociUrl/") }

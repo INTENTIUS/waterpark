@@ -31,6 +31,8 @@ profile="${FOUNTAIN_PROFILE:-default}"
 cred_url=$(awk -v p="[$profile]" '$0==p{f=1;next} /^\[/{f=0} f && $1=="base_url"{gsub(/"/,"",$3); print $3}' "$HOME/.fountain/credentials" 2>/dev/null | head -1)
 cli_url="${FOUNTAIN_BASE_URL:-${cred_url:-}}"
 gh_logged_in=false; have gh && gh auth status >/dev/null 2>&1 && gh_logged_in=true
+os_name=$(uname -s 2>/dev/null || echo unknown)
+pkg=""; for m in brew apt-get dnf pacman zypper winget scoop choco; do have "$m" && pkg="$pkg $m"; done; pkg=${pkg# }
 
 if have jq; then
   tools='{}'
@@ -40,10 +42,11 @@ if have jq; then
   done
   jq -n --argjson tools "$tools" --argjson wp_checkout "$wp_checkout" --arg wp_root "$wp_root" --arg wp_commit "$wp_commit" \
     --arg fountain_url "$FOUNTAIN_URL" --argjson fountain_reachable "$fountain_reachable" --argjson fountain_logged_in "$fountain_logged_in" --arg cli_url "$cli_url" --arg profile "$profile" \
-    --arg floci_url "$FLOCI_URL" --argjson floci_reachable "$floci_reachable" --argjson gh_logged_in "$gh_logged_in" \
-    '{waterpark:{checkout:$wp_checkout,root:$wp_root,commit:$wp_commit}, tools:$tools, fountain:{url:$fountain_url,reachable:$fountain_reachable,logged_in:$fountain_logged_in,cli_url:$cli_url,profile:$profile}, floci:{url:$floci_url,reachable:$floci_reachable}, github:{logged_in:$gh_logged_in}}'
+    --arg floci_url "$FLOCI_URL" --argjson floci_reachable "$floci_reachable" --argjson gh_logged_in "$gh_logged_in" --arg os "$os_name" --arg pkg "$pkg" \
+    '{waterpark:{checkout:$wp_checkout,root:$wp_root,commit:$wp_commit}, os:$os, package_managers:($pkg|split(" ")|map(select(.!=""))), tools:$tools, fountain:{url:$fountain_url,reachable:$fountain_reachable,logged_in:$fountain_logged_in,cli_url:$cli_url,profile:$profile}, floci:{url:$floci_url,reachable:$floci_reachable}, github:{logged_in:$gh_logged_in}}'
 else
   echo "waterpark_checkout=$wp_checkout root=$wp_root commit=$wp_commit"
+  echo "os=$os_name package_managers=$pkg"
   for t in $TOOLS; do if have "$t"; then echo "$t=true $(version_of "$t")"; else echo "$t=false"; fi; done
   echo "fountain_url=$FOUNTAIN_URL reachable=$fountain_reachable logged_in=$fountain_logged_in cli_url=$cli_url profile=$profile"
   echo "floci_url=$FLOCI_URL reachable=$floci_reachable"
