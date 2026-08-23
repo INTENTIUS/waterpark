@@ -3,7 +3,7 @@ title: "The watcher"
 id: "I13"
 lesson: 13
 weight: 13
-summary: "Rounds' form on IAM: scheduled; unused-access findings, expiring grants and drift become burndown / reconcile PRs, one per finding, capped, declines stick."
+summary: "The AWS desk on a schedule: drift, expired grants and unused-access findings become reconcile and burndown PRs, one per finding, capped, declines stick (Rounds' rules)."
 # card — empty renders as TODO
 goal: ""
 done_when: ""
@@ -25,8 +25,8 @@ activity:
 
 ## Context
 
-- Rounds' form on IAM: scheduled; unused-access findings, expiring grants and drift become burndown / reconcile PRs, one per finding, capped, declines stick.
-- Rounds as-is for the lint tier; the IAM projections on the same form.
+- The AWS desk on a schedule: drift, expired grants and unused-access findings become reconcile and burndown PRs, one per finding, capped, declines stick (Rounds' rules).
+- Rounds as-is can enroll the repo for what its catalogs cover; the IAM projections ride the same form.
 
 ## Watch
 
@@ -50,4 +50,4 @@ activity:
 
 ## Back office
 
-Rounds README; decision 28; [issues](../../docs/issues.md) D3.
+[the AWS desk](../../docs/aws-desk.md) (the watch); Rounds README; decision 28; [issues](../../docs/issues.md) D3.

@@ -3,7 +3,7 @@ title: "One path to prod"
 id: "I6"
 lesson: 6
 weight: 6
-summary: "Generated CODEOWNERS and branch protection, declared and watched (A20)."
+summary: "CODEOWNERS generated from the principal files and declared; branch protection declared (A20)."
 # card — empty renders as TODO
 goal: ""
 done_when: ""
@@ -26,9 +26,9 @@ activity:
 
 ## Context
 
-- Generated CODEOWNERS and branch protection, declared and watched (A20).
-- PR jobs without cloud credentials: `terraform validate`, tflint, conftest, plan against Floci; the real plan and Access Analyzer proofs post-merge-queue or behind a maintainer label (decision 22).
-- Three credential tiers via OIDC: plan, apply (bounded), org.
+- CODEOWNERS generated from the principal files and declared; branch protection declared (A20).
+- PR jobs with no cloud credential: `assemble`, JSON Schema, `validate-policy` against Floci, a changeset against Floci; the real changeset and `check-no-new-access` post-merge-queue or behind a maintainer label (decision 22).
+- Three credential tiers via OIDC: plan (create-change-set, describe), apply (`cloudformation deploy`, bounded), org.
 
 ## Watch
 
@@ -52,4 +52,4 @@ activity:
 
 ## Back office
 
-[issues](../../docs/issues.md) A20, A17, A12, A3b; decisions 21, 22.
+[issues](../../docs/issues.md) A20, A17, A12, A3b; decisions 21, 22; [the AWS desk](../../docs/aws-desk.md) (the apply job).

@@ -3,7 +3,7 @@ title: "The concierge"
 id: "I12"
 lesson: 12
 weight: 12
-summary: "The desk's form on IAM: a request in words, one deterministic leaf edit in HCL, the plan rendered as the access delta, a PR opened with a PR-only token, the merge is the approval (decision 18)."
+summary: "The AWS desk in repo mode: a request in words, one file edit, `assemble`, a changeset, `check-no-new-access`, the plan rendered as the access delta, a PR opened with a PR-only token; the merge is the approval (decision 18)."
 # card — empty renders as TODO
 goal: ""
 done_when: ""
@@ -26,7 +26,7 @@ activity:
 
 ## Context
 
-- The desk's form on IAM: a request in words, one deterministic leaf edit in HCL, the plan rendered as the access delta, a PR opened with a PR-only token, the merge is the approval (decision 18). No cloud credential in the sandbox.
+- The AWS desk in repo mode: a request in words, one file edit, `assemble`, a changeset, `check-no-new-access`, the plan rendered as the access delta, a PR opened with a PR-only token; the merge is the approval (decision 18). No cloud credential in the sandbox.
 - Unmapped requester: refusal naming the enrollment path; boundary exception: directed refusal.
 - Add its rows to the credential table from Fountain lesson 4; fill the parts table.
 
@@ -52,4 +52,4 @@ activity:
 
 ## Back office
 
-[the propose loop](../../propose-loop.md); [agentic](../../docs/design/agentic.md); decisions 14, 15, 17, 18, 30; dns-desk and Mend READMEs.
+[the AWS desk](../../docs/aws-desk.md); [the propose loop](../../propose-loop.md); [agentic](../../docs/design/agentic.md); decisions 14, 15, 17, 18, 30.

@@ -3,7 +3,7 @@ title: "Personas and principals"
 id: "I2"
 lesson: 2
 weight: 2
-summary: "Humans get permission sets (`aws_ssoadmin_*`), workloads get roles; no IAM users or groups (decision 5)."
+summary: "Humans get `AWS::SSO::PermissionSet` + `AWS::SSO::Assignment`, workloads get `AWS::IAM::Role`; no IAM users or groups (decision 5)."
 # card — empty renders as TODO
 goal: ""
 done_when: ""
@@ -26,9 +26,9 @@ activity:
 
 ## Context
 
-- Humans get permission sets (`aws_ssoadmin_*`), workloads get roles; no IAM users or groups (decision 5).
-- Personas as modules; one principal per file under `principals/<team>/`; `tickets-api`, `tickets`, `rides-board`.
-- Grants as typed access levels with an optional `expires`.
+- Humans get `AWS::SSO::PermissionSet` + `AWS::SSO::Assignment`, workloads get `AWS::IAM::Role`; no IAM users or groups (decision 5).
+- Personas as a small set of permission-set and role files copied by convention; one principal per file; `tickets-api`, `tickets`, `rides-board`.
+- `expires` on a grant is a date in the policy `Condition` (`aws:CurrentTime`) plus a tag; `scripts/proofs` flags the ones past due.
 
 ## Watch
 

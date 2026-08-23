@@ -3,7 +3,7 @@ title: "Approve the change, not the diff"
 id: "I14"
 lesson: 14
 weight: 14
-summary: "The reviewer approves the rendered manifest (access delta + proofs) bound by digest; apply refuses if the recompiled plan or the live estate diverges."
+summary: "The reviewer approves the plan block (access delta + proof verdicts) bound by a digest over template, parameters and changeset; the apply job re-creates the changeset and refuses if the digest or the stack moved."
 # card — empty renders as TODO
 goal: ""
 done_when: ""
@@ -26,8 +26,8 @@ activity:
 
 ## Context
 
-- The reviewer approves the rendered manifest (access delta + proofs) bound by digest; apply refuses if the recompiled plan or the live estate diverges.
-- Terraform: `terraform show -json plan.out` reduced to the manifest schema (E1); plan digest recorded at plan, re-checked at apply.
+- The reviewer approves the plan block (access delta + proof verdicts) bound by a digest over template, parameters and changeset; the apply job re-creates the changeset and refuses if the digest or the stack moved.
+- The changeset is the manifest; `describe-change-set` JSON is its native form (the kit's E1 schema is the cross-backend version).
 
 ## Watch
 
@@ -51,4 +51,4 @@ activity:
 
 ## Back office
 
-decisions 6, 23, 24; [pr-automation](../../docs/pr-automation.md); [issues](../../docs/issues.md) E1.
+decisions 6, 23, 24; [pr-automation](../../docs/pr-automation.md); [the AWS desk](../../docs/aws-desk.md) (the digest).

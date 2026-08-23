@@ -3,7 +3,7 @@ title: "Deploy to Floci"
 id: "I4"
 lesson: 4
 weight: 4
-summary: "`terraform apply` against Floci endpoints; no account, no keys."
+summary: "`scripts/assemble` then `aws cloudformation deploy` against Floci endpoints; no account, no keys; live: a real sandbox account."
 # card — empty renders as TODO
 goal: ""
 done_when: ""
@@ -26,9 +26,9 @@ activity:
 
 ## Context
 
-- `terraform apply` against Floci endpoints; no account, no keys. Live: a real sandbox account.
-- Floci: IAM/STS/CloudFormation/EC2 SGs in-process; no Organizations, Identity Center, Access Analyzer.
-- Read a role back; the source predicted it.
+- `scripts/assemble` then `aws cloudformation deploy` against Floci endpoints; no account, no keys; live: a real sandbox account.
+- Floci: CloudFormation, IAM, STS, EC2 SGs in-process; no Organizations, Identity Center, Access Analyzer (recorded verdicts for those).
+- Read a role back with `get-role`; the file predicted it.
 
 ## Watch
 

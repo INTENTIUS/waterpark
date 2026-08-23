@@ -3,7 +3,7 @@ title: "Guardrails in the editor"
 id: "I3"
 lesson: 3
 weight: 3
-summary: "no-wildcard-action, no-open-ingress, boundary-required, no-inline-policy, tag-owner-required, sg-reference-not-cidr as tflint rules + OPA/conftest on the plan; rule ids mapped to parliament/cloudsplaining."
+summary: "The six guardrails as native checks: JSON Schema in the editor for shape (boundary required, no inline policy, owner tag present, SG references not CIDRs), `accessanalyzer validate-policy` for the policy documents (wildcard action, open ingress, best-practice findings), mapped to parliament/cloudsplaining ids."
 # card — empty renders as TODO
 goal: ""
 done_when: ""
@@ -26,9 +26,9 @@ activity:
 
 ## Context
 
-- no-wildcard-action, no-open-ingress, boundary-required, no-inline-policy, tag-owner-required, sg-reference-not-cidr as tflint rules + OPA/conftest on the plan; rule ids mapped to parliament/cloudsplaining.
-- In the editor via terraform-ls; the same diagnostic to the agent.
-- Mend as-is can audit the repo (its aws catalog reads CloudFormation; for HCL the tflint/conftest path is the audit).
+- The six guardrails as native checks: JSON Schema in the editor for shape (boundary required, no inline policy, owner tag present, SG references not CIDRs), `accessanalyzer validate-policy` for the policy documents (wildcard action, open ingress, best-practice findings), mapped to parliament/cloudsplaining ids.
+- The same checks run by the agent at the keystroke and in the PR job; the diagnostic is the same.
+- No third-party linter on the site; the back office lists cfn-lint and chant as options.
 
 ## Watch
 

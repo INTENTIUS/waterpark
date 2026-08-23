@@ -3,7 +3,7 @@ title: "Offboard and the access review"
 id: "I11"
 lesson: 11
 weight: 11
-summary: "Offboard: remove a principal from every file that references it in one PR + apply; zero remaining references."
+summary: "Offboard: remove a principal's files and every reference in one PR + deploy; zero remaining references."
 # card — empty renders as TODO
 goal: ""
 done_when: ""
@@ -25,8 +25,8 @@ activity:
 
 ## Context
 
-- Offboard: remove a principal from every file that references it in one PR + apply; zero remaining references.
-- The quarterly artifact a compliance reviewer accepts: every principal, personas, reachable resources, expiring grants, module versions.
+- Offboard: remove a principal's files and every reference in one PR + deploy; zero remaining references.
+- The quarterly artifact from declared JSON plus live reads (`get-role`, `list-attached-role-policies`, Access Analyzer unused-access findings): every principal, what it can reach, what is expiring.
 
 ## Watch
 

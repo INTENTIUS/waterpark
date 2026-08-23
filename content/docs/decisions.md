@@ -153,12 +153,14 @@ it. Reversing one requires editing this file in the same PR.
     No chant MCP verb service is built ahead of need.
     ([propose loop](../propose-loop.md), [Fountain, lesson 8](../courses/fountain/08-propose-loop-interactive.md),
     [Fountain, lesson 9](../courses/fountain/09-propose-loop-ambient.md), [design/agentic](design/agentic.md))
-31. **Terraform is the IaC vehicle for the courses; chant stays the
-    other backend.** Course 2 builds `splashdown/access` in Terraform
-    because that is what the audience has (landscape: the real incumbent
-    is a pile of Terraform); guardrails are tflint/conftest at build and
-    in the editor via terraform-ls; drift is detected by plan and the fix
-    is authored by a person or by the agent; the manifest is plan JSON
-    reduced to the common schema (E1). chant remains first-class per
-    decision 23 and the kit-era docs describe it; switching the course
-    back is an edit to this decision. ([plan](plan.md), [issues](issues.md) E1–E3)
+31. **The course uses no toolchain: the IAM repo is plain CloudFormation
+    JSON and the applier is CloudFormation.** One resource per file in the
+    shape CloudFormation expects, assembled into a template per stack by a
+    `jq` merge; changesets are the plan, `detect-stack-drift` is the watch,
+    resource import is adopt-in-place, Access Analyzer `validate-policy` and
+    `check-no-new-access` are the lint and the proof, a JSON Schema is the
+    editor check. The agent app is [the AWS desk](aws-desk.md): direct mode
+    is dns-desk's posture, repo mode is the course's. chant and Terraform
+    remain backends the kit-era docs describe (decision 23) and are not
+    named on the site; switching the course to one is an edit to this
+    decision. ([aws-desk](aws-desk.md), [plan](plan.md))

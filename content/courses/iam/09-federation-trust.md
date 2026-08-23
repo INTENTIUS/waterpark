@@ -3,7 +3,7 @@ title: "Federation trust"
 id: "I9"
 lesson: 9
 weight: 9
-summary: "CI OIDC, k8s service-account and SPIFFE trust anchors in one module; strictest lint and drift severity; never operate the issuer."
+summary: "Trust policies (CI OIDC, k8s service accounts, SPIFFE) as the `AssumeRolePolicyDocument` of each role plus `AWS::IAM::OIDCProvider` resources; strictest checks and drift severity; never operate the issuer."
 # card — empty renders as TODO
 goal: ""
 done_when: ""
@@ -26,7 +26,7 @@ activity:
 
 ## Context
 
-- CI OIDC, k8s service-account and SPIFFE trust anchors in one module; strictest lint and drift severity; never operate the issuer.
+- Trust policies (CI OIDC, k8s service accounts, SPIFFE) as the `AssumeRolePolicyDocument` of each role plus `AWS::IAM::OIDCProvider` resources; strictest checks and drift severity; never operate the issuer.
 - Short-lived everything; the few static secrets rotate on a policy window.
 - The agent sandbox is never a federation subject (decision 15).
 

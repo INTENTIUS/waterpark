@@ -7,12 +7,13 @@ drift watched, delegation bounded by IAM itself), with an agent working
 on it as concierge and watcher. The courses are about the
 [Accessible Ops](https://accessibleops.net) properties, demonstrated on
 [Fountain](https://github.com/BinaryBourbon/fountain) (the agent side)
-and Terraform (the IaC side); the IAM project is the worked example
-because it exercises both. Live at
+and plain AWS (CloudFormation JSON, Access Analyzer; no toolchain); the
+IAM project is the worked example because it exercises both. Live at
 [intentius.io/waterpark](https://intentius.io/waterpark/).
 
 - [content/courses/fountain/](content/courses/fountain/) — course 1, the agent side (F1–F11)
-- [content/courses/iam/](content/courses/iam/) — course 2, the IAM repo in Terraform (I1–I15)
+- [content/courses/iam/](content/courses/iam/) — course 2, the IAM repo as plain CloudFormation JSON (I1–I15)
+- [content/docs/aws-desk.md](content/docs/aws-desk.md) — the Fountain AWS desk: the agent app the courses build (dns-desk's form on a CloudFormation estate)
 - [content/propose-loop.md](content/propose-loop.md) — how the agent side works: the loop abstracted from Mend, Rounds and dns-desk
 - [content/docs/page-model.md](content/docs/page-model.md) — what a lesson page is made of: card, video, activity, body
 - [content/docs/](content/docs/) — the back office: plan, decisions, principles, prescriptions, live session guide, upstream pins, threat model, design notes
@@ -20,6 +21,6 @@ because it exercises both. Live at
 
 Naming: *water park* is the project (this repo, `waterpark`); in the
 kit-era docs it also names the IAM access-repo kit those docs designed,
-which is course 2's backlog. splashdown is the fictional company. Fountain
-and Terraform are the vehicles; chant is the other backend, in the back
-office (decisions 23, 31).
+which is course 2's backlog. splashdown is the fictional company. Fountain and plain AWS are the
+vehicles; chant and Terraform are backends in the back office only
+(decisions 23, 31).

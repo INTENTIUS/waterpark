@@ -3,7 +3,7 @@ title: "Adopt in place"
 id: "I15"
 lesson: 15
 weight: 15
-summary: "Bring existing roles and SGs under management with `import` blocks and zero module edits; back out with `removed` blocks; nothing touched on day one."
+summary: "Bring a pre-existing role and SG under management with CloudFormation resource import: write the file, `import` the resource into the stack, nothing touched on day one; back out by removing the resource with a retain policy."
 # card — empty renders as TODO
 goal: ""
 done_when: ""
@@ -25,8 +25,8 @@ activity:
 
 ## Context
 
-- Bring existing roles and SGs under management with `import` blocks and zero module edits; back out with `removed` blocks; nothing touched on day one.
-- The estate is native (IAM, not a vendor format); the kit-era export bundle (A21) was the chant counterpart.
+- Bring a pre-existing role and SG under management with CloudFormation resource import: write the file, `import` the resource into the stack, nothing touched on day one; back out by removing the resource with a retain policy.
+- The estate is native (CloudFormation and IAM JSON, not a vendor format); the kit-era export bundle (A21) is moot here.
 
 ## Watch
 

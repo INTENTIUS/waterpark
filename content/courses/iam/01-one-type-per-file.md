@@ -3,7 +3,7 @@ title: "One resource type per file"
 id: "I1"
 lesson: 1
 weight: 1
-summary: "Scaffold `splashdown/access` in Terraform: one resource type per file, folder structure as the index, path matches logical name."
+summary: "Scaffold `splashdown/access` as plain CloudFormation JSON: `stacks/<stack>/<Type>/<LogicalId>."
 # card — empty renders as TODO
 goal: ""
 done_when: ""
@@ -26,9 +26,9 @@ activity:
 
 ## Context
 
-- Scaffold `splashdown/access` in Terraform: one resource type per file, folder structure as the index, path matches logical name.
-- Layout checks as tflint rules / a conftest policy; the editor path is terraform-ls + tflint.
-- Source: A1, A2 (the kit items assumed chant; the Terraform variant is E2).
+- Scaffold `splashdown/access` as plain CloudFormation JSON: `stacks/<stack>/<Type>/<LogicalId>.json`, one resource per file, the path as the index; `scripts/assemble` (a `jq` merge) makes one template per stack.
+- Layout checks: a JSON Schema per resource type (from the CloudFormation resource spec) for the editor, and a tiny check that file name equals logical id.
+- No toolchain: a stranger reads a file and predicts the template ([the AWS desk](../../docs/aws-desk.md), the target).
 
 ## Watch
 
@@ -52,4 +52,4 @@ activity:
 
 ## Back office
 
-[issues](../../docs/issues.md) A1, A2, E2; decision 31.
+[issues](../../docs/issues.md) A1, A2; [the AWS desk](../../docs/aws-desk.md); decision 31.

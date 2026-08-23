@@ -3,7 +3,7 @@ title: "Drift"
 id: "I7"
 lesson: 7
 weight: 7
-summary: "`terraform plan -detailed-exitcode` on a schedule over owned resources; SG and trust drift page-worthy."
+summary: "`detect-stack-drift` + `describe-stack-resource-drifts` on a schedule over owned stacks; SG and trust drift page-worthy."
 # card — empty renders as TODO
 goal: ""
 done_when: ""
@@ -26,8 +26,8 @@ activity:
 
 ## Context
 
-- `terraform plan -detailed-exitcode` on a schedule over owned resources; SG and trust drift page-worthy.
-- Terraform detects; it does not author the fix. The reconcile PR (restore declared state) is written by a person or by the agent under Rounds' rules (decision 28); this is where the watcher (lesson 13) earns its keep.
+- `detect-stack-drift` + `describe-stack-resource-drifts` on a schedule over owned stacks; SG and trust drift page-worthy.
+- CloudFormation detects; the reconcile PR restores the declared state (the template already says what it should be) under Rounds' rules (decision 28); the watcher (lesson 13) is who opens it.
 - Expired grants surface in the same watch.
 
 ## Watch
@@ -52,4 +52,4 @@ activity:
 
 ## Back office
 
-[issues](../../docs/issues.md) A8, E2; decision 28; Rounds README.
+[issues](../../docs/issues.md) A8; decision 28; [the AWS desk](../../docs/aws-desk.md) (the watch).

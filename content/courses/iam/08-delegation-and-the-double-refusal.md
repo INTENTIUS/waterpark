@@ -3,7 +3,7 @@ title: "Delegation and the double refusal"
 id: "I8"
 lesson: 8
 weight: 8
-summary: "A satellite repo declares a queue and the role that reads it inside the boundary; the deploy credential may create roles only when `iam:PermissionsBoundary` equals the central ARN; the same check in tflint/conftest at build."
+summary: "A satellite repo declares a queue and the role that reads it as CloudFormation inside the boundary; the deploy role may `CreateRole` only when `iam:PermissionsBoundary` equals the central ARN; the JSON Schema requires the boundary at build."
 # card — empty renders as TODO
 goal: ""
 done_when: ""
@@ -26,9 +26,9 @@ activity:
 
 ## Context
 
-- A satellite repo declares a queue and the role that reads it inside the boundary; the deploy credential may create roles only when `iam:PermissionsBoundary` equals the central ARN; the same check in tflint/conftest at build.
-- Strip the boundary: refused at build; bypass: refused by IAM at apply. Floci enforcement-mode support for the condition key is unverified.
-- The shared module / policy package is the delegation contract; rollout warn-minor / error-major.
+- A satellite repo declares a queue and the role that reads it as CloudFormation inside the boundary; the deploy role may `CreateRole` only when `iam:PermissionsBoundary` equals the central ARN; the JSON Schema requires the boundary at build.
+- Strip the boundary: the schema refuses at build; bypass: IAM refuses at apply. Floci enforcement-mode support for the condition key is unverified.
+- The shared schema and the boundary ARN are the delegation contract; rollout warn-minor / error-major.
 
 ## Watch
 

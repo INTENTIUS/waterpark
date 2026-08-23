@@ -50,9 +50,9 @@ facilitator. Each lesson file carries the same sections:
 On the site the lessons live in two **courses** ([courses/](../courses/):
 `fountain/` is F1–F11, `iam/` is I1–I15); F0 and I0 are the course intros,
 IA is [the appendix](appendix.md). The courses are about the Accessible Ops
-properties (decision 26); course 2 demonstrates on Terraform (decision
-31), which the tables below, written for chant, do not yet reflect in
-their source columns. Each lesson page's front matter is its card: goal,
+properties (decision 26); course 2 is plain CloudFormation JSON with CloudFormation as the applier
+(decision 31), which the tables below, written for chant, do not reflect
+in their source columns; [the AWS desk](aws-desk.md) is the agent app. Each lesson page's front matter is its card: goal,
 done when, restart from, properties, prescriptions closed. The F/I ids
 below are the lesson ids.
 The stubs there are the spec for each lesson; bodies are written against

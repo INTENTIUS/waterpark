@@ -3,7 +3,7 @@ title: "The permission boundary"
 id: "I5"
 lesson: 5
 weight: 5
-summary: "The baseline: the boundary every role carries; the apply role's own boundary (decision 12); org policy set (SCP/RCP/declarative, live only); default-deny SGs."
+summary: "The baseline stack: the boundary `AWS::IAM::ManagedPolicy` every role references by name; the apply role's own boundary (decision 12); the org policy set (live only); default-deny `AWS::EC2::SecurityGroup`s."
 # card — empty renders as TODO
 goal: ""
 done_when: ""
@@ -26,8 +26,9 @@ activity:
 
 ## Context
 
-- The baseline: the boundary every role carries; the apply role's own boundary (decision 12); org policy set (SCP/RCP/declarative, live only); default-deny SGs.
+- The baseline stack: the boundary `AWS::IAM::ManagedPolicy` every role references by name; the apply role's own boundary (decision 12); the org policy set (live only); default-deny `AWS::EC2::SecurityGroup`s.
 - Boundary contents lean from [delegation](../../docs/design/delegation.md).
+- Every other stack references the boundary by deterministic name.
 
 ## Watch
 

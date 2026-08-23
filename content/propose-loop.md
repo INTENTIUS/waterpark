@@ -36,6 +36,10 @@ weight: 1
 
 {{< todo "prose" >}}
 
+<!-- context: the applier is CloudFormation, never the agent; the desk proposes (repo mode) or applies only in direct mode with a bounded role; see docs/aws-desk.md -->
+
+{{< todo "prose" >}}
+
 <!-- context: IAM is a target that is *also* a repo, so propose is the PR in every form and approval is the merge, never an in-conversation message (decision 18). That is the … -->
 
 | Form | IAM instance | Build or reuse | Shifts |

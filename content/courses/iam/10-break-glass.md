@@ -3,7 +3,7 @@ title: "Break-glass"
 id: "I10"
 lesson: 10
 weight: 10
-summary: "The grant carries cloud-side expiry (time-conditioned policy / temporary assignment, 2h TTL); cleanup by a scheduled job or Op; the watch flags leftovers."
+summary: "The grant carries cloud-side expiry (a time-conditioned policy or a temporary Identity Center assignment, 2h TTL); a scheduled cleanup removes the artifact; the watch flags leftovers."
 # card — empty renders as TODO
 goal: ""
 done_when: ""
@@ -26,8 +26,8 @@ activity:
 
 ## Context
 
-- The grant carries cloud-side expiry (time-conditioned policy / temporary assignment, 2h TTL); cleanup by a scheduled job or Op; the watch flags leftovers.
-- Terraform has no executor: the gate is a second human's approval in the workflow; revocation never depends on it.
+- The grant carries cloud-side expiry (a time-conditioned policy or a temporary Identity Center assignment, 2h TTL); a scheduled cleanup removes the artifact; the watch flags leftovers.
+- The gate is a second human in the workflow; revocation never depends on it.
 - Kill the cleanup mid-grant; access still ends at the TTL.
 
 ## Watch
