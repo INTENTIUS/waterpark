@@ -2,15 +2,22 @@
 {{- with .Params.skill }}
 {{- $raw := printf "https://raw.githubusercontent.com/INTENTIUS/waterpark/main/%s/SKILL.md" . }}
 {{- $blob := printf "%s/blob/main/%s/SKILL.md" $.Site.Params.github . }}
+{{- $prompt := printf "curl -fsSL %s and follow that skill with me, step by step. Confirm with me before you install or write anything." $raw }}
 <section class="block block-skill" aria-label="Run with an agent">
   <h2 class="block-head">Run with an agent</h2>
-  <p>Give your agent this skill and it walks you through the page. <a href="{{ $raw }}"><code>SKILL.md</code></a> (<a href="{{ $blob }}">view on GitHub</a>).</p>
-  <pre><code># paste to your agent
-Read {{ $raw }} and follow it step by step.
-
-# or install it
-npx skills add INTENTIUS/waterpark          # skills-aware agents
-cp -r {{ . }} ~/.claude/skills/             # Claude Code, from a checkout
-# Fountain agent spec.skills  [{source "INTENTIUS/waterpark"}]</code></pre>
+  <p>Paste this to your agent.</p>
+  <div class="prompt">
+    <code id="skill-prompt">{{ $prompt }}</code>
+    <button type="button" class="copy" data-copy="#skill-prompt" aria-label="Copy prompt">Copy</button>
+  </div>
+  <p class="muted small">The skill is <a href="{{ $raw }}"><code>{{ . }}/SKILL.md</code></a> (<a href="{{ $blob }}">on GitHub</a>). Installable too, with <code>npx skills add INTENTIUS/waterpark</code>, or by copying <code>{{ . }}</code> into <code>~/.claude/skills/</code>, or as a Fountain agent skill from <code>INTENTIUS/waterpark</code>.</p>
 </section>
+<script>
+document.querySelectorAll('button.copy').forEach(function (b) {
+  b.addEventListener('click', function () {
+    var t = document.querySelector(b.getAttribute('data-copy')).textContent;
+    navigator.clipboard.writeText(t).then(function () { b.textContent = 'Copied'; setTimeout(function () { b.textContent = 'Copy'; }, 1500); });
+  });
+});
+</script>
 {{- end }}

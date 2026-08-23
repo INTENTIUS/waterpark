@@ -7,73 +7,82 @@ description: Walk a student through water park's Start here page. Use when someo
 
 You are walking a student through Start here
 (https://intentius.io/waterpark/start/). The outcome is a water park
-checkout, a working Fountain they are logged in to, and a profile file the
-next lesson reads. Ten minutes.
+checkout, a Fountain instance they are logged in to, and a profile file
+the next lesson reads. About ten minutes.
+
+Confirm with the student before each step that installs software, starts
+a service, or writes a file. Those steps are marked **confirm**.
 
 ## 1. Say what this is
 
 In three sentences say what the two courses are and that this step gets
-two things installed, water park and Fountain. Ask which mode they want,
+two things in place, water park and Fountain. Ask which mode they want,
 self-paced (their laptop, Floci, no AWS account) or live (a facilitator
 brings accounts). Default to self-paced.
 
 ## 2. Get water park
 
-Run the check script. From a checkout that is `bash skills/start/check.sh`.
-Without a checkout, fetch it first.
-
-```sh
-curl -fsSL https://raw.githubusercontent.com/INTENTIUS/waterpark/main/skills/start/check.sh -o check.sh && bash check.sh
-```
-
-If `waterpark.checkout` is false, clone it and move there.
+If the current directory is not a water park checkout (no `hugo.toml` and
+no `skills/start/SKILL.md`), **confirm**, then clone it and move there.
 
 ```sh
 git clone https://github.com/INTENTIUS/waterpark && cd waterpark
 ```
 
-If it is true, `git pull`. The skills, the check scripts, the student's
-profile and the exercises all live in this checkout. The student does not
-need a repo of their own. Offline reading of the site is
-`docker run --rm -p 8080:80 ghcr.io/intentius/waterpark`, optional.
+If it is a checkout, `git pull`. The skills, the check script, the
+student's profile and the exercises live here. The student does not need
+a repo of their own.
 
-## 3. Get Fountain
+## 3. Run the check
 
-Ask whether they already have a Fountain instance. If yes, take its URL.
-If no, self-host one.
+Run `bash skills/start/check.sh` from the checkout and show the output.
+The script only reads. It reports, as JSON, whether this is a water park
+checkout, which of `docker`, `fountain`, `floci`, `aws`, `jq` and `gh`
+are installed with versions, whether the Fountain URL answers and the CLI
+is logged in, and whether Floci answers. Read it before you run it if you
+want. Do not guess at anything it can report.
 
-1. Clone Fountain at the location recorded in
-   https://intentius.io/waterpark/docs/upstream/ (the canonical repo is
-   being verified there, so read it rather than assume).
-2. In that checkout, `cp .env.compose.example .env`, fill the generated
-   keys as the file says, then `docker compose up -d`. The instance is at
-   `http://localhost:4000`.
-3. Install the CLI. `brew install BinaryBourbon/tap/fountain` on macOS, or
-   the release binary from the same tap page.
-4. `fountain auth login` against the URL.
-5. Open the instance once in a browser and finish onboarding. Fountain asks
-   for an inference key there (Anthropic first, other providers when a
-   model needs them). Do not ask the student for the key and never store it.
+## 4. Get Fountain
+
+Ask whether the student already has a Fountain instance. If yes, take its
+URL and set `FOUNTAIN_URL` for the rest of the session. If no, self-host
+one.
+
+1. The Fountain repo is https://github.com/BinaryBourbon/fountain. If it
+   is not reachable, stop and ask the student where their copy is or for
+   an instance URL. Do not look elsewhere for it.
+2. **confirm**, then in a Fountain checkout, `cp .env.compose.example .env`,
+   fill the generated keys as the file says, and `docker compose up -d`.
+   The instance is at `http://localhost:4000`.
+3. **confirm**, then install the CLI with `brew install BinaryBourbon/tap/fountain`
+   on macOS, or the release binary from that tap.
+4. `fountain auth login` against the URL. The student types their
+   credentials, not you.
+5. Ask the student to open the instance in a browser once and finish
+   onboarding. Fountain asks for an inference key there. Never ask for
+   the key and never store it.
 
 Re-run `bash skills/start/check.sh` and confirm `fountain.reachable` and
 `fountain.logged_in` are both true before moving on.
 
-## 4. Self-paced extras
+## 5. Self-paced extras
 
-For self-paced, install Floci if `tools.floci.installed` is false, then
-`floci start` and `eval $(floci env)`. Confirm `floci.reachable`. Install
-`aws`, `jq` and `gh` with the package manager they already use if missing.
-For live, skip this step.
+For self-paced, if `tools.floci.installed` is false, **confirm**, then
+install Floci, `floci start`, and `eval $(floci env)`. Confirm
+`floci.reachable`. If `aws`, `jq` or `gh` are missing, **confirm**, then
+install them with the package manager the student already uses. For
+live, skip this step.
 
-## 5. Verify done when
+## 6. Verify done when
 
-Done when `check.sh` shows a water park checkout, Fountain reachable and
+Done when the check shows a water park checkout, Fountain reachable and
 logged in, and, for self-paced, Floci reachable. If anything is false,
-name it and stop. Nothing in the lessons works around a missing Fountain.
+say which and stop. Nothing in the lessons works around a missing
+Fountain.
 
-## 6. Record and hand off
+## 7. Record and hand off
 
-Write `.waterpark/profile.json` at the checkout root.
+**confirm**, then write `.waterpark/profile.json` at the checkout root.
 
 ```json
 {"mode":"self-paced","waterpark_root":"…","fountain_url":"…","floci":true,"completed":["start"]}
