@@ -74,6 +74,34 @@ docker-run:
 fountain-login url="http://localhost:4000":
     FOUNTAIN_BASE_URL={{url}} fountain auth login
 
+# One-shot local stack. Fountain, Postgres, Floci. Then just register, just runner
+up:
+    compose/bin/env.sh
+    docker compose -f compose/docker-compose.yml --env-file compose/.env up -d
+
+# Register a class account, log the CLI in, give the runner its key: just register you@example.com 'pw'
+register email password profile="default":
+    compose/bin/register.sh {{email}} {{password}} {{profile}}
+
+# Start the containerized runner (after just register). Pulls the published image
+runner:
+    docker compose -f compose/docker-compose.yml --env-file compose/.env --profile runner up -d --pull missing --no-build
+
+# Build the runner image locally (needs compose/runner/bin/fountain-linux-<arch>, see the Dockerfile)
+runner-build:
+    docker compose -f compose/docker-compose.yml --env-file compose/.env --profile runner up -d --build
+
+# Stop the local stack (keeps data). just down-all removes volumes too
+down:
+    docker compose -f compose/docker-compose.yml --env-file compose/.env --profile runner down
+
+down-all:
+    docker compose -f compose/docker-compose.yml --env-file compose/.env --profile runner down -v
+
+# Tail the local stack's logs
+logs:
+    docker compose -f compose/docker-compose.yml --env-file compose/.env --profile runner logs -f --tail=50
+
 # Remove build output
 clean:
     rm -rf public resources .hugo_build.lock

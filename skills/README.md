@@ -49,7 +49,11 @@ Every skill follows the same shape so a student knows what to expect.
 7. Ask the student's OS and shell before giving a command. Offer the OS
    install and the Docker path where both exist. Give the PowerShell
    form where it differs. Ship a `.ps1` beside any `.sh` the skill runs.
-8. Never assume a package manager. The check reports which are present.
+8. A class-instance email and password may be collected by the agent when
+   the skill says the two sentences (temporary instance, do not reuse a
+   password you care about) and the student consents. An inference key or
+   any real account's credential, never.
+9. Never assume a package manager. The check reports which are present.
    Offer Homebrew, winget or Scoop first when none is, and name the
    no-package-manager path for every install.
 7. Verify *done when*. If it fails, name the restart point from the card.

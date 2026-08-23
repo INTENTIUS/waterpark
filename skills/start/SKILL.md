@@ -32,8 +32,8 @@ git clone https://github.com/INTENTIUS/waterpark && cd waterpark
 ```
 
 If it is a checkout, `git pull`. The skills, the check script, the
-student's profile and the exercises live here. The student does not need
-a repo of their own.
+student's profile, the exercises and the compose stack all live here. The
+student does not need a repo of their own.
 
 ## 3. Ask the OS, then run the check
 
@@ -51,17 +51,16 @@ Floci answers. Do not guess at anything the check can report.
 ## 4. Docker, yes or no
 
 Settle this before installing anything, and say it to the student in
-these words. Docker is needed for exactly two things here. Running Floci
-the default way, and self-hosting Fountain. Nothing else.
+these words. Docker runs the class stack, Fountain with its database,
+Floci, and the sandbox runner, from one compose file in this repo.
 
 | The student is | Docker |
 |---|---|
 | live, with a Fountain URL from the facilitator | not needed |
-| self-paced, with a Fountain URL | needed, for Floci |
-| self-hosting Fountain (facilitators, or a student with no URL) | needed |
+| anything else | needed, it runs the whole stack |
 
-If the answer is needed and `docker` is missing, **confirm**, then install
-Docker Desktop and wait until `docker version` answers.
+If needed and `docker` is missing, **confirm**, then install Docker
+Desktop and wait until `docker version` answers.
 
 | OS | Install |
 |---|---|
@@ -69,112 +68,93 @@ Docker Desktop and wait until `docker version` answers.
 | Windows | `winget install Docker.DockerDesktop`, or the installer from the same page. Choose the WSL 2 backend when asked. Log out and in if it says so |
 | Linux | the distribution's `docker` packages, then add the user to the `docker` group |
 
-If the answer is not needed, skip Docker entirely and never mention it
-again.
-
 ## 5. Fountain
 
 Ask. **Do you have a Fountain URL to use?** In a class the facilitator
-gives one. Take it. Only with no URL does the student self-host (5b).
+may give one. Otherwise the stack from this repo is the instance.
 
-### 5a. With a URL. The CLI, then log in. No Docker.
+### 5a. The stack, one shot
+
+From the water park checkout. **confirm**, then
+
+```sh
+just up          # Fountain at :4000, Floci at :4566, keys generated into compose/.env
+```
+
+(Without `just`, `compose/bin/env.sh` then
+`docker compose -f compose/docker-compose.yml --env-file compose/.env up -d`.
+Windows runs these in WSL or Git Bash.)
+
+Then register the student. This instance is temporary and local, so you
+handle it. Ask for an email and a password, saying both of these
+sentences first. This account lives only in the class instance on this
+laptop. Do not reuse a password you care about. Then **confirm** and run
+
+```sh
+just register their@email 'their-password'
+```
+
+It calls `POST /api/auth/register` and `POST /api/auth/token`, writes
+`~/.fountain/credentials` the way `fountain auth login` does, and gives
+the runner service its key. Accounts self-verify on this instance. Then
+**confirm** and start the sandbox runner
+
+```sh
+just runner
+```
+
+The runner is a container with node, bun, git, the AWS CLI and jq. Its
+sandboxes are directories inside it, not on the laptop. One caveat to
+say out loud. `networking_type: limited` does not provision on a runner,
+so the egress lesson (Fountain lesson 3) needs a hosted sandbox provider,
+`SPRITES_TOKEN` in `compose/.env` and `SANDBOX_PROVIDER=sprites`, then
+`just up` again.
+
+Last, the inference key. The student opens `http://localhost:4000`, signs
+in, and finishes onboarding, which asks for the key. Never ask for the
+key and never store it.
+
+The CLI is optional with the stack (the web UI covers the lessons until
+the CLI appears in one). When wanted, install it as in 5b.
+
+### 5b. With a facilitator's URL, the CLI and an account
 
 Install the CLI for their OS. **confirm** first.
 
 | OS | CLI |
 |---|---|
-| macOS | `brew install BinaryBourbon/tap/fountain`. Without Homebrew, the `fountain-darwin-arm64` or `-amd64` binary from the GitHub release, made executable and on the PATH |
+| macOS | `brew install BinaryBourbon/tap/fountain`. Without Homebrew, the `fountain-darwin-arm64` or `-amd64` binary from the GitHub release, on the PATH |
 | Linux | the `fountain-linux-amd64` or `-arm64` binary from the GitHub release, on the PATH |
-| Windows | no native build yet. The Linux binary inside WSL 2, or no CLI at all. Everything the CLI does is also the web UI or `curl` against `/api`, and the lessons say which |
+| Windows | no native build yet. The Linux binary inside WSL 2, or no CLI at all. Everything the CLI does is also the web UI or `curl` against `/api` |
 
-Register, then log in. If the student has no account on that instance,
-they open the URL in a browser and register first. Then, once, with the
-URL in front of the command. The CLI writes the URL into
-`~/.fountain/credentials` next to the key, so later `fountain` calls need
-nothing else set. The student types their credentials, not you.
+Register the student on the class instance the same way, after the two
+sentences and a **confirm**.
 
 ```sh
-FOUNTAIN_BASE_URL=https://the.instance fountain auth login       # bash, zsh, WSL
+compose/bin/register.sh their@email 'their-password' class https://the.instance
 ```
 
-```powershell
-$env:FOUNTAIN_BASE_URL = "https://the.instance"; fountain auth login   # PowerShell, if a CLI is present
+With a remote base URL it registers, mints a key and writes the CLI
+credentials under the named profile, and touches nothing else. Then
+`export FOUNTAIN_PROFILE=class`. Look at the check's `fountain.profile`
+and `fountain.cli_url` first. If a `default` profile already points at
+another host, the named profile keeps them apart. The inference key is
+the browser onboarding, as above, at the facilitator's URL.
+
+## 6. Floci
+
+With the stack from 5a, Floci is already running at `http://localhost:4566`.
+Put the variables in the shell and nothing else is needed.
+
+```sh
+export AWS_ENDPOINT_URL=http://localhost:4566 AWS_DEFAULT_REGION=us-east-1 AWS_ACCESS_KEY_ID=test AWS_SECRET_ACCESS_KEY=test
 ```
 
-Look at the check's `fountain.profile` and `fountain.cli_url` before the
-login. If a `default` profile already exists and points at a different
-host than the one being logged in to, say so and offer `--profile <name>`
-on the login with `FOUNTAIN_PROFILE=<name>` afterwards, so the existing
-login is kept. Otherwise the login overwrites `[default]`, which is fine. Onboarding in the browser asks for
-an inference key. Never ask for the key and never store it.
-
-### 5b. Without a URL. Self-host. Docker.
-
-This is the facilitator's path, or a student working alone. The server
-ships only as a container image. The compose file also runs Postgres
-(`postgres:16`) and the app migrates its own database at boot, so Docker
-is the only thing to install.
-
-1. **confirm**, then clone Fountain next to the water park checkout.
-   Do not ask where a checkout is. Make one.
-
-   ```sh
-   git clone https://github.com/BinaryBourbon/fountain ../fountain && cd ../fountain
-   ```
-
-   If a `../fountain` checkout already exists, `git pull` in it instead. If
-   the clone fails because the repo is not reachable, stop, say so, and go
-   back to 5a with a URL from the facilitator. Do not look elsewhere for
-   the repo.
-2. **confirm**, then `cp .env.compose.example .env`, fill the generated
-   keys as the file says, and set one of the two sandbox-provider lines.
-   Without one the app starts and every conversation fails.
-   `SPRITES_TOKEN=` for hosted sandboxes from sprites.dev, the default and
-   the one the egress lesson needs. Or `SANDBOX_PROVIDER=runner`, no
-   credential, and `fountain runner` runs on the same machine once the CLI
-   is in. That is trusted mode on the laptop and lesson 3's containment
-   claims do not hold there. Say so. If the instance is already running
-   when `.env` changes, `docker compose up -d` again recreates the app with
-   the new setting.
-3. `docker compose up -d` in that checkout. The instance is at
-   `http://localhost:4000`. Same commands in PowerShell or WSL on Windows.
-   Then `cd` back to the water park checkout.
-4. Do 5a against `http://localhost:4000`. Register first. The first
-   account self-verifies and becomes admin with the compose defaults.
-5. If they chose the runner, start it in a second terminal,
-   `fountain runner`, and leave it running.
-
-Re-run the check and confirm `fountain.reachable` and `fountain.logged_in`
-(reachable alone with no CLI) before moving on.
-
-## 6. Floci, self-paced only
-
-For live, skip. Floci is the local AWS for the lessons. The default is
-Docker plus the `floci` CLI, because it is the path a facilitator can
-support in a room. The native binary is the fallback for a machine that
-cannot run Docker.
-
-**Default. Docker and the CLI.** Docker is installed from step 4.
-**confirm**, then install the CLI. macOS and Linux
-`brew install floci-io/floci/floci`, or without Homebrew the install
-script at https://floci.io/install.sh, which the student runs. Windows
-`iwr https://floci.io/install.ps1 | iex`, or Scoop. Then `floci start`,
-which launches the Floci container, and the AWS variables into the
-shell. `eval $(floci env)` for bash and zsh,
-`floci env --shell powershell | Invoke-Expression` for PowerShell.
-`floci env` sets `AWS_ENDPOINT_URL` to `http://localhost.floci.io:4566`, a
-name for the local machine, and the check reads that variable.
-
-**Fallback. No Docker.** Floci ships the emulator as a native binary on
-its releases page. The student downloads it for their OS and runs it. It
-listens on 4566. Then the four variables by hand,
-`AWS_ENDPOINT_URL=http://localhost:4566`, `AWS_DEFAULT_REGION=us-east-1`,
-`AWS_ACCESS_KEY_ID=test`, `AWS_SECRET_ACCESS_KEY=test` (PowerShell uses
-`$env:NAME = "value"`). No `floci` CLI is involved.
-
-Confirm `floci.reachable` with the check. If `aws`, `jq` or `gh` are
-missing, **confirm**, then install them with a package manager from the
-check's list, or from each tool's own site if there is none.
+(PowerShell uses `$env:NAME = "value"`.) The `floci` CLI is optional,
+`brew install floci-io/floci/floci` and `eval $(floci env)` do the same
+with `floci start` managing its own container. Live students skip Floci.
+A machine that cannot run Docker uses Floci's native binary from its
+releases page, listening on 4566, with the same four variables.
 
 ## 7. Verify done when
 
