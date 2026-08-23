@@ -139,21 +139,48 @@ worst version was a write GUI. The IAM scenario is those lessons made
 checkable ([prescriptions.md](prescriptions.md)); the foundations are what
 makes an agent safe to hand them to.
 
-## What is next
+## What is next: the phases
 
-1. Write lesson bodies in order F1–F4, F8–F9, I1–I4, then the live
-   playlist set (I3, I4, I7, I8, I12). Confirm Mend and Rounds run
-   unmodified against a chant repo's synthesized CloudFormation (I3, I13). Each body is written against the versions in
-   [upstream.md](upstream.md) and re-run before it ships.
-2. Cut checkpoints per IAM lesson (a tag each) from a reference build of
-   splashdown/access; the reference build is the seed test's expected
-   output.
-3. Verify on Floci whether enforcement mode honors the
-   `iam:PermissionsBoundary` condition on `CreateRole` (I8's solo path
-   depends on it; if not, solo I8 shows the lint refusal and the live
-   path shows both).
-4. Site build: Hugo, one page per lesson, the same expandable-bar layout
-   as accessibleops.net.
+Measured 2026-08-22: 26 lesson pages, 182 TODO chips, every card empty; the
+reference repo and the AWS desk do not exist; five Fountain lessons carry no
+property tag (F2, F5, F6, F7, F10); II, III, VII, X, XII each have one
+lesson. Definition of done for a lesson: card filled; Do steps run on a
+fresh machine (Floci or a Fountain instance) by someone other than the
+author; Self-paced says what the solo path cannot show; Live has the
+timing and the line; properties tagged; zero TODO chips.
+
+0. **Verify the ground.** Floci: changesets, `detect-stack-drift`, resource
+   import, and `iam:PermissionsBoundary` on `CreateRole` under enforcement
+   (I4, I7, I8, I14, I15 solo paths hinge on these). Pin Fountain's
+   canonical location and version. Record one Access Analyzer run. Decide
+   media hosting (static files vs. YouTube). Output: [upstream](upstream.md)
+   updated; each lesson's Self-paced bullet marked runs / recorded / live-only.
+1. **The reference repo.** Build `splashdown/access` for real as plain
+   CloudFormation JSON: layout, `assemble`, the JSON Schemas, `proofs`,
+   `render-delta`, generated CODEOWNERS, the apply workflow with the digest
+   check, the Floci local path; cut a checkpoint tag per IAM lesson. Without
+   it the IAM lessons are fiction. Its own repo; the lessons clone it.
+2. **Fountain course, the runtime half (F1–F6, F10, F11).** Depends only on
+   a Fountain instance. Write the cards and steps, verify live, tag or
+   explicitly un-tag properties on F2/F5/F6/F7/F10.
+3. **The AWS desk v0, direct mode against Floci.** The page (Stacks,
+   Activity), `spec.ts` / `protocol.ts`, `aws-state` / `aws-plan` /
+   `aws-result`. Then F7–F9 (the protocol, the loop interactive, the watch).
+4. **IAM course bodies.** I1–I11 from the reference repo checkpoints; then
+   the desk v1 (repo mode, the watch, the digest job) and I12–I15.
+5. **The live layer.** Rewrite the [live session guide](demo.md) as
+   playlists over lessons (20 / 60 / half-day); checkpoint drills; recorded
+   runs; the solo path walked end to end on a clean machine.
+6. **Media.** Script the Watch sections; record the two course intros and
+   the five marquee lessons (egress denial, guardrail in the editor, the
+   double refusal, drift, the desk request); fill the `video:` blocks.
+7. **Polish and back office.** The tables in this doc and
+   [prescriptions](prescriptions.md) restated for the CloudFormation path;
+   [issues](issues.md) mapped to it; the home video; an Education link on
+   accessibleops.net pointing here; the appendix written or retired.
+
+Order is by dependency: 0 gates 1, 3, 4; 1 gates 4; 3 gates F7–F9 and
+I12–I13. Phase 2 can start today.
 
 ## Terms
 
