@@ -91,10 +91,12 @@ sentences first. This account lives only in the class instance on this
 laptop. Do not reuse a password you care about. Then **confirm** and run
 
 ```sh
-just register their@email 'their-password'
+just register their@email
 ```
 
-It calls `POST /api/auth/register` and `POST /api/auth/token`, writes
+It prompts for the password silently, keeping it out of shell history.
+
+The script calls `POST /api/auth/register` and `POST /api/auth/token`, writes
 `~/.fountain/credentials` the way `fountain auth login` does, and gives
 the runner service its key. Accounts self-verify on this instance. Then
 **confirm** and start the sandbox runner
@@ -103,12 +105,19 @@ the runner service its key. Accounts self-verify on this instance. Then
 just runner
 ```
 
+Then re-run the check and confirm `fountain.runner_online` is true. The
+runner is the one service whose failure nothing else surfaces.
+
 The runner is a container with node, bun, git, the AWS CLI and jq. Its
 sandboxes are directories inside it, not on the laptop. One caveat to
 say out loud. `networking_type: limited` does not provision on a runner,
 so the egress lesson (Fountain lesson 3) needs a hosted sandbox provider,
 `SPRITES_TOKEN` in `compose/.env` and `SANDBOX_PROVIDER=sprites`, then
 `just up` again.
+
+If the student signs in to the web UI at any point, the onboarding
+wizard may ask for the inference key before step 7 mentions it. That is
+fine. Step 7 verifies it either way.
 
 The CLI is optional with the stack (the web UI covers the lessons until
 the CLI appears in one). When wanted, install it as in 5b.
@@ -168,8 +177,11 @@ Two ways, the student picks.
   it, and have the student replace the placeholder and run it in their
   own terminal. Do not run it for them and do not watch for the value.
 
+  Substitute the real instance URL when you print it. Nothing exports
+  `$FOUNTAIN_URL`, so a pasted `$FOUNTAIN_URL` is an empty string.
+
   ```sh
-  curl -X PUT "$FOUNTAIN_URL/api/account/inference-credentials/anthropic_api_key" \
+  curl -X PUT "http://localhost:4000/api/account/inference-credentials/anthropic_api_key" \
     -H "Authorization: Bearer $(awk -F'"' '/api_key/{print $2; exit}' ~/.fountain/credentials)" \
     -H 'Content-Type: application/json' -d '{"value":"PASTE-KEY-HERE"}'
   ```
@@ -179,7 +191,7 @@ Two ways, the student picks.
   browser visit does not re-enter it.
 
   ```sh
-  curl -X POST "$FOUNTAIN_URL/api/account/onboarding/complete" \
+  curl -X POST "http://localhost:4000/api/account/onboarding/complete" \
     -H "Authorization: Bearer $(awk -F'"' '/api_key/{print $2; exit}' ~/.fountain/credentials)"
   ```
 
@@ -189,9 +201,10 @@ script reports it as `fountain.inference_set`.
 
 ## 8. Verify done when
 
-Done when the check shows a water park checkout, Fountain reachable and
-logged in (reachable alone on Windows without a CLI), `inference_set`
-true, and, for self-paced, Floci reachable. If anything is false, say
+Done when the check shows a water park checkout, `fountain.logged_in`
+true (it is an authenticated call now, a stale credentials file cannot
+pass it), `inference_set` true, `runner_online` true when the stack's
+runner is the provider, and, for self-paced, Floci reachable. If anything is false, say
 which and stop. Nothing in the lessons works around a missing Fountain
 or a missing key.
 
@@ -200,7 +213,7 @@ or a missing key.
 **confirm**, then write `.waterpark/profile.json` at the checkout root.
 
 ```json
-{"mode":"self-paced","waterpark_root":"…","fountain_url":"…","floci":true,"completed":["start"]}
+{"mode":"self-paced","waterpark_root":"…","fountain_url":"…","email":"their@email","floci":true,"completed":["start"]}
 ```
 
 Say the next step is the Fountain course, lesson 1, Four primitives

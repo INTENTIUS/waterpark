@@ -19,7 +19,7 @@ foreach ($t in "docker","fountain","floci","aws","jq","gh") {
     $tools[$t] = @{ installed = $true; version = "$v" }
   } else { $tools[$t] = @{ installed = $false } }
 }
-$loggedIn = $false; if (Have "fountain") { fountain auth status *> $null; if ($LASTEXITCODE -eq 0) { $loggedIn = $true } }
+$loggedIn = $false
 $ghLoggedIn = $false; if (Have "gh") { gh auth status *> $null; if ($LASTEXITCODE -eq 0) { $ghLoggedIn = $true } }
 $profile = if ($env:FOUNTAIN_PROFILE) { $env:FOUNTAIN_PROFILE } else { "default" }
 $credUrl = ""
@@ -42,10 +42,15 @@ if (Test-Path $credFile) {
     if ($inProfile -and $line -match '^api_key\s*=\s*"?([^"]+)"?') { $credKey = $Matches[1] }
   }
 }
-$inferenceSet = $false; $onboarded = $false
+$inferenceSet = $false; $onboarded = $false; $runnerOnline = $false; $meEmail = ""
 if ($credKey -and $cliUrl) {
-  try { $c = Invoke-RestMethod -Uri "$cliUrl/api/account/inference-credentials" -Headers @{Authorization = "Bearer $credKey"} -TimeoutSec 5; if (($c | ConvertTo-Json) -match "true") { $inferenceSet = $true } } catch {}
-  try { $m = Invoke-RestMethod -Uri "$cliUrl/api/auth/me" -Headers @{Authorization = "Bearer $credKey"} -TimeoutSec 5; if ($m.onboarding_completed) { $onboarded = $true } } catch {}
+  try {
+    $m = Invoke-RestMethod -Uri "$cliUrl/api/auth/me" -Headers @{Authorization = "Bearer $credKey"} -TimeoutSec 5
+    $loggedIn = $true; $meEmail = $m.email
+    if ($m.onboarding_completed) { $onboarded = $true }
+    try { $c = Invoke-RestMethod -Uri "$cliUrl/api/account/inference-credentials" -Headers @{Authorization = "Bearer $credKey"} -TimeoutSec 5; if (($c | ConvertTo-Json) -match "true") { $inferenceSet = $true } } catch {}
+    try { $r = Invoke-RestMethod -Uri "$cliUrl/api/runners" -Headers @{Authorization = "Bearer $credKey"} -TimeoutSec 5; if (($r | ConvertTo-Json) -match '"online":\s*true') { $runnerOnline = $true } } catch {}
+  } catch {}
 }
 
 $pkgs = @(); foreach ($m in "winget","scoop","choco") { if (Have $m) { $pkgs += $m } }
@@ -54,7 +59,7 @@ $pkgs = @(); foreach ($m in "winget","scoop","choco") { if (Have $m) { $pkgs += 
   os = "Windows"
   package_managers = $pkgs
   tools = $tools
-  fountain = @{ url = $fountainUrl; reachable = (Reach "$fountainUrl/health"); logged_in = $loggedIn; cli_url = "$cliUrl"; profile = $profile; inference_set = $inferenceSet; onboarded = $onboarded }
+  fountain = @{ url = $fountainUrl; reachable = (Reach "$fountainUrl/health"); logged_in = $loggedIn; cli_url = "$cliUrl"; profile = $profile; inference_set = $inferenceSet; onboarded = $onboarded; runner_online = $runnerOnline; email = $meEmail }
   floci = @{ url = $flociUrl; reachable = (Reach "$flociUrl/") }
   github = @{ logged_in = $ghLoggedIn }
 } | ConvertTo-Json -Depth 4

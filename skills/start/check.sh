@@ -25,19 +25,26 @@ if [ -n "$wp_root" ] && [ -f "$wp_root/skills/start/SKILL.md" ] && [ -f "$wp_roo
 fi
 fountain_reachable=$(reach "$FOUNTAIN_URL/health")
 floci_reachable=$(reach "$FLOCI_URL/")
-fountain_logged_in=false; have fountain && fountain auth status >/dev/null 2>&1 && fountain_logged_in=true
+fountain_logged_in=false
 # the URL the CLI will actually use, env first, then the profile in ~/.fountain/credentials
 profile="${FOUNTAIN_PROFILE:-default}"
 cred_url=$(awk -v p="[$profile]" '$0==p{f=1;next} /^\[/{f=0} f && $1=="base_url"{gsub(/"/,"",$3); print $3}' "$HOME/.fountain/credentials" 2>/dev/null | head -1)
 cred_key=$(awk -v p="[$profile]" '$0==p{f=1;next} /^\[/{f=0} f && $1=="api_key"{gsub(/"/,"",$3); print $3}' "$HOME/.fountain/credentials" 2>/dev/null | head -1)
 cli_url="${FOUNTAIN_BASE_URL:-${cred_url:-}}"
-# set or not-set per provider. values are write-only server-side, nothing secret crosses here
-inference_set=false; onboarded=false
+# logged_in means the token works right now: an authenticated call answers.
+# a credentials file from a wiped instance stays on disk with a dead token, so the file proves nothing
+inference_set=false; onboarded=false; runner_online=false; me_email=""
 if [ -n "${cred_key:-}" ] && [ -n "$cli_url" ]; then
-  creds=$(curl -fs -m 5 -H "Authorization: Bearer $cred_key" "$cli_url/api/account/inference-credentials" 2>/dev/null || true)
-  echo "$creds" | grep -q true && inference_set=true
   me=$(curl -fs -m 5 -H "Authorization: Bearer $cred_key" "$cli_url/api/auth/me" 2>/dev/null || true)
-  echo "$me" | grep -q '"onboarding_completed":true' && onboarded=true
+  if [ -n "$me" ]; then
+    fountain_logged_in=true
+    me_email=$(echo "$me" | sed -n 's/.*"email":"\([^"]*\)".*/\1/p')
+    echo "$me" | grep -q '"onboarding_completed":true' && onboarded=true
+    creds=$(curl -fs -m 5 -H "Authorization: Bearer $cred_key" "$cli_url/api/account/inference-credentials" 2>/dev/null || true)
+    echo "$creds" | grep -q true && inference_set=true
+    runners=$(curl -fs -m 5 -H "Authorization: Bearer $cred_key" "$cli_url/api/runners" 2>/dev/null || true)
+    echo "$runners" | grep -q '"online":true' && runner_online=true
+  fi
 fi
 gh_logged_in=false; have gh && gh auth status >/dev/null 2>&1 && gh_logged_in=true
 os_name=$(uname -s 2>/dev/null || echo unknown)
@@ -50,14 +57,14 @@ if have jq; then
     else tools=$(jq -c --arg t "$t" '. + {($t):{installed:false}}' <<<"$tools"); fi
   done
   jq -n --argjson tools "$tools" --argjson wp_checkout "$wp_checkout" --arg wp_root "$wp_root" --arg wp_commit "$wp_commit" \
-    --arg fountain_url "$FOUNTAIN_URL" --argjson fountain_reachable "$fountain_reachable" --argjson fountain_logged_in "$fountain_logged_in" --arg cli_url "$cli_url" --arg profile "$profile" --argjson inference_set "$inference_set" --argjson onboarded "$onboarded" \
+    --arg fountain_url "$FOUNTAIN_URL" --argjson fountain_reachable "$fountain_reachable" --argjson fountain_logged_in "$fountain_logged_in" --arg cli_url "$cli_url" --arg profile "$profile" --argjson inference_set "$inference_set" --argjson onboarded "$onboarded" --argjson runner_online "$runner_online" --arg me_email "$me_email" \
     --arg floci_url "$FLOCI_URL" --argjson floci_reachable "$floci_reachable" --argjson gh_logged_in "$gh_logged_in" --arg os "$os_name" --arg pkg "$pkg" \
-    '{waterpark:{checkout:$wp_checkout,root:$wp_root,commit:$wp_commit}, os:$os, package_managers:($pkg|split(" ")|map(select(.!=""))), tools:$tools, fountain:{url:$fountain_url,reachable:$fountain_reachable,logged_in:$fountain_logged_in,cli_url:$cli_url,profile:$profile,inference_set:$inference_set,onboarded:$onboarded}, floci:{url:$floci_url,reachable:$floci_reachable}, github:{logged_in:$gh_logged_in}}'
+    '{waterpark:{checkout:$wp_checkout,root:$wp_root,commit:$wp_commit}, os:$os, package_managers:($pkg|split(" ")|map(select(.!=""))), tools:$tools, fountain:{url:$fountain_url,reachable:$fountain_reachable,logged_in:$fountain_logged_in,cli_url:$cli_url,profile:$profile,inference_set:$inference_set,onboarded:$onboarded,runner_online:$runner_online,email:$me_email}, floci:{url:$floci_url,reachable:$floci_reachable}, github:{logged_in:$gh_logged_in}}'
 else
   echo "waterpark_checkout=$wp_checkout root=$wp_root commit=$wp_commit"
   echo "os=$os_name package_managers=$pkg"
   for t in $TOOLS; do if have "$t"; then echo "$t=true $(version_of "$t")"; else echo "$t=false"; fi; done
-  echo "fountain_url=$FOUNTAIN_URL reachable=$fountain_reachable logged_in=$fountain_logged_in cli_url=$cli_url profile=$profile inference_set=$inference_set onboarded=$onboarded"
+  echo "fountain_url=$FOUNTAIN_URL reachable=$fountain_reachable logged_in=$fountain_logged_in cli_url=$cli_url profile=$profile inference_set=$inference_set onboarded=$onboarded runner_online=$runner_online email=$me_email"
   echo "floci_url=$FLOCI_URL reachable=$floci_reachable"
   echo "gh_logged_in=$gh_logged_in"
 fi

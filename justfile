@@ -79,9 +79,10 @@ up:
     compose/bin/env.sh
     docker compose -f compose/docker-compose.yml --env-file compose/.env up -d
 
-# Register a class account, log the CLI in, give the runner its key: just register you@example.com 'pw'
-register email password profile="default":
-    compose/bin/register.sh {{email}} {{password}} {{profile}}
+# Register a class account, log the CLI in, give the runner its key.
+# just register you@example.com          prompts for the password, keeping it out of history
+register email password="" profile="default":
+    compose/bin/register.sh {{email}} "{{password}}" {{profile}}
 
 # Start the containerized runner (after just register). Pulls the published image
 runner:

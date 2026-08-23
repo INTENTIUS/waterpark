@@ -1,10 +1,16 @@
 #!/usr/bin/env bash
 # Register an account on the compose Fountain, mint an API key, log the CLI in, and give the runner the key.
-# Usage: bin/register.sh you@example.com 'password' [profile] [base-url]
+# Usage: bin/register.sh you@example.com ['password'] [profile] [base-url]
+# With no password argument it prompts silently (or reads WP_PASSWORD), keeping it out of history and ps.
 # Only for a class or laptop instance. Accounts self-verify there (EMAIL_DELIVERY=none).
 set -euo pipefail
 cd "$(dirname "$0")/.."
-email=${1:?email}; password=${2:?password}; profile=${3:-default}
+email=${1:?email}; password=${2:-${WP_PASSWORD:-}}; profile=${3:-default}
+if [ -z "$password" ]; then
+  # keep it out of shell history and ps. just register you@example.com prompts here
+  printf 'password (not echoed): ' >&2; read -rs password; echo >&2
+  [ -n "$password" ] || { echo "empty password" >&2; exit 1; }
+fi
 port=$(grep -E '^PORT=' .env 2>/dev/null | cut -d= -f2); port=${port:-4000}
 base="${4:-http://localhost:$port}"
 
