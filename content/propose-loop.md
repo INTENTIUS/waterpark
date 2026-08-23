@@ -5,68 +5,64 @@ weight: 1
 
 {{< todo "prose" >}}
 
-<!-- context: How work gets done at splashdown is one loop, abstracted from three Fountain apps — [Mend](https://github.com/jhgaylor/mend), [Rounds](https://github.com/jhgayl … -->
+<!-- context. How work gets done at splashdown is one loop abstracted from three Fountain apps, Mend, Rounds and dns-desk. The apps differ on two axes, interactive or ambient and audit-driven or request-driven, and share everything else. -->
 
 ## The parts
 
 | Part | What it is | Mend | Rounds | dns-desk |
 |---|---|---|---|---|
-| **target** | the thing under management, which the agent does not control and whose contents it treats as untrusted | a repo's CI, k8s, Docker and cloud config | the same, enrolled | the Cloudflare zones a token can see |
-| **read** | a deterministic read of the target. Audit-driven: **findings** sorted by how confident the fix is — *deterministic* (exact edit known), *judgement* (confident something is wrong; will not guess the fix), *report-only*. Request-driven: the current state, re-read before any apply | `chant audit`, ten catalogs, the silent ones shown greyed | the same, on a schedule | `dns-state`, incremental per zone |
-| **operator** | an agent on a toolkit environment with the tool on its PATH and a credential that can **read the target and nothing more**, one per target | one mender per repo; a per-repo read-only token in its own vault | the same, holding a grant it trades for a one-hour read-only token | one desk per token; the vault's zone list is the blast radius |
-| **plan** | what the operator proposes, per finding or per request: *applied* (mechanical, from the tool's own diff), *proposed* (a judgement call it was confident in), *skipped* (turns on intent it cannot see, with a note on what to decide); rendered as a diff | `mend-plan` plus one `mend-fix` block per fix, independently selectable | one cluster per file, with status | `dns-plan`, a diff against the last read |
-| **verify** | re-run the read after the change, before proposing: findings gone, merge-worthy count not up, files still parse; or the target re-read and the plan re-made if it moved | before the plan is shown | a failed verify opens nothing | re-read the zone before apply; re-plan instead of applying stale |
-| **propose** | the only path that writes, held by something that is not the operator | the human's browser with the human's token; every context line re-verified against the target right now | a server minting a one-target write token for one proposal, checking policy and history, rendering the PR body from the findings | the desk applies after an `APPROVE plan-id` message, with a token that was scoped before the conversation began |
-| **rules** | constraints that hold when the prompt is ignored, enforced where the write happens | the browser refuses a stale patch | never reopen what a human closed; never a second PR for the same thing; never outside the derived branch; at most N open; `enabled: false` means nothing | the token's scope; today the approve is convention and the audit trail, until fountain#643 |
-| **record** | where the state lives: where the person who decides is already standing, nothing to keep in sync | the conversation: report, plan, patch derived from turns and blocks | GitHub: branch name and a marker in the PR body; the conversation for the round report | the conversation: plan status always derived, never stored |
-| **refusal** | an outcome, not a failure, rendered as one | `skipped`, with the note | `already-open`, `declined`, `deferred`, `clean`; a decline sticks until `rounds:reconsider` | a request outside the token's zones |
+| **target** | The thing under management. The agent does not control it and treats its contents as untrusted. | A repo's CI, Kubernetes, Docker and cloud config. | The same, enrolled. | The Cloudflare zones a token can see. |
+| **read** | A deterministic read of the target. An audit yields findings sorted by fix confidence (deterministic, judgement, report-only). A request yields the current state, re-read before any apply. | `chant audit` over ten catalogs. Silent catalogs are shown greyed. | The same, on a schedule. | `dns-state`, incremental per zone. |
+| **operator** | An agent on a toolkit environment with the tool on its PATH and a credential that can read the target and nothing more. One per target. | One mender per repo. A per-repo read-only token in its own vault. | The same, holding a grant it trades for a one-hour read-only token. | One desk per token. The vault's zone list is the blast radius. |
+| **plan** | What the operator proposes per finding or per request. Applied means mechanical from the tool's own diff. Proposed means a judgement call it was confident in. Skipped means it turns on intent it cannot see, with a note. Rendered as a diff. | `mend-plan` plus one `mend-fix` block per fix, independently selectable. | One cluster per file, with status. | `dns-plan`, a diff against the last read. |
+| **verify** | Re-run the read after the change and before proposing. Findings gone, merge-worthy count not up, files still parse. Or re-read the target and re-plan if it moved. | Before the plan is shown. | A failed verify opens nothing. | Re-read the zone before apply. Re-plan instead of applying stale. |
+| **propose** | The only path that writes, held by something that is not the operator. | The human's browser with the human's token. Every context line re-verified against the target right now. | A server minting a one-target write token for one proposal, checking policy and history, rendering the PR body from the findings. | The desk applies after an `APPROVE plan-id` message, with a token scoped before the conversation began. |
+| **rules** | Constraints that hold when the prompt is ignored, enforced where the write happens. | The browser refuses a stale patch. | Never reopen what a human closed. Never a second PR for the same thing. Never outside the derived branch. At most N open. `enabled: false` means nothing happens. | The token's scope. Today the approve is convention and the audit trail, until fountain#643. |
+| **record** | Where the state lives. It is where the person who decides is already standing, with nothing to keep in sync. | The conversation. Report, plan and patch are derived from turns and blocks. | GitHub. Branch name and a marker in the PR body. The conversation holds the round report. | The conversation. Plan status is always derived, never stored. |
+| **refusal** | An outcome, not a failure, rendered as one. | `skipped`, with the note. | `already-open`, `declined`, `deferred`, `clean`. A decline sticks until `rounds:reconsider`. | A request outside the token's zones. |
 
 {{< todo "prose" >}}
 
-<!-- context: Two invariants run through every column. The claim and the report are one copy (a PR body rendered from the objects the plan reports cannot disagree with it). A … -->
+<!-- context. Two invariants run through every column. The claim and the report are one copy. The operator never holds a write. -->
 
 ## The four forms
 
 |  | audit-driven | request-driven |
 |---|---|---|
-| **interactive** | Mend: point it at a target, watch, ask for changes, take the patch or open the PR yourself | dns-desk: ask in words, read the plan as a diff, approve, done |
-| **ambient** | Rounds: schedule, reconcile against its own past work, cap, server as propose, declines stick | (a ticket webhook starting a desk conversation; no app yet) |
+| **interactive** | Mend. Point it at a target, watch, ask for changes, take the patch or open the PR yourself. | dns-desk. Ask in words, read the plan as a diff, approve, done. |
+| **ambient** | Rounds. Schedule, reconcile against its own past work, cap, server as propose, declines stick. | A ticket webhook starting a desk conversation. No app yet. |
 
 ## The loop on IAM
 
 {{< todo "prose" >}}
 
-<!-- context: the applier is CloudFormation, never the agent; the desk proposes (repo mode) or applies only in direct mode with a bounded role; see docs/aws-desk.md -->
-
-{{< todo "prose" >}}
-
-<!-- context: IAM is a target that is *also* a repo, so propose is the PR in every form and approval is the merge, never an in-conversation message (decision 18). That is the … -->
+<!-- context. The applier is CloudFormation, never the agent. The desk proposes in repo mode and applies only in direct mode with a bounded role. See docs/aws-desk.md. IAM is a target that is also a repo, so propose is the PR in every form and approval is the merge, never an in-conversation message (decision 18). -->
 
 | Form | IAM instance | Build or reuse | Lessons |
 |---|---|---|---|
-| interactive, request-driven | **the concierge**, in the desk's form: the estate on screen (`chant search`), "tickets-api needs read on the receipts bucket", `wp-request` makes one deterministic leaf edit, the plan is the rendered access delta, the PR is opened with a PR-only token, CODEOWNERS approve, the gated job applies; refusals name the enrollment or escalation path | build | I12 |
-| ambient, audit-driven | **the watcher**, in Rounds' form: unused-access findings and expiring grants on a schedule, one PR per finding, capped, declines stick; and the drift reconcile under the same rules | Rounds as-is for the lint tier (enroll `splashdown/access`); IAM projections added | I7, I13 |
-| interactive, audit-driven | **mend the access repo**: point Mend at `splashdown/access`; `chant audit`'s aws catalog reads the synthesized CloudFormation; the repo's own `.chant/rules/` are the judgement tier | Mend as-is | I3 |
-| ambient, request-driven | a ticket that opens a desk conversation and tracks the PR as comments | later | I12 (ticketing) |
+| interactive, request-driven | **The concierge**, in the desk's form. The estate on screen. "tickets-api needs read on the receipts bucket." One deterministic file edit. The plan is the rendered access delta. The PR is opened with a PR-only token. CODEOWNERS approve. The gated job applies. Refusals name the enrollment or escalation path. | Build. | I12 |
+| ambient, audit-driven | **The watcher**, in Rounds' form. Unused-access findings and expiring grants on a schedule. One PR per finding, capped, declines stick. The drift reconcile runs under the same rules. | Rounds as-is for what its catalogs cover. IAM projections added. | I7, I13 |
+| interactive, audit-driven | **Mend the access repo.** Point Mend at `splashdown/access`. The aws catalog reads the synthesized CloudFormation. | Mend as-is. | I3 |
+| ambient, request-driven | A ticket that opens a desk conversation and tracks the PR as comments. | Later. | I12 |
 
 {{< todo "prose" >}}
 
-<!-- context: The parts, on IAM: … -->
+<!-- context. The parts, on IAM. -->
 
 | Part | IAM at splashdown | Lessons |
 |---|---|---|
-| target | `splashdown/access` and the live estate it owns; a satellite repo | I1, I8 |
-| read | the lint pack, the drift watch, the Access Analyzer proofs, the unused-access and expiring-grant projections, `chant search` for the estate view | I3, I6, I7, I11 |
-| operator | a teammate on the reference Environment: checkout, SKILL.md, a code-host token that can open PRs and nothing else, **no cloud credential** | I12, F4 |
-| plan | the access delta rendered by the deterministic renderer (never the model); a directed refusal for a boundary exception or an unmapped requester | I12, I14 |
-| verify | lint and emulator-backed validation on every PR with no credential; CheckNoNewAccess where an untrusted author cannot trigger it; the manifest digest re-checked at apply | I4, I6, I14 |
-| propose | the PR; merge-then-apply by a gated job on a protected branch; the watcher's propose endpoint with cap and declined list | I6, I13 |
-| rules | generated CODEOWNERS and branch protection; the apply role's own boundary; the satellite's `iam:PermissionsBoundary` condition; Rounds' rules on reconcile and watcher (decision 28) | I5, I6, I7, I8 |
-| record | git: blame, the PR, provenance by PR and sha; the conversation for the request; reconcile state in the code host | I6, I7, I12 |
-| refusal | the red squiggle; the double refusal; "unmapped identity, here is the enrollment path"; a reconcile PR closed unmerged | I3, I8, I12, I7 |
+| target | `splashdown/access` and the live estate it owns. A satellite repo. | I1, I8 |
+| read | The guardrails, the drift watch, the Access Analyzer proofs, the unused-access and expiring-grant projections, and the estate view. | I3, I6, I7, I11 |
+| operator | A teammate on the reference Environment with a checkout, SKILL.md and a code-host token that can open PRs and nothing else. No cloud credential. | I12, F4 |
+| plan | The access delta rendered by the deterministic renderer, never the model. A directed refusal for a boundary exception or an unmapped requester. | I12, I14 |
+| verify | The guardrails and a changeset against Floci on every PR with no credential. `check-no-new-access` where an untrusted author cannot trigger it. The digest re-checked at apply. | I4, I6, I14 |
+| propose | The PR. Merge then apply by a gated job on a protected branch. The watcher's propose endpoint with cap and declined list. | I6, I13 |
+| rules | Generated CODEOWNERS and branch protection. The apply role's own boundary. The satellite's `iam:PermissionsBoundary` condition. Rounds' rules on reconcile and watcher (decision 28). | I5, I6, I7, I8 |
+| record | Git for blame, the PR and provenance by PR and sha. The conversation for the request. Reconcile state in the code host. | I6, I7, I12 |
+| refusal | The guardrail in the editor. The double refusal. An unmapped identity with the enrollment path. A reconcile PR closed unmerged. | I3, I8, I12, I7 |
 
 ## What the loop asks of Fountain
 
 {{< todo "prose" >}}
 
-<!-- context: An environment with the tool preinstalled and no secrets (F1, F4); a vault per target bound at creation (F4); a teammate per target with a persistent computer s … -->
+<!-- context. An environment with the tool preinstalled and no secrets (F1, F4). A vault per target bound at creation (F4). A teammate per target with a persistent computer (F5). A schedule for the ambient forms (F6). Protocol blocks and the conversation as record for the interactive forms (F7). A hosted sandbox provider wherever the operator reads untrusted input while holding anything (F10). No approval gate in the loop, which is why propose lives outside it (F11). -->

@@ -10,19 +10,19 @@ stopped.
 ## Use
 
 Claude Code, in a checkout of this repo, loads skills from the repo when
-they are linked under `.claude/skills/`. Or copy one:
+they are linked under `.claude/skills/`. Or copy one.
 
 ```sh
 mkdir -p ~/.claude/skills && cp -r skills/start ~/.claude/skills/waterpark-start
 ```
 
-The skills.sh CLI can install from the repo directly:
+The skills.sh CLI can install from the repo directly.
 
 ```sh
 npx skills add INTENTIUS/waterpark
 ```
 
-A Fountain agent takes the same repo as a GitHub-sourced skill:
+A Fountain agent takes the same repo as a GitHub-sourced skill.
 
 ```yaml
 spec:
@@ -56,4 +56,4 @@ skill: "skills/start"
 
 | Skill | Drives | State |
 |---|---|---|
-| `start` | Start here: clone water park, install and log in to Fountain, Floci for self-paced | first draft |
+| `start` | Start here. Clone water park, install and log in to Fountain, Floci for self-paced. | first draft |
