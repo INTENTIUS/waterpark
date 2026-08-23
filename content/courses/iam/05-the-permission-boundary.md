@@ -8,7 +8,7 @@ summary: "The baseline stack: the boundary `AWS::IAM::ManagedPolicy` every role 
 goal: ""
 done_when: ""
 restart_from: "lesson 4"
-properties: ["VI"]
+properties: ["VI", "III"]
 closes: ["P7"]
 # media — provider: youtube | vimeo | file | todo
 video:
@@ -18,7 +18,7 @@ video:
 # activity — kind: hands-on | watch-along | discuss
 activity:
   kind: hands-on
-  time: ""
+  time: "30 min"
   needs: []
   solo: true
   live: true
@@ -29,6 +29,7 @@ activity:
 - The baseline stack: the boundary `AWS::IAM::ManagedPolicy` every role references by name; the apply role's own boundary (decision 12); the org policy set (live only); default-deny `AWS::EC2::SecurityGroup`s.
 - Boundary contents lean from [delegation](../../docs/design/delegation.md).
 - Every other stack references the boundary by deterministic name.
+- The why lives in the repo (property III): a `Description` on the boundary and the baseline README say why each deny is there; a grant carries its rationale beside `expires`; the [decisions ledger](../../docs/decisions.md) is the long form.
 
 ## Watch
 
@@ -50,6 +51,6 @@ activity:
 
 {{< todo "what the room sees; timing; the honesty line" >}}
 
-## Back office
+## Further reading
 
 [issues](../../docs/issues.md) A6, A7; decisions 11, 12; [threat model](../../docs/threat-model.md).

@@ -18,7 +18,7 @@ video:
 # activity — kind: hands-on | watch-along | discuss
 activity:
   kind: hands-on
-  time: ""
+  time: "45 min"
   needs: []
   solo: true
   live: true
@@ -50,6 +50,6 @@ activity:
 
 {{< todo "what the room sees; timing; the honesty line" >}}
 
-## Back office
+## Further reading
 
 [the AWS desk](../../docs/aws-desk.md); [the propose loop](../../propose-loop.md); [agentic](../../docs/design/agentic.md); decisions 14, 15, 17, 18, 30.

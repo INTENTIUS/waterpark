@@ -8,7 +8,7 @@ summary: "`scripts/assemble` then `aws cloudformation deploy` against Floci endp
 goal: ""
 done_when: ""
 restart_from: "lesson 3"
-properties: ["XI"]
+properties: ["XI", "I", "VII"]
 closes: ["P6 (part)"]
 # media — provider: youtube | vimeo | file | todo
 video:
@@ -18,7 +18,7 @@ video:
 # activity — kind: hands-on | watch-along | discuss
 activity:
   kind: hands-on
-  time: ""
+  time: "20 min"
   needs: []
   solo: true
   live: true
@@ -29,6 +29,7 @@ activity:
 - `scripts/assemble` then `aws cloudformation deploy` against Floci endpoints; no account, no keys; live: a real sandbox account.
 - Floci: CloudFormation, IAM, STS, EC2 SGs in-process; no Organizations, Identity Center, Access Analyzer (recorded verdicts for those).
 - Read a role back with `get-role`; the file predicted it.
+- Rollback is native (property VII): a failed update rolls the stack back on its own; a `replacement: true` change is the risky case and waits for a person (lesson 14).
 
 ## Watch
 
@@ -50,6 +51,6 @@ activity:
 
 {{< todo "what the room sees; timing; the honesty line" >}}
 
-## Back office
+## Further reading
 
 [issues](../../docs/issues.md) A13; [multi-account](../../docs/design/multi-account.md) item 3; [upstream](../../docs/upstream.md) (Floci).

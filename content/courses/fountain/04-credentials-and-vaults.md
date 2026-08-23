@@ -8,7 +8,7 @@ summary: "Env vars merge environment secrets then vault secrets; the vault wins.
 goal: ""
 done_when: ""
 restart_from: "lesson 3"
-properties: ["V", "VI"]
+properties: ["V", "VI", "X"]
 # media — provider: youtube | vimeo | file | todo
 video:
   provider: todo
@@ -17,7 +17,7 @@ video:
 # activity — kind: hands-on | watch-along | discuss
 activity:
   kind: hands-on
-  time: ""
+  time: "20 min"
   needs: []
   solo: true
   live: true
@@ -28,6 +28,7 @@ activity:
 - Env vars merge environment secrets then vault secrets; the vault wins.
 - A vault binds to one conversation at creation; `allowed_environment_ids` / `allowed_vault_ids` bound what a caller may attach.
 - Mend's split: read token in the repo's vault, write token in the browser, never the sandbox. The credential table (who / holds / can) is reused by lessons 8 and 12 of the IAM course.
+- Revocation is removing the vault (property X): no rotation ceremony, nothing shared.
 
 ## Watch
 
@@ -49,6 +50,6 @@ activity:
 
 {{< todo "what the room sees; timing; the honesty line" >}}
 
-## Back office
+## Further reading
 
 [workload identity](../../docs/design/workload-identity.md); decision 15; Mend README.

@@ -12,10 +12,11 @@ half-written.
 
 | Kind | Where | Layout | Has |
 |---|---|---|---|
-| home | `content/_index.md` | `index.html` | intro, optional video, the course cards |
+| home | `content/_index.md` | `index.html` | intro, optional video, Start here, the course cards |
+| start | `content/start.md` | `single.html` (page) | setup, self-paced vs live, order |
 | courses index | `content/courses/_index.md` | `list.html` | intro, course cards |
 | course | `content/courses/<course>/_index.md` | `list.html` | intro (text or video), optional activity, the lesson list |
-| lesson | `content/courses/<course>/NN-slug.md` | `single.html` (lesson) | card, optional video, optional activity, body, pager |
+| lesson | `content/courses/<course>/NN-slug.md` | `single.html` (lesson) | card (properties, goal, done when, restart from, mode + time), optional video, optional activity, body, pager |
 | page | `content/propose-loop.md`, `content/docs/**` | `single.html` (page) | optional video, optional activity, body |
 
 A lesson may have a video, an activity, or both. A lesson with neither is
@@ -65,7 +66,7 @@ Headings in this order; a section may be dropped if it does not apply.
 ## Do            the activity: numbered steps, imperative, one job
 ## Self-paced    what Floci / your own machine can and cannot show
 ## Live          what the room sees; timing; the honesty line
-## Back office   links into content/docs for depth
+## Further reading   links into content/docs for depth
 ```
 
 ## Markers

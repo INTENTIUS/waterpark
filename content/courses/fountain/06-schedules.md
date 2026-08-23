@@ -17,7 +17,7 @@ video:
 # activity — kind: hands-on | watch-along | discuss
 activity:
   kind: hands-on
-  time: ""
+  time: "10 min"
   needs: []
   solo: true
   live: true
@@ -48,6 +48,6 @@ activity:
 
 {{< todo "what the room sees; timing; the honesty line" >}}
 
-## Back office
+## Further reading
 
 Fountain `docs/api.md` (Schedules); Rounds README.

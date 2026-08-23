@@ -18,7 +18,7 @@ video:
 # activity — kind: hands-on | watch-along | discuss
 activity:
   kind: hands-on
-  time: ""
+  time: "25 min"
   needs: []
   solo: true
   live: true
@@ -50,6 +50,6 @@ activity:
 
 {{< todo "what the room sees; timing; the honesty line" >}}
 
-## Back office
+## Further reading
 
 [issues](../../docs/issues.md) A4, A5; [personas](../../docs/design/personas.md).

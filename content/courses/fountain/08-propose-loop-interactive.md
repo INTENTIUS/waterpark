@@ -8,7 +8,7 @@ summary: "Mend (audit-driven) and dns-desk (request-driven) as the worked refere
 goal: ""
 done_when: ""
 restart_from: "lessons 4 and 7"
-properties: ["IV", "VIII"]
+properties: ["IV", "VIII", "XI"]
 # media — provider: youtube | vimeo | file | todo
 video:
   provider: todo
@@ -17,7 +17,7 @@ video:
 # activity — kind: hands-on | watch-along | discuss
 activity:
   kind: hands-on
-  time: ""
+  time: "45 min"
   needs: []
   solo: true
   live: true
@@ -27,6 +27,7 @@ activity:
 
 - Mend (audit-driven) and dns-desk (request-driven) as the worked references; the parts table from [the propose loop](../../propose-loop.md).
 - The agent reads; a person is the propose step; the browser refuses a stale patch.
+- Re-read before apply is property XI on the agent side: the desk re-plans instead of applying a stale diff.
 
 ## Watch
 
@@ -48,6 +49,6 @@ activity:
 
 {{< todo "what the room sees; timing; the honesty line" >}}
 
-## Back office
+## Further reading
 
 [the propose loop](../../propose-loop.md); Mend and dns-desk READMEs; decisions 14, 15, 18, 30.

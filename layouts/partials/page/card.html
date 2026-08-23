@@ -4,7 +4,8 @@
     <dt>Properties</dt><dd>{{ if $props }}{{ range $i, $r := $props }}{{ if $i }}, {{ end }}{{ range hugo.Data.properties }}{{ if eq .roman $r }}<a href="https://accessibleops.net/{{ .slug }}/">{{ .roman }} {{ .title }}</a>{{ end }}{{ end }}{{ end }}{{ else }}<span class="todo">TODO: which properties this demonstrates</span>{{ end }}</dd>
     <dt>Goal</dt><dd>{{ .Params.goal | default "TODO" | markdownify }}</dd>
     <dt>Done when</dt><dd>{{ .Params.done_when | default "TODO" | markdownify }}</dd>
-    <dt>Restart from</dt><dd>{{ .Params.restart_from | default "TODO" | markdownify }}</dd>
+    <dt>Restart from</dt><dd>{{ .Params.restart_from | default "TODO" | markdownify }} <span class="muted legend">(the lesson whose checkpoint to reload if this one breaks)</span></dd>
+    {{ with .Params.activity }}<dt>Mode</dt><dd>{{ if and .solo .live }}self-paced or live{{ else if .solo }}self-paced{{ else if .live }}live only{{ end }}{{ with .time }} &middot; about {{ . }}{{ end }}</dd>{{ end }}
   </dl>
   {{ with .Params.closes }}<p class="tags">{{ range . }}<span class="tag tag-closes">closes {{ . }}</span>{{ end }}</p>{{ end }}
 </section>

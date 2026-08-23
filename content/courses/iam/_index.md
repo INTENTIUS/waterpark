@@ -1,6 +1,6 @@
 ---
 title: "The IAM repo"
-kicker: "Course 2"
+kicker: "Course 2 · after Fountain"
 weight: 2
 summary: "Build splashdown/access from nothing as plain CloudFormation JSON, then put the agent on it as the desk and the watcher. Org IAM is the worked example because it exercises the agent side and most of the properties with no toolchain at all."
 video:

@@ -18,7 +18,7 @@ video:
 # activity — kind: hands-on | watch-along | discuss
 activity:
   kind: hands-on
-  time: ""
+  time: "30 min"
   needs: []
   solo: true
   live: true
@@ -50,6 +50,6 @@ activity:
 
 {{< todo "what the room sees; timing; the honesty line" >}}
 
-## Back office
+## Further reading
 
 [delegation](../../docs/design/delegation.md); [guardrail rollout](../../docs/design/guardrail-rollout.md); decisions 9, 20.

@@ -8,7 +8,7 @@ summary: "A teammate is a conversation bound to `fountain:team`; one thread per 
 goal: ""
 done_when: ""
 restart_from: "lesson 2"
-properties: []
+properties: ["IX"]
 # media — provider: youtube | vimeo | file | todo
 video:
   provider: todo
@@ -17,7 +17,7 @@ video:
 # activity — kind: hands-on | watch-along | discuss
 activity:
   kind: hands-on
-  time: ""
+  time: "10 min"
   needs: []
   solo: true
   live: true
@@ -27,6 +27,7 @@ activity:
 
 - A teammate is a conversation bound to `fountain:team`; one thread per agent; the roster, presence, `/api/team/stream`.
 - Not a fifth primitive.
+- One thread per agent is what makes a teammate's work attributable (property IX): you can always find what it did.
 
 ## Watch
 
@@ -48,6 +49,6 @@ activity:
 
 {{< todo "what the room sees; timing; the honesty line" >}}
 
-## Back office
+## Further reading
 
 Fountain `docs/primitives.md` (the team page); `docs/api.md` (`/api/team`).

@@ -18,7 +18,7 @@ video:
 # activity — kind: hands-on | watch-along | discuss
 activity:
   kind: hands-on
-  time: ""
+  time: "30 min"
   needs: []
   solo: true
   live: true
@@ -50,6 +50,6 @@ activity:
 
 {{< todo "what the room sees; timing; the honesty line" >}}
 
-## Back office
+## Further reading
 
 [workload identity](../../docs/design/workload-identity.md); decision 13; [issues](../../docs/issues.md) A17, A18.

@@ -1,8 +1,8 @@
 ---
-title: "Appendix: shifts not on the schedule"
+title: "Appendix: lessons not yet scheduled"
 ---
 
-Not on the schedule. Each becomes a shift when its upstream is ready.
+Not in either course yet. Each becomes a lesson when its upstream is ready.
 
 - **The org layer as Ops.** A19: OU tree, SCPs, Identity Center, org trail
   reconciled from typed source on aws-warden's cycle design (decision 16).

@@ -4,7 +4,7 @@
     <span class="lesson-num">{{ .Params.lesson }}</span>
     <span class="lesson-title">{{ .Title }}</span>
   </a>
-  <span class="lesson-theme">{{ .Params.summary }}</span>
+  <span class="lesson-theme">{{ .Params.summary }}{{ with .Params.activity }}{{ with .time }} &middot; {{ . }}{{ end }}{{ if and .live (not .solo) }} &middot; live only{{ end }}{{ end }}</span>
   <span class="tags">
     {{ range .Params.properties }}<span class="tag tag-prop" title="Accessible Ops property">{{ . }}</span>{{ end }}
     {{ range .Params.closes }}<span class="tag tag-closes" title="Prescription closed">{{ . }}</span>{{ end }}

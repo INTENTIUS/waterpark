@@ -51,7 +51,7 @@ activity:
 
 {{< todo >}}
 
-## Back office
+## Further reading
 
 {{< todo "links into content/docs" >}}
 EOT

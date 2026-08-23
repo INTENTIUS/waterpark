@@ -12,6 +12,7 @@
 </div>
 {{ end }}
 {{ if gt (len .RegularPages) 0 }}
+{{ if eq .Section "courses" }}{{ $t := 0 }}{{ range .RegularPages }}{{ with .Params.activity }}{{ with .time }}{{ $t = add $t (int (index (split . " ") 0)) }}{{ end }}{{ end }}{{ end }}{{ if gt $t 0 }}<p class="muted course-total">{{ len .RegularPages }} lessons · about {{ div $t 60 }} h {{ mod $t 60 }} min self-paced</p>{{ end }}{{ end }}
 <ol class="lesson-list">
   {{ range .RegularPages.ByWeight }}
     {{ if eq $.Section "courses" }}

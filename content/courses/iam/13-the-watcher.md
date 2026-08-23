@@ -17,7 +17,7 @@ video:
 # activity — kind: hands-on | watch-along | discuss
 activity:
   kind: hands-on
-  time: ""
+  time: "30 min"
   needs: []
   solo: true
   live: true
@@ -48,6 +48,6 @@ activity:
 
 {{< todo "what the room sees; timing; the honesty line" >}}
 
-## Back office
+## Further reading
 
 [the AWS desk](../../docs/aws-desk.md) (the watch); Rounds README; decision 28; [issues](../../docs/issues.md) D3.

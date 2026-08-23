@@ -8,7 +8,7 @@ summary: "`fountain runner` on a machine you own; sandboxes are directories; tru
 goal: ""
 done_when: ""
 restart_from: "lesson 3"
-properties: []
+properties: ["VI"]
 # media — provider: youtube | vimeo | file | todo
 video:
   provider: todo
@@ -17,7 +17,7 @@ video:
 # activity — kind: hands-on | watch-along | discuss
 activity:
   kind: hands-on
-  time: ""
+  time: "30 min"
   needs: []
   solo: true
   live: true
@@ -27,6 +27,7 @@ activity:
 
 - `fountain runner` on a machine you own; sandboxes are directories; trusted mode only: no isolation, no egress policy, daemon must be online (ADR 0022).
 - Re-run lesson 3 here and watch the allowlist not apply.
+- The counterexample for property VI: a runner has no bound; every containment claim from lesson 3 is void here.
 
 ## Watch
 
@@ -48,6 +49,6 @@ activity:
 
 {{< todo "what the room sees; timing; the honesty line" >}}
 
-## Back office
+## Further reading
 
 Fountain ADR 0022; ADR 0018; decision 29.

@@ -8,7 +8,7 @@ summary: "The reviewer approves the plan block (access delta + proof verdicts) b
 goal: ""
 done_when: ""
 restart_from: "lesson 6"
-properties: ["VIII", "XIV"]
+properties: ["VIII", "XIV", "VII"]
 closes: ["P3"]
 # media — provider: youtube | vimeo | file | todo
 video:
@@ -18,7 +18,7 @@ video:
 # activity — kind: hands-on | watch-along | discuss
 activity:
   kind: hands-on
-  time: ""
+  time: "20 min"
   needs: []
   solo: true
   live: true
@@ -28,6 +28,7 @@ activity:
 
 - The reviewer approves the plan block (access delta + proof verdicts) bound by a digest over template, parameters and changeset; the apply job re-creates the changeset and refuses if the digest or the stack moved.
 - The changeset is the manifest; `describe-change-set` JSON is its native form (the kit's E1 schema is the cross-backend version).
+- Provenance is a stated gap (property XIV): the digest proves the plan did not move, not who built the template; an OIDC-attested build checked before `deploy` is the follow-on lesson.
 
 ## Watch
 
@@ -49,6 +50,6 @@ activity:
 
 {{< todo "what the room sees; timing; the honesty line" >}}
 
-## Back office
+## Further reading
 
 decisions 6, 23, 24; [pr-automation](../../docs/pr-automation.md); [the AWS desk](../../docs/aws-desk.md) (the digest).

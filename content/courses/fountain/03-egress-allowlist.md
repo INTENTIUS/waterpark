@@ -17,7 +17,7 @@ video:
 # activity — kind: hands-on | watch-along | discuss
 activity:
   kind: hands-on
-  time: ""
+  time: "15 min"
   needs: []
   solo: true
   live: true
@@ -49,6 +49,6 @@ activity:
 
 {{< todo "what the room sees; timing; the honesty line" >}}
 
-## Back office
+## Further reading
 
 Fountain `docs/primitives.md` (networking); [threat model](../../docs/threat-model.md) boundary 5; decision 29.

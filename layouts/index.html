@@ -4,10 +4,11 @@
   {{ partial "page/video.html" . }}
 </section>
 <section class="courses">
+  <p class="start-cta"><a href="{{ "start/" | relURL }}">Start here &rarr;</a> <span class="muted">what you need, ten minutes; then course 1.</span></p>
   <h2 class="band-head">Courses</h2>
   <div class="course-grid">
     {{ range (site.GetPage "courses").Sections.ByWeight }}{{ partial "course-card.html" . }}{{ end }}
   </div>
-  <p class="props-more"><a href="https://accessibleops.net">The fourteen properties &rarr;</a> &nbsp; <a href="{{ "propose-loop/" | relURL }}">The propose loop &rarr;</a> &nbsp; <a href="{{ "docs/" | relURL }}">The back office &rarr;</a></p>
+  <p class="props-more"><a href="https://accessibleops.net">The fourteen properties &rarr;</a></p>
 </section>
 {{ end }}

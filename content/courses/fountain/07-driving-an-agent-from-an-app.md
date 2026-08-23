@@ -8,7 +8,7 @@ summary: "Protocol blocks parsed out of replies; the conversation is the system 
 goal: ""
 done_when: ""
 restart_from: "lesson 5"
-properties: []
+properties: ["IX"]
 # media — provider: youtube | vimeo | file | todo
 video:
   provider: todo
@@ -17,7 +17,7 @@ video:
 # activity — kind: hands-on | watch-along | discuss
 activity:
   kind: hands-on
-  time: ""
+  time: "45 min"
   needs: []
   solo: true
   live: true
@@ -28,6 +28,7 @@ activity:
 - Protocol blocks parsed out of replies; the conversation is the system of record; one SSE connection while live.
 - Sign in with Fountain (OAuth code + PKCE; token is an API key); `API_CORS_ORIGINS`, `OAUTH_CLIENTS`.
 - Client patterns from dns-desk / Mend.
+- The conversation is the record (property IX): the page derives its view from turns and blocks; nothing is stored elsewhere.
 
 ## Watch
 
@@ -49,6 +50,6 @@ activity:
 
 {{< todo "what the room sees; timing; the honesty line" >}}
 
-## Back office
+## Further reading
 
 dns-desk README; Mend README.

@@ -42,7 +42,7 @@ weight: 1
 
 <!-- context: IAM is a target that is *also* a repo, so propose is the PR in every form and approval is the merge, never an in-conversation message (decision 18). That is the … -->
 
-| Form | IAM instance | Build or reuse | Shifts |
+| Form | IAM instance | Build or reuse | Lessons |
 |---|---|---|---|
 | interactive, request-driven | **the concierge**, in the desk's form: the estate on screen (`chant search`), "tickets-api needs read on the receipts bucket", `wp-request` makes one deterministic leaf edit, the plan is the rendered access delta, the PR is opened with a PR-only token, CODEOWNERS approve, the gated job applies; refusals name the enrollment or escalation path | build | I12 |
 | ambient, audit-driven | **the watcher**, in Rounds' form: unused-access findings and expiring grants on a schedule, one PR per finding, capped, declines stick; and the drift reconcile under the same rules | Rounds as-is for the lint tier (enroll `splashdown/access`); IAM projections added | I7, I13 |
@@ -53,7 +53,7 @@ weight: 1
 
 <!-- context: The parts, on IAM: … -->
 
-| Part | IAM at splashdown | Shifts |
+| Part | IAM at splashdown | Lessons |
 |---|---|---|
 | target | `splashdown/access` and the live estate it owns; a satellite repo | I1, I8 |
 | read | the lint pack, the drift watch, the Access Analyzer proofs, the unused-access and expiring-grant projections, `chant search` for the estate view | I3, I6, I7, I11 |

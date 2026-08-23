@@ -16,16 +16,15 @@
   <header class="topbar">
     <a class="brand" href="{{ site.Home.RelPermalink }}">water park</a>
     <nav class="topnav" aria-label="Site">
+      <a href="{{ "start/" | relURL }}"{{ if eq .RelPermalink (printf "%sstart/" site.Home.RelPermalink) }} aria-current="page"{{ end }}>Start here</a>
       <a href="{{ "courses/" | relURL }}"{{ if eq .Section "courses" }} aria-current="page"{{ end }}>Courses</a>
-      <a href="{{ "propose-loop/" | relURL }}"{{ if eq .RelPermalink (printf "%spropose-loop/" site.Home.RelPermalink) }} aria-current="page"{{ end }}>The propose loop</a>
-      <a href="{{ "docs/" | relURL }}"{{ if eq .Section "docs" }} aria-current="page"{{ end }}>Back office</a>
       <a href="{{ .Site.Params.github }}">GitHub</a>
     </nav>
   </header>
   <main>
     {{ block "main" . }}{{ end }}
     <footer class="site-footer">
-      <p>water park is an IAM project repo with courses in it; the courses demonstrate the <a href="https://accessibleops.net">Accessible Ops</a> properties. Vehicles: <a href="https://github.com/BinaryBourbon/fountain">Fountain</a> and plain AWS. The propose loop is abstracted from <a href="https://github.com/jhgaylor/mend">Mend</a>, <a href="https://github.com/jhgaylor/rounds">Rounds</a> and <a href="https://github.com/jhgaylor/dns-desk">dns-desk</a>.</p>
+      <p>water park is an IAM project repo with courses in it; the courses demonstrate the <a href="https://accessibleops.net">Accessible Ops</a> properties. <a href="{{ "docs/" | relURL }}">Design docs</a> (the reasoning, not the course) · <a href="{{ "propose-loop/" | relURL }}">the propose loop</a>. Vehicles: <a href="https://github.com/BinaryBourbon/fountain">Fountain</a> and plain AWS. The propose loop is abstracted from <a href="https://github.com/jhgaylor/mend">Mend</a>, <a href="https://github.com/jhgaylor/rounds">Rounds</a> and <a href="https://github.com/jhgaylor/dns-desk">dns-desk</a>.</p>
     </footer>
   </main>
 </body>
