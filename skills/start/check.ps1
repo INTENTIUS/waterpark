@@ -1,5 +1,6 @@
 # Report what a student has for water park's Start here. Windows PowerShell. Never changes anything.
-# Prints the same JSON shape as check.sh.
+# Prints the same JSON shape as check.sh. `check.ps1 doctor` prints a human
+# report instead, with the install or fix line for whatever is missing.
 $ErrorActionPreference = "SilentlyContinue"
 $fountainUrl = if ($env:FOUNTAIN_URL) { $env:FOUNTAIN_URL } else { "http://localhost:4000" }
 $flociUrl = if ($env:AWS_ENDPOINT_URL) { $env:AWS_ENDPOINT_URL } else { "http://localhost:4566" }
@@ -54,6 +55,48 @@ if ($credKey -and $cliUrl) {
 }
 
 $pkgs = @(); foreach ($m in "winget","scoop","choco") { if (Have $m) { $pkgs += $m } }
+
+if ($args.Count -gt 0 -and $args[0] -eq "doctor") {
+  $checkMark = [char]0x2713
+  $crossMark = [char]0x2717
+  function Ok($name) { Write-Host ("  {0} {1}" -f $checkMark, $name) }
+  function Bad($name, $fix) { Write-Host ("  {0} {1}" -f $crossMark, $name); Write-Host ("      fix: {0}" -f $fix) }
+
+  $dockerFix = "winget install Docker.DockerDesktop   (WSL 2 backend)"
+  $toolsFix = "winget install Amazon.AWSCLI jqlang.jq GitHub.cli   (or scoop install aws jq gh)"
+  $pkgLabel = "none"
+  if ($pkgs.Count -gt 0) { $pkgLabel = $pkgs -join " " }
+
+  Write-Host "water park doctor (Windows, package managers: $pkgLabel)"
+
+  if ($checkout) { Ok "water park checkout ($root @ $commit)" }
+  else { Bad "water park checkout" "git clone https://github.com/INTENTIUS/waterpark && cd waterpark" }
+
+  if (Have "docker") { Ok "docker ($(Ver { docker --version }))" }
+  else { Bad "docker" $dockerFix }
+
+  if (Reach "$fountainUrl/health") { Ok "Fountain answering at $fountainUrl" }
+  else { Bad "Fountain at $fountainUrl" "just up   (or set FOUNTAIN_URL to the class instance)" }
+
+  if ($loggedIn) { Ok "logged in as $meEmail (profile $profile)" }
+  else { Bad "logged in" "just register you@example.com   (prompts for a password)" }
+
+  if ($inferenceSet) { Ok "inference key set" }
+  else { Bad "inference key" "sign in at $(if ($cliUrl) { $cliUrl } else { $fountainUrl }) and finish onboarding, or the step-7 curl from the start skill" }
+
+  if ($runnerOnline) { Ok "a runner is online" }
+  else { Bad "runner" "just runner   (only needed when the stack's runner is the provider)" }
+
+  if (Reach "$flociUrl/") { Ok "Floci answering at $flociUrl" }
+  else { Bad "Floci at $flociUrl" "just up   (self-paced only; live students skip this)" }
+
+  foreach ($t in "aws","jq","gh") {
+    if (Have $t) { Ok $t } else { Bad $t $toolsFix }
+  }
+
+  exit 0
+}
+
 [ordered]@{
   waterpark = @{ checkout = $checkout; root = "$root"; commit = "$commit" }
   os = "Windows"

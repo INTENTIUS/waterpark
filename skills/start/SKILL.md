@@ -43,7 +43,9 @@ and show the output. macOS and Linux run `bash skills/start/check.sh`.
 Windows runs `powershell -ExecutionPolicy Bypass -File skills/start/check.ps1`,
 or the bash script inside WSL or Git Bash. Both only read. For the
 student's own eyes there is also `just doctor` (or
-`bash skills/start/check.sh doctor`), the same checks as a human report
+`bash skills/start/check.sh doctor` on macOS/Linux,
+`powershell -ExecutionPolicy Bypass -File skills/start/check.ps1 doctor`
+on Windows), the same checks as a human report
 with the install line under each missing item. You read the JSON, the
 student reads the doctor. They report
 the OS, which package managers are present (brew, apt, winget, scoop and

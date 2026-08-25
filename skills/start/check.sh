@@ -6,7 +6,10 @@
 set -u
 have() { command -v "$1" >/dev/null 2>&1; }
 first() { "$@" 2>/dev/null | head -1; }
-FOUNTAIN_URL="${FOUNTAIN_URL:-http://localhost:4000}"
+# with the compose stack on a non-default port, follow compose/.env unless FOUNTAIN_URL says otherwise
+wp_top=$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || true)
+compose_port=$(grep -E '^PORT=' "$wp_top/compose/.env" 2>/dev/null | cut -d= -f2)
+FOUNTAIN_URL="${FOUNTAIN_URL:-http://localhost:${compose_port:-4000}}"
 # floci env sets AWS_ENDPOINT_URL to http://localhost.floci.io:4566, which resolves to 127.0.0.1. either works
 FLOCI_URL="${AWS_ENDPOINT_URL:-http://localhost:4566}"
 TOOLS="docker fountain floci aws jq gh"
@@ -87,7 +90,7 @@ if [ "${1:-}" = "doctor" ]; then
   have docker && ok "docker ($(first docker --version))" || bad "docker" "$DOCKER"
   [ "$fountain_reachable" = true ] && ok "Fountain answering at $FOUNTAIN_URL" || bad "Fountain at $FOUNTAIN_URL" "just up   (or set FOUNTAIN_URL to the class instance)"
   [ "$fountain_logged_in" = true ] && ok "logged in as $me_email (profile $profile)" || bad "logged in" "just register you@example.com   (prompts for a password)"
-  [ "$inference_set" = true ] && ok "inference key set" || bad "inference key" "sign in at $cli_url and finish onboarding, or the step-7 curl from the start skill"
+  [ "$inference_set" = true ] && ok "inference key set" || bad "inference key" "sign in at ${cli_url:-$FOUNTAIN_URL} and finish onboarding, or the step-7 curl from the start skill"
   [ "$runner_online" = true ] && ok "a runner is online" || bad "runner" "just runner   (only needed when the stack's runner is the provider)"
   [ "$floci_reachable" = true ] && ok "Floci answering at $FLOCI_URL" || bad "Floci at $FLOCI_URL" "just up   (self-paced only; live students skip this)"
   for t in aws jq gh; do have "$t" && ok "$t" || bad "$t" "$TOOLS"; done
