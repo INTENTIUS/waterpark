@@ -19,11 +19,6 @@ goal: ""
 done_when: ""
 restart_from: "lesson $((n-1))"
 properties: []
-# media — provider: youtube | vimeo | file | todo
-video:
-  provider: todo
-  title: ""
-  length: ""
 # activity — kind: hands-on | watch-along | discuss
 activity:
   kind: hands-on
@@ -36,10 +31,6 @@ activity:
 ## Context
 
 - {{< todo "what's underneath; sources" >}}
-
-## Watch
-
-{{< todo "video script or link; optional" >}}
 
 ## Do
 

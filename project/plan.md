@@ -140,10 +140,14 @@ makes an agent safe to hand them to.
 Measured 2026-08-22: 26 lesson pages, 182 TODO chips, every card empty; the
 reference repo and the AWS desk do not exist; five Fountain lessons carry no
 property tag (F2, F5, F6, F7, F10); II, III, VII, X, XII each have one
-lesson. Definition of done for a lesson: card filled; Do steps run on a
-fresh machine (Floci or a Fountain instance) by someone other than the
-author; Self-paced says what the solo path cannot show; Live has the
-timing and the line; properties tagged; zero TODO chips.
+lesson. Definition of done for a lesson, amended after lesson 1 shipped. Card
+filled. Every command verified on a live stack by the author before
+writing. Skill written to the page's exact names and commands. An
+adversarial student run from a fresh clone with site-only knowledge,
+stumbles fixed, re-run clean. Self-paced says what the solo path cannot
+show. Live has the timing and the line. Properties tagged. Zero TODO
+chips visible on the page. The authoring checklist is in
+[page-model.md](page-model.md).
 
 0. **Verify the ground.** Floci: changesets, `detect-stack-drift`, resource
    import, and `iam:PermissionsBoundary` on `CreateRole` under enforcement

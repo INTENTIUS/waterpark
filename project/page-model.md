@@ -83,3 +83,28 @@ A page with `skill:` set shows a "Run with an agent" block linking the
 skill directory and the install commands. Skills live in [`skills/`](https://github.com/INTENTIUS/waterpark/tree/main/skills),
 one per section or lesson, each a `SKILL.md` and its scripts, following the
 contract there. `just skills` lists them and checks the frontmatter.
+
+## Authoring checklist, learned from lesson 1
+
+What made lesson 1 land, in order. Every later lesson follows it.
+
+1. Read the upstream source, then verify every command on a live stack
+   before writing it. The upstream doc was wrong once already (list-form
+   secrets silently apply as zero, the contract is a map). Trust runs,
+   not docs.
+2. Write the lesson page first. The skill copies the page's exact
+   filenames, object names and commands. The student-run found that a
+   `manifest.yaml` vs `f1-manifest.yaml` mismatch between page and skill
+   is a stumble even when each is internally consistent.
+3. Ids are not names. `fountain env show` takes an id, `env list` does
+   not print one by default. Any step that says "find the id" must show
+   the exact command that produces it, verified.
+4. The skill's done-when must verify the same fact the page's done_when
+   states, against the same endpoint.
+5. No visible TODO ships on a student-path page. Video blocks and Watch
+   sections are added when a video exists, not before.
+6. The lesson is done only after an adversarial student run: a fresh
+   clone, site-only knowledge, every stumble filed and fixed, re-run
+   clean. Budget roughly one fix round.
+7. Prose bans em dashes, colons and semicolons outside code. Check
+   mechanically, not by eye.
