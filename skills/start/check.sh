@@ -10,14 +10,15 @@ first() { "$@" 2>/dev/null | head -1; }
 wp_top=$(git -C "$(dirname "$0")" rev-parse --show-toplevel 2>/dev/null || true)
 compose_port=$(grep -E '^PORT=' "$wp_top/compose/.env" 2>/dev/null | cut -d= -f2)
 FOUNTAIN_URL="${FOUNTAIN_URL:-http://localhost:${compose_port:-4000}}"
+compose_floci_port=$(grep -E '^FLOCI_PORT=' "$wp_top/compose/.env" 2>/dev/null | cut -d= -f2)
 # floci env sets AWS_ENDPOINT_URL to http://localhost.floci.io:4566, which resolves to 127.0.0.1. either works
-FLOCI_URL="${AWS_ENDPOINT_URL:-http://localhost:4566}"
-TOOLS="docker fountain floci aws jq gh"
+FLOCI_URL="${AWS_ENDPOINT_URL:-http://localhost:${compose_floci_port:-4566}}"
+TOOLS="docker fountain floci aws jq gh just"
 
 version_of() {
   case "$1" in
     docker) first docker --version;; fountain) first fountain --version;; floci) first floci --version;;
-    aws) first aws --version;; jq) first jq --version;; gh) first gh --version;;
+    aws) first aws --version;; jq) first jq --version;; gh) first gh --version;; just) first just --version;;
   esac
 }
 # any HTTP status means something answered. a refused connection gives 000 and a non-zero exit
@@ -80,13 +81,14 @@ if [ "${1:-}" = "doctor" ]; then
   ok() { printf '  \xe2\x9c\x93 %s\n' "$1"; }
   bad() { printf '  \xe2\x9c\x97 %s\n      fix: %s\n' "$1" "$2"; }
   case "$pkg" in
-    *brew*) DOCKER='brew install --cask docker   (then open Docker.app once)'; TOOLS='brew install awscli jq gh';;
-    *winget*|*scoop*) DOCKER='winget install Docker.DockerDesktop   (WSL 2 backend)'; TOOLS='winget install Amazon.AWSCLI jqlang.jq GitHub.cli';;
-    *apt-get*) DOCKER="your distribution's docker packages, then usermod -aG docker \$USER"; TOOLS='sudo apt-get install awscli jq gh';;
-    *) DOCKER='https://www.docker.com/products/docker-desktop/'; TOOLS='awscli, jq and gh from their own sites';;
+    *brew*) DOCKER='brew install --cask docker   (then open Docker.app once)'; TOOLS='brew install awscli jq gh'; JUST='brew install just';;
+    *winget*|*scoop*) DOCKER='winget install Docker.DockerDesktop   (WSL 2 backend)'; TOOLS='winget install Amazon.AWSCLI jqlang.jq GitHub.cli'; JUST='winget install Casey.Just   (or scoop install just)';;
+    *apt-get*) DOCKER="your distribution's docker packages, then usermod -aG docker \$USER"; TOOLS='sudo apt-get install awscli jq gh'; JUST='the release binary from https://github.com/casey/just';;
+    *) DOCKER='https://www.docker.com/products/docker-desktop/'; TOOLS='awscli, jq and gh from their own sites'; JUST='https://github.com/casey/just#installation';;
   esac
   echo "water park doctor ($os_name, package managers: ${pkg:-none})"
   [ "$wp_checkout" = true ] && ok "water park checkout ($wp_root @ $wp_commit)" || bad "water park checkout" "git clone https://github.com/INTENTIUS/waterpark && cd waterpark"
+  have just && ok "just ($(first just --version))" || bad "just" "$JUST"
   have docker && ok "docker ($(first docker --version))" || bad "docker" "$DOCKER"
   [ "$fountain_reachable" = true ] && ok "Fountain answering at $FOUNTAIN_URL" || bad "Fountain at $FOUNTAIN_URL" "just up   (or set FOUNTAIN_URL to the class instance)"
   [ "$fountain_logged_in" = true ] && ok "logged in as $me_email (profile $profile)" || bad "logged in" "just register you@example.com   (prompts for a password)"

@@ -11,11 +11,6 @@ goal: "Apply a three-document manifest that defines an Environment, an Agent and
 done_when: "The conversation you start replies, and a GET to the environment's secrets endpoint lists the key you set with no value field anywhere in the response."
 restart_from: "none, this is the first lesson"
 properties: ["III"]
-# media. provider is youtube, vimeo, file or todo
-video:
-  provider: todo
-  title: ""
-  length: ""
 # activity. kind is hands-on, watch-along or discuss
 activity:
   kind: hands-on
@@ -30,10 +25,6 @@ activity:
 - Environment, Vault, Agent and Conversation are the only objects in Fountain.
 - `fountain apply -f` applies documents with `apiVersion` `fountain.dev/v1`. The API never returns a secret value.
 - The UI, the API and the CLI expose the same objects. The CLI wraps the API.
-
-## Watch
-
-{{< todo "Video script or link. Optional." >}}
 
 ## Do
 
@@ -73,7 +64,13 @@ Start here kept the CLI optional and said it would earn its place once it appear
 
 2. Apply it with `fountain apply -f manifest.yaml`. It prints one line per object, `+` for created, and one line per secret underneath. There is nothing to click for this step. Applying three objects in one request is what the CLI is for.
 
-3. Read the environment back without its secret's value. Find its id with `fountain env list`, then `fountain env show <id>`, or `curl` `GET /api/environments/<id>/secrets` with your Bearer key. Either way the response names the key `DEMO_API_KEY` with an id and timestamps and no `value` field. The environment's page under `/environments` in the web UI shows the same thing, a key name and nothing else.
+3. Read the environment back without its secret's value. `fountain env list` prints a table with no id column, and `fountain env show` needs an id, not a name (a name gives an HTTP 400). Get the id from the JSON form of the list.
+
+   ```sh
+   fountain env list --json | jq -r '.[] | select(.name=="lesson1-env") | .id'
+   ```
+
+   Then `fountain env show <id>`. The response names the key `DEMO_API_KEY` with an id and timestamps and no `value` field. `curl` `GET /api/environments/<id>/secrets` with your Bearer key returns the same shape. The environment's page under `/environments` in the web UI shows the same thing, a key name and nothing else.
 
 4. Start a conversation with the agent using `fountain run lesson1-agent -p "say hello"`, or `curl -X POST /api/conversations` with `agent_id` and `prompt` in the body. With the inference key you set in Start here, the sandbox provisions and the agent's reply streams into your terminal, or onto the conversation's page under `/conversations` in the web UI.
 

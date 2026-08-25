@@ -1,9 +1,5 @@
 ---
 title: "water park"
-video:
-  provider: todo
-  title: "what this is, in two minutes"
-  length: ""
 ---
 
 Water Park is a series of lessons based on the principles of [Accessible Ops](https://accessibleops.net).

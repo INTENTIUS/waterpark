@@ -3,10 +3,6 @@ title: "Fountain"
 kicker: "Course 1 · start here"
 weight: 1
 summary: "The agent side. Primitives, lifecycle, egress, credentials, the team, schedules, driving an agent from an app, the propose loop interactive and ambient, the self-hosted runner, and the gate Fountain does not have."
-video:
-  provider: todo
-  title: "course intro"
-  length: ""
 ---
 
 ## Context

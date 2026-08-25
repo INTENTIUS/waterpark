@@ -90,7 +90,9 @@ just up          # Fountain at :4000, Floci at :4566, keys generated into compos
 It ends by proving both answer (two check-mark lines) and printing the
 next command. If it fails it names the step, `just logs` shows why, and
 `just up` is safe to re-run. It will not mint a second set of keys over
-the first.
+the first. If port 4000 is already taken, `just up` says so. Set `PORT`
+and `FLOCI_PORT` in `compose/.env` and run it again. Everything below
+follows those two ports.
 
 (Without `just`, `compose/bin/env.sh` then
 `docker compose -f compose/docker-compose.yml --env-file compose/.env up -d`.

@@ -2,8 +2,6 @@
 # Prints the same JSON shape as check.sh. `check.ps1 doctor` prints a human
 # report instead, with the install or fix line for whatever is missing.
 $ErrorActionPreference = "SilentlyContinue"
-$fountainUrl = if ($env:FOUNTAIN_URL) { $env:FOUNTAIN_URL } else { "http://localhost:4000" }
-$flociUrl = if ($env:AWS_ENDPOINT_URL) { $env:AWS_ENDPOINT_URL } else { "http://localhost:4566" }
 
 function Have($name) { $null -ne (Get-Command $name -ErrorAction SilentlyContinue) }
 function Ver($cmd) { try { (& $cmd 2>$null | Select-Object -First 1) -join "" } catch { "" } }
@@ -13,10 +11,22 @@ $root = (git rev-parse --show-toplevel 2>$null)
 $checkout = $false; $commit = ""
 if ($root -and (Test-Path "$root/skills/start/SKILL.md") -and (Test-Path "$root/hugo.toml")) { $checkout = $true; $commit = (git -C $root rev-parse --short HEAD 2>$null) }
 
+# with the compose stack on non-default ports, follow compose/.env unless FOUNTAIN_URL / AWS_ENDPOINT_URL say otherwise
+$composePort = $null; $composeFlociPort = $null
+$composeEnvFile = if ($root) { Join-Path $root "compose/.env" } else { $null }
+if ($composeEnvFile -and (Test-Path $composeEnvFile)) {
+  foreach ($line in Get-Content $composeEnvFile) {
+    if ($line -match '^PORT=(.*)') { $composePort = $Matches[1] }
+    if ($line -match '^FLOCI_PORT=(.*)') { $composeFlociPort = $Matches[1] }
+  }
+}
+$fountainUrl = if ($env:FOUNTAIN_URL) { $env:FOUNTAIN_URL } else { "http://localhost:$(if ($composePort) { $composePort } else { 4000 })" }
+$flociUrl = if ($env:AWS_ENDPOINT_URL) { $env:AWS_ENDPOINT_URL } else { "http://localhost:$(if ($composeFlociPort) { $composeFlociPort } else { 4566 })" }
+
 $tools = @{}
-foreach ($t in "docker","fountain","floci","aws","jq","gh") {
+foreach ($t in "docker","fountain","floci","aws","jq","gh","just") {
   if (Have $t) {
-    $v = switch ($t) { "docker" { Ver { docker --version } } "fountain" { Ver { fountain --version } } "floci" { Ver { floci --version } } "aws" { Ver { aws --version } } "jq" { Ver { jq --version } } "gh" { Ver { gh --version } } }
+    $v = switch ($t) { "docker" { Ver { docker --version } } "fountain" { Ver { fountain --version } } "floci" { Ver { floci --version } } "aws" { Ver { aws --version } } "jq" { Ver { jq --version } } "gh" { Ver { gh --version } } "just" { Ver { just --version } } }
     $tools[$t] = @{ installed = $true; version = "$v" }
   } else { $tools[$t] = @{ installed = $false } }
 }
@@ -64,6 +74,7 @@ if ($args.Count -gt 0 -and $args[0] -eq "doctor") {
 
   $dockerFix = "winget install Docker.DockerDesktop   (WSL 2 backend)"
   $toolsFix = "winget install Amazon.AWSCLI jqlang.jq GitHub.cli   (or scoop install aws jq gh)"
+  $justFix = "winget install Casey.Just   (or scoop install just)"
   $pkgLabel = "none"
   if ($pkgs.Count -gt 0) { $pkgLabel = $pkgs -join " " }
 
@@ -71,6 +82,9 @@ if ($args.Count -gt 0 -and $args[0] -eq "doctor") {
 
   if ($checkout) { Ok "water park checkout ($root @ $commit)" }
   else { Bad "water park checkout" "git clone https://github.com/INTENTIUS/waterpark && cd waterpark" }
+
+  if (Have "just") { Ok "just ($(Ver { just --version }))" }
+  else { Bad "just" $justFix }
 
   if (Have "docker") { Ok "docker ($(Ver { docker --version }))" }
   else { Bad "docker" $dockerFix }

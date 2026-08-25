@@ -98,7 +98,7 @@ Fountain builds the conversation's env vars. The Agent names a `model` as
 `provider/model-id`, a `runtime` (`claude` here, matching the provider),
 and references the Environment by name.
 
-Save it as `f1-manifest.yaml` in the checkout, or wherever the student
+Save it as `manifest.yaml` in the checkout, or wherever the student
 prefers, the path below just has to match.
 
 ### 3b. Apply it
@@ -106,21 +106,26 @@ prefers, the path below just has to match.
 **confirm**, then
 
 ```sh
-fountain apply -f f1-manifest.yaml
+fountain apply -f manifest.yaml
 ```
 
 This creates the three objects on the student's real Fountain account.
 Say that out loud before running it, it is the first step in this lesson
-that writes anything. Expect one line per resource, `+` for created. The
-same `fountain apply -f` command reconciles by name, so running it again
-later updates instead of duplicating, that comes back in 3e.
+that writes anything. Expect one line per resource, `+` for created. Under
+the environment and the vault, a nested `secret` line always shows `~`,
+never `+`, even on this first apply. The same `fountain apply -f`
+command reconciles by name, so running it again later updates instead of
+duplicating, that comes back in 3e.
 
 ### 3c. Read it back, keys never values
 
-Read commands run freely, no confirmation needed.
+Read commands run freely, no confirmation needed. `fountain env list`
+prints a table with no id column, and `env show` needs an id, not a
+name, a name gives an HTTP 400. Get the id from the JSON form of the
+list.
 
 ```sh
-fountain env list        # copy the environment id
+fountain env list --json | jq -r '.[] | select(.name=="lesson1-env") | .id'
 fountain env show <id>
 ```
 
@@ -140,8 +145,8 @@ curl -s -H "Authorization: Bearer $FOUNTAIN_KEY" "$CLI_URL/api/environments/<id>
 `Select-String -Path "$env:USERPROFILE\.fountain\credentials" -Pattern api_key`
 and sets `$env:FOUNTAIN_KEY` from the match. The curl call itself is
 identical on every OS.) Substitute the check's `fountain.cli_url` for
-`$CLI_URL`. Either way the point is the same: a secret value goes in once
-and is never readable again, from the CLI, the API, or the UI's
+`$CLI_URL`. Either way, the point stays the same. A secret value goes in
+once and is never readable again, from the CLI, the API, or the UI's
 environment page.
 
 ### 3d. Start a conversation
