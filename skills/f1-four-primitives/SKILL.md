@@ -36,7 +36,7 @@ bash skills/start/check.sh
 Also read `.waterpark/profile.json` at the checkout root if it exists.
 Trust what it says about the student only when the check's own
 `fountain.logged_in` is `true` and `fountain.email` matches the profile's
-`email`. A profile file is a claim from a previous run; the check's live
+`email`. A profile file is a claim from a previous run. The check's live
 call is the truth, so when they disagree believe the check.
 
 Require, from the check's `fountain` object, `reachable` true, `logged_in`
@@ -124,7 +124,7 @@ fountain env list        # copy the environment id
 fountain env show <id>
 ```
 
-The output carries `env_vars` with `GREETING` printed plainly, and a
+The output carries `env_vars` with `STAGE` printed plainly, and a
 `secrets` list with `DEMO_API_KEY`'s key, id and timestamps, no `value`
 field at all. That is the same shape `GET /api/environments/:id` (for
 `env_vars`) and `GET /api/environments/:id/secrets` (for the keys) return
@@ -138,7 +138,7 @@ curl -s -H "Authorization: Bearer $FOUNTAIN_KEY" "$CLI_URL/api/environments/<id>
 
 (PowerShell reads the same file with
 `Select-String -Path "$env:USERPROFILE\.fountain\credentials" -Pattern api_key`
-and sets `$env:FOUNTAIN_KEY` from the match; the curl call itself is
+and sets `$env:FOUNTAIN_KEY` from the match. The curl call itself is
 identical on every OS.) Substitute the check's `fountain.cli_url` for
 `$CLI_URL`. Either way the point is the same: a secret value goes in once
 and is never readable again, from the CLI, the API, or the UI's
