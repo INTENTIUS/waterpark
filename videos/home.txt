@@ -1,0 +1,13 @@
+Welcome to water park. This is a hands-on course about letting an AI agent work on real infrastructure without having to trust it.
+
+The runtime is Fountain. It gives an agent a computer of its own. A sandbox with tools, named credentials, and one conversation thread you can always read back.
+
+The story is splashdown, a fictional water-park company. Two hundred engineers, a dozen parks, card payments. All of its AWS access lives in one repo that anyone can change with a pull request.
+
+You'll work through two short courses. The first teaches Fountain itself. The four objects it's built from, and the loop every safe agent app follows. The agent reads, plans, and proposes. Something you control does the writing.
+
+The second course puts that to work. You and the agent build splashdown's IAM repo from nothing. Then the agent runs its access desk.
+
+Every lesson is one job, about twenty minutes. On your laptop for free, or live with a class.
+
+Start with lesson one. The water is fine.
