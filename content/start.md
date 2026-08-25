@@ -13,7 +13,7 @@ skill: "skills/start"
 - Docker, unless you are live with a Fountain URL from the facilitator. Docker Desktop on macOS and Windows (WSL 2 backend), Docker Engine on Linux.
 - Then one shot. `just up` starts Fountain (with its database), Floci and the sandbox runner from `compose/`. `just register you@example.com 'password'` makes your account on the local instance and logs the CLI in. `just runner` starts the sandboxes. An inference key goes in once, yours, in the browser onboarding or with one `curl` you run yourself. The agent never sees it.
 - Live with a URL instead. Install the Fountain CLI (`brew install BinaryBourbon/tap/fountain` on macOS, the release binary on Linux, WSL 2 or the web UI on Windows) and register on the class instance.
-- About ten minutes, once.
+- About ten minutes, once. Check what you already have with `just doctor`, which prints the install line for whatever is missing.
 
 ## Self-paced or live
 

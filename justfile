@@ -74,10 +74,26 @@ docker-run:
 fountain-login url="http://localhost:4000":
     FOUNTAIN_BASE_URL={{url}} fountain auth login
 
-# One-shot local stack. Fountain, Postgres, Floci. Then just register, just runner
+# What do I have, and the install line for whatever is missing
+doctor:
+    @bash skills/start/check.sh doctor
+
+# One-shot local stack. Fountain, Postgres, Floci. Ends by proving both answer
 up:
     compose/bin/env.sh
     docker compose -f compose/docker-compose.yml --env-file compose/.env up -d
+    @port=$(grep -E '^PORT=' compose/.env | cut -d= -f2); port=${port:-4000}; \
+    fport=$(grep -E '^FLOCI_PORT=' compose/.env | cut -d= -f2); fport=${fport:-4566}; \
+    printf 'waiting for Fountain on :%s ' "$port"; \
+    for i in $(seq 1 60); do curl -fs "http://localhost:$$port/health" >/dev/null 2>&1 && break; printf .; sleep 2; done; echo; \
+    curl -fs "http://localhost:$$port/health" >/dev/null && printf '  \342\234\223 Fountain /health answered on :%s\n' "$port" || { echo "  Fountain did not come up. just logs"; exit 1; }; \
+    curl -fs -o /dev/null "http://localhost:$$fport/" && printf '  \342\234\223 Floci answered on :%s\n' "$fport" || { echo "  Floci did not come up. just logs"; exit 1; }; \
+    echo "next: just register you@example.com   then: just runner"
+
+# Everything in the stack, then the doctor's view
+status:
+    docker compose -f compose/docker-compose.yml --env-file compose/.env --profile runner ps
+    @just doctor
 
 # Register a class account, log the CLI in, give the runner its key.
 # just register you@example.com          prompts for the password, keeping it out of history

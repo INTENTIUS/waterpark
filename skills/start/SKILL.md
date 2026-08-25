@@ -41,7 +41,11 @@ Ask which OS and shell the student is on. macOS, Linux, or Windows, and
 bash, zsh, or PowerShell. Do not assume. Then run the check for that OS
 and show the output. macOS and Linux run `bash skills/start/check.sh`.
 Windows runs `powershell -ExecutionPolicy Bypass -File skills/start/check.ps1`,
-or the bash script inside WSL or Git Bash. Both only read. They report
+or the bash script inside WSL or Git Bash. Both only read. For the
+student's own eyes there is also `just doctor` (or
+`bash skills/start/check.sh doctor`), the same checks as a human report
+with the install line under each missing item. You read the JSON, the
+student reads the doctor. They report
 the OS, which package managers are present (brew, apt, winget, scoop and
 so on), whether this is a water park checkout, which of `docker`,
 `fountain`, `floci`, `aws`, `jq` and `gh` are installed with versions,
@@ -80,6 +84,11 @@ From the water park checkout. **confirm**, then
 ```sh
 just up          # Fountain at :4000, Floci at :4566, keys generated into compose/.env
 ```
+
+It ends by proving both answer (two check-mark lines) and printing the
+next command. If it fails it names the step, `just logs` shows why, and
+`just up` is safe to re-run. It will not mint a second set of keys over
+the first.
 
 (Without `just`, `compose/bin/env.sh` then
 `docker compose -f compose/docker-compose.yml --env-file compose/.env up -d`.
