@@ -14,16 +14,14 @@ runs these on every push to `main`.
 | Check | Job |
 |---|---|
 | The Hugo build succeeds | `build` |
+| The Hugo build fails on any warning | `build` |
+| Every internal link in the rendered site resolves | `build` |
+| Every relative link in the markdown sources resolves | `build` |
 | The site deploys to GitHub Pages | `deploy` |
 | The site container image builds and pushes to `ghcr.io/intentius/waterpark` | `image` |
 
-Two more checks exist as commands, not yet as a gate. `just build` fails
-on any Hugo warning. `just check` and `just check-md` fail on a broken
-internal link, one against the rendered site, one against the markdown
-sources. Nobody has wired the three into the push workflow, so today they
-only run when someone remembers to run them by hand. The runner image
-compose pulls, `ghcr.io/intentius/waterpark-runner`, is not built by this
-workflow either.
+The runner image compose pulls, `ghcr.io/intentius/waterpark-runner`, is
+not built by this workflow.
 
 ## Verified by hand, dated
 

@@ -37,7 +37,11 @@ jobs:
       - name: Build with Hugo
         env:
           HUGO_ENVIRONMENT: production
-        run: hugo --gc --minify --baseURL "${{ steps.pages.outputs.base_url }}/"
+        run: hugo --gc --minify --panicOnWarning --baseURL "${{ steps.pages.outputs.base_url }}/"
+      - name: Check markdown links
+        run: python3 scripts/check_md_links.py
+      - name: Check site links
+        run: python3 scripts/check_site_links.py
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v5
         with:
