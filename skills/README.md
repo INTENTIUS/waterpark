@@ -75,3 +75,4 @@ skill: "skills/start"
 | Skill | Drives | State |
 |---|---|---|
 | `start` | Start here. Clone water park, install and log in to Fountain, Floci for self-paced. macOS, Linux and Windows, OS install or Docker where both exist. `check.sh` and `check.ps1`. | first draft |
+| `f1-four-primitives` | Fountain lesson 1, Four primitives. Writes an Environment/Vault/Agent manifest, `fountain apply -f`, reads secret keys back with no values, starts a conversation, re-applies for idempotence. Reuses `skills/start/check.sh`. | first draft |
