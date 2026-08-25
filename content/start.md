@@ -7,8 +7,6 @@ skill: "skills/start"
 
 ## What you need
 
-{{< todo "setup list, verified on a clean machine" >}}
-
 - A checkout of this repo (`git clone https://github.com/INTENTIUS/waterpark`). The skills, the check scripts, your progress file, the exercises and the class stack live in it. You do not need a repo of your own.
 - Docker, unless you are live with a Fountain URL from the facilitator. Docker Desktop on macOS and Windows (WSL 2 backend), Docker Engine on Linux.
 - Then one shot. `just up` starts Fountain (with its database), Floci and the sandbox runner from `compose/`. `just register you@example.com 'password'` makes your account on the local instance and logs the CLI in. `just runner` starts the sandboxes. An inference key goes in once, yours, in the browser onboarding or with one `curl` you run yourself. The agent never sees it.

@@ -28,6 +28,8 @@ that path. Verify the canonical location before a lesson links it.
 | ADR 0016 governance as an ACP proxy | F11 | Proposed, unbuilt; runtimes run with permission prompts bypassed; audit trail retrospective |
 | `GET /api/search` across conversations | I13 | "which requests did the concierge handle" is a query |
 
+**Manifest secrets are a map.** `docs/primitives.md` shows `secrets` as a list of `{key, value}`. The server silently drops that form (`secret_count: 0`). The real contract, confirmed against a live v0.12 stack and the CLI tests, is a map (`secrets: {KEY: value}`). The lesson and skill use the map. Worth an upstream doc fix when the repo is reachable.
+
 **Two earlier claims corrected.** The demo-era runbook called the
 self-hosted runner "the answer to shared infra"; ADR 0022 says the
 opposite about containment (decision 29). And `design/agentic.md` once

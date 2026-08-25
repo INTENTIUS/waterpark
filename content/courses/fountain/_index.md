@@ -17,4 +17,12 @@ video:
 
 ## Intro
 
-{{< todo "course intro, under 250 words" >}}
+Eleven lessons take an Environment, an Agent and a Conversation from a single apply to a team you can talk to.
+
+Four primitives opens the CLI and shows what those objects hold. The sandbox lifecycle follows one conversation from a fresh sandbox to suspension and back, and traces what survives a restart. The egress allowlist locks a sandbox down to named hosts and proves the lock holds. Credentials and vaults cover the two places secrets live and which one wins when both set the same key.
+
+The team turns a conversation into a teammate with its own thread, and schedules puts a cron on top of it so the teammate speaks without being asked. Driving an agent from an app leaves the web UI behind and calls the same API from your own code.
+
+Lessons 8 and 9 build the propose loop, first as something you trigger by hand, then as something that runs on its own from an event. Both are abstracted from real systems, Mend, Rounds and dns-desk, and the propose loop page is where that depth lives.
+
+The self-hosted runner replaces the hosted sandbox with a container you run yourself, trading egress policy for a laptop you already trust. The course ends with the gate Fountain does not have, and what has to stand in for one.
