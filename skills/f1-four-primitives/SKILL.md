@@ -137,7 +137,7 @@ over the API, `fountain env show` just calls both and merges them. To see
 it directly,
 
 ```sh
-FOUNTAIN_KEY=$(awk -F'"' '/api_key/{print $2; exit}' ~/.fountain/credentials)
+FOUNTAIN_KEY=$(awk -v p="[${FOUNTAIN_PROFILE:-default}]" '$0==p{f=1;next} /^\[/{f=0} f && $1=="api_key"{gsub(/"/,"",$3); print $3; exit}' ~/.fountain/credentials)
 curl -s -H "Authorization: Bearer $FOUNTAIN_KEY" "$CLI_URL/api/environments/<id>/secrets" | jq .
 ```
 

@@ -195,7 +195,7 @@ Two ways, the student picks.
 
   ```sh
   curl -X PUT "http://localhost:4000/api/account/inference-credentials/anthropic_api_key" \
-    -H "Authorization: Bearer $(awk -F'"' '/api_key/{print $2; exit}' ~/.fountain/credentials)" \
+    -H "Authorization: Bearer $(awk -v p="[${FOUNTAIN_PROFILE:-default}]" '$0==p{f=1;next} /^\[/{f=0} f && $1=="api_key"{gsub(/"/,"",$3); print $3; exit}' ~/.fountain/credentials)" \
     -H 'Content-Type: application/json' -d '{"value":"PASTE-KEY-HERE"}'
   ```
 
@@ -205,7 +205,7 @@ Two ways, the student picks.
 
   ```sh
   curl -X POST "http://localhost:4000/api/account/onboarding/complete" \
-    -H "Authorization: Bearer $(awk -F'"' '/api_key/{print $2; exit}' ~/.fountain/credentials)"
+    -H "Authorization: Bearer $(awk -v p="[${FOUNTAIN_PROFILE:-default}]" '$0==p{f=1;next} /^\[/{f=0} f && $1=="api_key"{gsub(/"/,"",$3); print $3; exit}' ~/.fountain/credentials)"
   ```
 
 You may verify either way yourself. `GET /api/account/inference-credentials`
