@@ -1,0 +1,1 @@
+Welcome to water park. This is a hands-on course about letting an AI agent work on real infrastructure without having to trust it. The runtime is Fountain. It gives an agent a computer of its own. A sandbox with tools, named credentials, and one conversation thread you can always read back.
