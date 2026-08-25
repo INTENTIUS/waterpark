@@ -44,6 +44,14 @@ public on ghcr for students to pull it. `just runner-build` builds it
 locally instead, which needs `runner/bin/fountain-linux-<arch>` from a
 Fountain checkout, `cd cli && GOOS=linux go build -o ... ./cmd/fountain`.
 
+A durable shared instance for a class (two replicas, replicated
+Postgres, a real cluster) is
+[fountain-ops](https://github.com/INTENTIUS/fountain-ops), Fountain
+deployed by chant with `just up`. Its current pin predates runner
+support and its laptop data plane is an emulator, so for a real class
+it needs a newer image pin and a real provider. This compose stays the
+student path.
+
 Windows. Docker Desktop with the WSL 2 backend runs all of it. The two
 scripts are bash, run them in WSL or Git Bash, or do the four calls by
 hand in PowerShell (`Invoke-RestMethod`).

@@ -72,6 +72,31 @@ Unchanged from the kit-era notes, with the course's reading:
 | Op-manifest diff (item 9) | I10 step 4, I14 |
 | A step referencing a prior step's output (chant#1290) | `wp-request` returns its PR URL as a search attribute |
 
+## fountain-ops — local main 36ba204 (2026-08-09)
+
+[INTENTIUS/fountain-ops](https://github.com/INTENTIUS/fountain-ops).
+Self-hosted Fountain deployed by chant onto Kubernetes. `just up` on a
+k3d laptop cluster in about five minutes; `tier=ha` gives two app
+replicas in one Erlang cluster over CNPG-replicated Postgres; the same
+build targets a real cluster. Registration and first-admin handling
+match what the compose stack does (ADR 0011). Its Status page is
+asserted against reality on every push and wins disagreements with its
+own docs.
+
+Seams that matter here. spritzer is its in-cluster data plane, so
+conversations complete as **echoes** (34 of 34 at fountain v0.6.1 +
+spritzer 0.5.0), which verifies the deployment and nothing about real
+agent work; floci is its in-cluster S3 for backup dump/restore and PITR
+drills, a different use of Floci than the courses'. The fountain image
+pin is v0.7.0, which predates runner support, team schedules and most
+of what the courses use.
+
+Relation to the class stack: `compose/` is the student path (real
+conversations on a containerized runner, Docker as the only prereq);
+fountain-ops is the facilitator path to a durable shared instance, once
+its pin moves to a runner-capable image and a real data plane
+(`SPRITES_TOKEN` or runners) replaces spritzer.
+
 ## Floci — local main 17c7f7ef (2026-08-21)
 
 In-process IAM (users, roles, groups, policies, boundaries, STS

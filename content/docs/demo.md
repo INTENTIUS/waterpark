@@ -14,7 +14,11 @@ radius; the best moments are refusals.
 ## Before the room
 
 - **Fountain.** A hosted instance with a hosted sandbox provider (Sprites,
-  E2B, Daytona) for anything that claims containment. A self-hosted
+  E2B, Daytona) for anything that claims containment. For a durable
+  self-hosted class instance,
+  [fountain-ops](https://github.com/INTENTIUS/fountain-ops) deploys
+  Fountain onto a real cluster with `just up` (newer image pin and a real
+  data plane required; see [upstream](https://github.com/INTENTIUS/waterpark/blob/main/project/upstream.md)). A self-hosted
   runner is trusted mode (F10); do not present it as sandboxed.
   `API_CORS_ORIGINS` and `OAUTH_CLIENTS` set for any app you will show.
 - **Accounts.** For IAM: a sandbox org with the splashdown account set
