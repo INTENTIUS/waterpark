@@ -171,3 +171,63 @@ a rewrite until Floci populates the key.
 resources with no errors. `import` blocks and `-generate-config-out` both
 work, which is I15 unblocked. Drift detection works on both the
 attachment and the tag path, which is I7 unblocked.
+
+## Floci as a Terraform target, patched fork build, verified 2026-09-05
+
+Same setup as the 2.0.1 run. Floci alone on port 4566, IAM enforcement on
+(`FLOCI_SERVICES_IAM_ENFORCEMENT_ENABLED=true`), hashicorp/aws against
+`endpoints { iam sts s3 }`. Image under test is `ghcr.io/lex00/floci:iam-boundary`,
+a fork build from branch `fix/iam-permissions-boundary`, Floci 1.7.0 base plus
+fixes for the two boundary bugs recorded in the prior section. Total wall
+time 2m 38s (container start to teardown).
+
+| Fact | Result | Proving command | Evidence |
+|---|---|---|---|
+| 1. Converge | pass | `terraform apply -auto-approve` then `terraform plan -detailed-exitcode` | apply creates all 5 resources, none rejected; the immediate plan exits **0** with "No changes. Your infrastructure matches the configuration."; `aws iam get-role --role-name wp-workload` returns a `PermissionsBoundary` block with `PermissionsBoundaryArn = arn:aws:iam::000000000000:policy/wp-permission-boundary` |
+| 2. Drift | pass | `aws iam detach-role-policy --role-name wp-workload --policy-arn ...wp-workload-read` then `terraform plan -detailed-exitcode` | exit **2**, `# aws_iam_role_policy_attachment.workload_read will be created`; `aws iam tag-role` drift also lands, `- "owner" = "intruder" -> null` |
+| 3. Import | pass | `terraform plan -generate-config-out=generated.tf`, apply, then re-plan | `aws_iam_role.adopted: Import complete [id=wp-adopted]`; the re-plan is now a genuine clean exit, **0**, "No changes", not just a refresh with a lingering boundary diff |
+| 4. Boundary enforcement | pass | `aws iam create-role` as a user allowed `iam:CreateRole` only under `StringEquals iam:PermissionsBoundary` | first call, no `--permissions-boundary`, denied with `AccessDenied ... User is not authorized to perform: iam:CreateRole`; second call, with `--permissions-boundary arn:aws:iam::000000000000:policy/wp-permission-boundary`, succeeds and the returned role carries that same boundary ARN |
+
+**Versions.** Image `ghcr.io/lex00/floci:iam-boundary`, digest
+`sha256:b08cd3d507429fae9201b85cca58dcb5e6708bca3bde37eaface7b7fb1419813`,
+image id `sha256:44ac5a70121fddc2dfa46126faf40e1547ea937a538b395697bc47a2c8653fc7`,
+built 2026-09-05. The container reports `floci 1.7.0 on JVM (powered by
+Quarkus 3.37.4)` and `AWS Local Emulator 1.7.0`. Terraform v1.15.8 selected
+hashicorp/aws **v6.63.0**, the same provider version as the 2.0.1 run.
+Account `000000000000`, region us-east-1, storage `memory`.
+
+**Both boundary bugs are fixed.** The read bug is gone. `GetRole` now
+returns the `PermissionsBoundary` block Terraform set on `CreateRole`, so
+the provider's next refresh matches the config and `plan -detailed-exitcode`
+exits 0 instead of proposing the same in-place update forever. That turns
+fact 1 from a partial into a clean pass and means an estate carrying a
+boundary can now reach a stable green plan on Floci.
+
+The authorization bug is also gone. Floci now populates the
+`iam:PermissionsBoundary` request context key on `CreateRole`, so a policy
+conditioned on `StringEquals iam:PermissionsBoundary` matches and allows
+the call when the boundary is supplied, and still denies when it is not.
+This is the exact double-refusal shape I8 needs, deny without the
+boundary and allow with it. The lesson can demonstrate against Floci now
+without a real account or a recorded run.
+
+**Everything else still clean.** `terraform destroy -auto-approve` removed
+all six Terraform-managed resources with no errors. Drift detection still
+works on both the attachment and the tag path. Import and
+`-generate-config-out` still work, and now the post-import plan is truly
+clean rather than clean-except-for-the-boundary-diff.
+
+**Difference from the 2.0.1 run, beyond the two intended fixes.** This
+build runs on JVM (`floci 1.7.0 on JVM`) rather than as a native binary
+(the 2.0.1 image logged `floci 2.0.1 native`), so cold start is about 1.1s
+against roughly 0.02s before. That did not matter here since `curl` against
+`/` answered on the first try. The enabled-service list also differs
+because it is a different base version rather than a fork change. This
+1.7.0 build is missing classic `elb` and `rekognition` from the 2.0.1
+list, and carries several services 2.0.1 does not, including `ivs`,
+`mediapackage`, `medialive`, `sagemaker`, `bedrock`, `apprunner`,
+`accessanalyzer`, `globalaccelerator`, `cognitoidentity`, `codeartifact`,
+`appintegrations`, `datasync`, and `auditmanager`. None of that touches
+`iam`, `sts`, or `s3`, and none of the five resource types under test was
+rejected or produced a different error shape. No regression found in the
+four facts against the prior run.

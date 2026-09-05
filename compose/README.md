@@ -21,6 +21,13 @@ What you get and what you do not.
   `AWS_ENDPOINT_URL=http://localhost:4566`, `AWS_DEFAULT_REGION=us-east-1`,
   `AWS_ACCESS_KEY_ID=test`, `AWS_SECRET_ACCESS_KEY=test`. The `floci` CLI is
   not needed, `floci env` works too if you have it.
+- The Floci image is a patched build from the `lex00/floci` fork,
+  `ghcr.io/lex00/floci:iam-boundary`, branch `fix/iam-permissions-boundary`.
+  Upstream 2.0.1 never returns a role's permissions boundary on read, so a
+  bounded role replans forever, and never populates the
+  `iam:PermissionsBoundary` condition key, so the double refusal in IAM
+  lesson 8 denies both ways. The fork fixes both. `FLOCI_IMAGE=floci/floci`
+  and `FLOCI_IMAGE_TAG=latest` in `.env` switch back to upstream.
 - A runner, so conversations work with no sprites.dev account. The runner
   is a container with node, bun, git, the AWS CLI and jq, and its
   sandboxes are directories in it. It is trusted mode (Fountain's runners
