@@ -185,3 +185,43 @@ it. Reversing one requires editing this file in the same PR.
     teaches the mitigation. A backend without a state file scores better
     on this property and the course says so rather than hiding it.
     ([IAM, lesson 4](../courses/iam/04-deploy-to-floci.md), [IAM, lesson 7](../courses/iam/07-drift.md))
+33. **The access repo is this repo.** The Terraform the IAM course builds,
+    which is the `envs/<env>/` layout, the baseline module, the shared
+    `workload_role` module, the tflint rule pack, `proofs` and
+    `render-delta`, the apply workflow and the Floci local path, lands in
+    this checkout beside `content/` and `skills/` rather than in a sibling
+    repo. [The estate](estate.md) already says the repo a student clones is
+    the repo the course puts under management, and one clone, one PR flow
+    and one CI keep that literal. The HCL root is a top-level `access/`
+    directory, so every path a lesson gives starts `access/envs/<env>/`.
+    The cost is named out loud. The site repo carries a state backend
+    config, an OIDC apply workflow and CODEOWNERS gating `.tf` files, so
+    course PRs and access PRs share one review queue. Lesson checkpoints
+    are git tags here.
+    ([estate](estate.md), [aws-desk](aws-desk.md), [plan](https://github.com/INTENTIUS/waterpark/blob/main/project/plan.md))
+34. **The desk edits directly, and there is no `scripts/request`.** In repo
+    mode the desk locates the file by convention, makes the one edit
+    itself, then runs `terraform validate`, `tflint`, `proofs`, `terraform
+    plan` and `render-delta`, and opens the PR. The domain-verb idea in
+    [design/agentic](design/agentic.md) keeps its read side, which is
+    `access/scripts/whocan`, `access/scripts/expiring` and
+    `access/scripts/offboard --preview`, and it keeps its refusals. The
+    write side is dropped, so no script authors the edit on the agent's
+    behalf. The trade is stated rather than hidden. Two identical requests
+    may produce two different diffs, and the guardrails and the rendered
+    delta carry the weight a deterministic authoring script would have
+    carried. Prescription 13's check moves with it and now asks whether a
+    human making the same edit by hand lands in the same jobs and the same
+    rendered delta.
+    ([aws-desk](aws-desk.md), [design/agentic](design/agentic.md), [prescriptions](prescriptions.md))
+35. **Approve the change, not the diff, is prescription 14.** The saved
+    plan is the manifest, `terraform show -json` renders the typed changes,
+    the apply job refuses a plan whose digest does not match what was
+    approved, and the PR shows the semantic access delta, meaning the
+    grants added and removed by principal and by resource. Decisions 24 and
+    31 already say most of this. P14 promotes it to a checkable
+    prescription, closed by lesson I14, whose check is that an apply
+    against a stale or altered plan fails and the PR comment names the
+    grants added and removed. I14 previously claimed P3, which belongs to
+    I2 and I7.
+    ([prescriptions](prescriptions.md), [IAM, lesson 14](../courses/iam/14-approve-the-change-not-the-diff.md))

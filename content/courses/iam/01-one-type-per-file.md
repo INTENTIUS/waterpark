@@ -28,7 +28,7 @@ activity:
 
 ## Context
 
-- The access repo holds Terraform at `envs/<env>/<resource_type>.<label>.tf`, one `resource` block per file. Terraform already reads every `.tf` in a directory as one module, so there is no assemble step and no generated artifact.
+- The access repo is this repo, and it holds Terraform at `access/envs/<env>/<resource_type>.<label>.tf`, one `resource` block per file. Terraform already reads every `.tf` in a directory as one module, so there is no assemble step and no generated artifact.
 - `terraform validate` checks shape in the editor through the language server. A small check requires the file name to repeat the address of the resource inside it, and fails a file holding two.
 - A reader finds a resource by guessing a path and predicts the file from the resource address. That is the whole index.
 

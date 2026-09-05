@@ -60,7 +60,7 @@ capability map (A15).
 ## The capability ladder
 
 1. **Q&A** (read-only). "Who can reach the artifacts bucket?" answered
-   from `scripts/whocan`, and offboarding previews from the same
+   from `access/scripts/whocan`, and offboarding previews from the same
    read-only scripts.
 2. **Request → PR.** "tickets-api needs read on the receipts bucket" →
    one-file typed edit, PR, lint and CheckNoNewAccess before any human
@@ -81,40 +81,42 @@ Outbound, crossing all six: the Ops can notify into the org's intake
 surfaces. Notification only — each terminates in a PR or an existing
 gate, and nothing takes an instruction back (decision 18).
 
-## Better than a free-editing agent: domain verbs
+## Domain verbs, on the read side
 
 An agent loose in a checkout can edit any file any way it likes, and
-every edit is a different diff. The refinement is **fewer, sharper
-verbs**, which here are ordinary scripts in the repo that a human runs
-the same way.
+every edit is a different diff. The part of that refinement worth keeping
+is **fewer, sharper verbs** for reading, which here are ordinary scripts
+in the repo that a human runs the same way.
 
-1. **Write side: intent goes through a script.** `scripts/request` takes
-   structured intent, which is a principal, a resource, an access level
-   and an optional expiry. It locates the file by convention, applies the
-   edit deterministically, runs the checks and the no-new-access proof,
-   and opens the PR. The agent extracts intent and the script authors, so
-   the same request produces the same diff every time. Offboard,
-   break-glass and satellite scaffolding follow the same pattern, and
-   every ladder level terminates in one of these rather than in ad-hoc
-   agent behavior.
-2. **Read side: queries, not graph walks.** `scripts/whocan` answers
+1. **Queries, not graph walks.** `access/scripts/whocan` answers
    reachability in tens of tokens. "What expires in 30 days" and "what
-   would offboarding remove" are `scripts/expiring` and
-   `scripts/offboard --preview`, reading the declared HCL and the live
-   estate.
-3. **Refusals are part of the interface.** SKILL.md golden paths include
+   would offboarding remove" are `access/scripts/expiring` and
+   `access/scripts/offboard --preview`, reading the declared HCL and the
+   live estate.
+2. **Refusals are part of the interface.** SKILL.md golden paths include
    what the concierge will not do and the escalation route, so a denial
    is a directed next step.
 
-The scripts are the contract, not the agent. Anything the concierge can
-do, a person can do by running the same command, which is what makes the
-agent replaceable and prescription 13 checkable.
+The write side is not a script. There is no `scripts/request`, and no
+deterministic path authors the edit on the agent's behalf. The desk
+locates the file by convention and makes the one edit itself, then runs
+`terraform validate`, `tflint`, `proofs`, the plan and `render-delta`,
+and opens the PR (decision 34). Offboard, break-glass and satellite
+scaffolding work the same way, each ending at a PR.
+
+The cost of that is real and worth stating. Two identical requests may
+produce two different diffs, because a model wrote both. What a reviewer
+approves is the rendered access delta and the checks behind it rather
+than the keystrokes, so the guardrails carry the weight the script used
+to carry. A person who makes the same edit by hand and opens a PR goes
+through the identical jobs and lands the same rendered delta, which is
+what makes the agent replaceable and prescription 13 checkable.
 
 ## Executors and the HITL fallback
 
 A durable executor such as Temporal is optional. The human-in-the-loop
 ladder has three rungs. First, the PR merge is the universal gate, since
-`scripts/request` ends at a PR and needs no gate of its own. Second,
+every concierge path ends at a PR and needs no gate of its own. Second,
 CI-native gates cover gated applies with nothing else deployed. Third, a
 durable workflow with a signal gate covers operations that need a gate
 outside any one CI run, which means break-glass and restore-class

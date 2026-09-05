@@ -97,7 +97,7 @@ deploys to real sandbox accounts (decision 27).
 | I11 | Offboard and the access review | IX attributable; XIII | — | I7 | A10, A11 |
 | I12 | The concierge | V, VIII, IX — the desk's form on IAM: estate on screen, request in words, plan as the access delta, propose is a PR | P13 | F4, F7, F8, I6 | D0, D1, [design/agentic](../content/docs/design/agentic.md), [propose loop](../content/propose-loop.md) |
 | I13 | The watcher | XIII — Rounds' form on IAM: Rounds as-is for the lint tier, the same form over the IAM projections | — | F6, F9, I7, I12 | D3, [propose loop](../content/propose-loop.md) |
-| I14 | Approve the change, not the diff | VIII; XIV | P3 | I6 | [pr-automation](archive/pr-automation.md), decisions 23, 24, 31; C4 |
+| I14 | Approve the change, not the diff | VIII; XIV | P14 | I6 | [pr-automation](archive/pr-automation.md), decisions 23, 24, 31; C4 |
 | I15 | Walk away | I honor the lower layer; XII adopt in place | — | I6 | A21, A14 |
 | IA | Appendix: the org layer; the Terraform backend; cross-cloud; the threat model in full | — | — | — | A19, E, B, [threat-model](../content/docs/threat-model.md) |
 
@@ -163,9 +163,10 @@ chips visible on the page. The authoring checklist is in
    the layout, the `tflint` rule pack, `proofs`, `render-delta`, the shared
    `workload_role` module, generated CODEOWNERS, the apply workflow with
    the digest check, the Floci local path; cut a checkpoint tag per IAM
-   lesson. Without it the IAM lessons are fiction. Whether it lives in this
-   repo or beside it is open, and the courses-repo-is-the-estate framing
-   argues for in-repo.
+   lesson. Without it the IAM lessons are fiction. It lives in this repo,
+   under a top-level `access/` directory beside `content/` and `skills/`,
+   so one clone, one PR flow and one CI cover the course and the estate
+   (decision 33).
 2. **Fountain course, the runtime half (F1–F6, F10, F11).** Depends only on
    a Fountain instance. Write the cards and steps, verify live, tag or
    explicitly un-tag properties on F2/F5/F6/F7/F10.
@@ -184,8 +185,10 @@ chips visible on the page. The authoring checklist is in
    still name chant items; restate them. The GitHub backlog was reissued
    on 2026-09-05 as one issue per lesson (#39 to #54, epic #1), and
    [issues](archive/issues.md) maps the kit-era items to them. Then the home video, an
-   Education link on accessibleops.net pointing here, and the appendix
-   written or retired.
+   Education link on accessibleops.net pointing here. The appendix stays a
+   short parked page naming what the course does not cover and the decision
+   that gates each item, with cross-cloud as one paragraph gated on decision
+   19. Nothing is built for it.
 
 Order is by dependency: 0 gates 1, 3, 4; 1 gates 4; 3 gates F7–F9 and
 I12–I13. Phase 2 can start today.
