@@ -46,8 +46,8 @@ assumes exfiltration; the allowlist is defence in depth, and only holds
 on a hosted sandbox provider (decision 29; a self-hosted runner is
 trusted mode).
 
-Fountain enforces the boundary; the repo declares its policy
-(chant-lexicon-fountain can declare the Environment). Fountain has no
+Fountain enforces the boundary and the repo declares its policy, with
+the concierge's own Environment manifest checked in beside it. Fountain has no
 approval gate in the loop (ADR 0016 proposed, unbuilt; F11), which is
 why decision 14 puts the gate at the PR. Intake is a CLI, a ticket
 webhook, or a Fountain conversation against the same Environment; the
@@ -59,8 +59,9 @@ capability map (A15).
 
 ## The capability ladder
 
-1. **Q&A** (read-only). "Who can reach the receipts bucket?" from
-   `chant search`; offboarding previews from lifecycle projections.
+1. **Q&A** (read-only). "Who can reach the artifacts bucket?" answered
+   from `scripts/whocan`, and offboarding previews from the same
+   read-only scripts.
 2. **Request → PR.** "tickets-api needs read on the receipts bucket" →
    one-file typed edit, PR, lint and CheckNoNewAccess before any human
    looks.
@@ -72,56 +73,58 @@ capability map (A15).
 5. **Concierge for the Ops.** Break-glass requested conversationally
    (the gate stays where it is), offboard drafted from a departure
    notice, satellite scaffolding.
-6. **Migration** (optional). A carve-driven conversation walking
-   Terraform IAM into chant leaf files, for orgs that choose that
-   backend (A14).
+6. **Migration** (optional). A conversation walking a pile of
+   hand-rolled Terraform into the one-resource-per-file layout, for orgs
+   adopting the pattern on an estate they already have (A14).
 
 Outbound, crossing all six: the Ops can notify into the org's intake
 surfaces. Notification only — each terminates in a PR or an existing
 gate, and nothing takes an instruction back (decision 18).
 
-## Better than asking chant: domain verbs
+## Better than a free-editing agent: domain verbs
 
-A generic agent in a checkout already has chant MCP and can free-edit
-files. The refinement is **fewer, sharper verbs**, packaged as Ops and
-projections:
+An agent loose in a checkout can edit any file any way it likes, and
+every edit is a different diff. The refinement is **fewer, sharper
+verbs**, which here are ordinary scripts in the repo that a human runs
+the same way.
 
-1. **Write side: intent goes through an Op.** `wp-request` takes
-   structured intent — principal, resource, access level, expiry —
-   locates the leaf file by convention, applies the edit
-   deterministically, runs lint + CheckNoNewAccess, opens the PR. The
-   agent extracts intent; the Op authors — same diff every time.
-   Same pattern for offboard, break-glass, and scaffolding: every ladder
-   level terminates in a gated or intent Op, never ad-hoc agent behavior.
-2. **Read side: queries and projections, not graph walks.** `chant
-   search` answers reachability in tens of tokens; "what expires in 30
-   days" and "what would offboarding remove" are lifecycle projections
-   exposed as typed commands.
+1. **Write side: intent goes through a script.** `scripts/request` takes
+   structured intent, which is a principal, a resource, an access level
+   and an optional expiry. It locates the file by convention, applies the
+   edit deterministically, runs the checks and the no-new-access proof,
+   and opens the PR. The agent extracts intent and the script authors, so
+   the same request produces the same diff every time. Offboard,
+   break-glass and satellite scaffolding follow the same pattern, and
+   every ladder level terminates in one of these rather than in ad-hoc
+   agent behavior.
+2. **Read side: queries, not graph walks.** `scripts/whocan` answers
+   reachability in tens of tokens. "What expires in 30 days" and "what
+   would offboarding remove" are `scripts/expiring` and
+   `scripts/offboard --preview`, reading the declared HCL and the live
+   estate.
 3. **Refusals are part of the interface.** SKILL.md golden paths include
-   what the concierge won't do and the escalation route, so a denial is
-   a directed next step.
+   what the concierge will not do and the escalation route, so a denial
+   is a directed next step.
 
-chant gaps: project-local MCP tools (a `.chant/tools/` analog of
-`.chant/rules/`) so the domain verbs surface to any MCP-speaking agent
-without a lexicon; and chant#1290 (a step cannot reference a prior
-step's output), so `wp-request` returns its PR URL as a search attribute
-or artifact.
+The scripts are the contract, not the agent. Anything the concierge can
+do, a person can do by running the same command, which is what makes the
+agent replaceable and prescription 13 checkable.
 
 ## Executors and the HITL fallback
 
-Temporal is optional, exactly as chant Ops already work. The
-human-in-the-loop ladder: (1) the PR merge is the universal gate —
-`wp-request` runs on the local executor and ends at a PR, so the intent
-Op needs no gate of its own; (2) CI-native gates (`gate: 'ci'`) cover
-gated applies with no Temporal deployment; (3) Temporal signal gates
-(`gate: 'op'`) for operations needing a gate outside any one CI run —
-break-glass, restore-class applies.
+A durable executor such as Temporal is optional. The human-in-the-loop
+ladder has three rungs. First, the PR merge is the universal gate, since
+`scripts/request` ends at a PR and needs no gate of its own. Second,
+CI-native gates cover gated applies with nothing else deployed. Third, a
+durable workflow with a signal gate covers operations that need a gate
+outside any one CI run, which means break-glass and restore-class
+applies.
 
-Break-glass keeps a documented no-Temporal path (local executor, CLI
-confirmation by a second human) and stays safe with a weak gate because
-revocation never depends on the gate: cloud-side expiry holds
-regardless of executor. Gates degrade gracefully down the ladder;
-revocation guarantees never degrade, because they live in the cloud.
+Break-glass keeps a documented path with no durable executor at all,
+which is a CLI confirmation by a second human, and it stays safe with a
+weak gate because revocation never depends on the gate. Cloud-side expiry
+holds regardless. Gates degrade gracefully down the ladder and revocation
+guarantees never degrade, because they live in the cloud.
 
 ## Git and ticketing integration
 
@@ -137,7 +140,8 @@ repo is the system of record.** Never sync state bidirectionally.
 Inbound, a labeled ticket starts a concierge conversation and tracks the
 PR's lifecycle as comments; outbound, events needing a human decision
 but not a PR can file tickets. The concierge's Environment includes the
-org's ticketing MCP server; chant needs no Jira lexicon.
+org's ticketing MCP server, and nothing in the repo needs to know what
+tracker the org uses.
 
 ## To decide
 
@@ -147,5 +151,6 @@ org's ticketing MCP server; chant needs no Jira lexicon.
    projection.
 2. Hygiene-agent cadence and PR volume caps (40 PRs on day one is
    noise, not hygiene).
-3. Whether level-1 Q&A ships inside behold as well as the concierge.
+3. Whether level-1 Q&A ships as a read-only page as well as the
+   concierge.
 4. The ticket-lifecycle comment format.

@@ -28,7 +28,7 @@ activity:
 
 ## Context
 
-- Trust for CI OIDC, Kubernetes service accounts and SPIFFE is the `AssumeRolePolicyDocument` of each role plus `AWS::IAM::OIDCProvider` resources. These carry the strictest checks and drift severity. The repo never operates an issuer.
+- Trust for CI OIDC, Kubernetes service accounts and SPIFFE is the `assume_role_policy` of each role plus `aws_iam_openid_connect_provider` resources under `identity/`. These carry the strictest checks and the highest drift severity in the repo. The repo never operates an issuer.
 - Credentials are short-lived everywhere. The few static secrets rotate on a policy window.
 - The agent sandbox is never a federation subject (decision 15).
 

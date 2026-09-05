@@ -27,8 +27,8 @@ activity:
 
 ## Context
 
-- CloudFormation resource import brings a pre-existing role and security group under a stack. You write the file and import. Nothing changes on day one. A retain policy backs a resource out.
-- The estate stays in native form. The kit-era export bundle (A21) has no counterpart here.
+- An `import` block brings a pre-existing role and security group under management. You write the file and plan, or let `terraform plan -generate-config-out` write the first draft of the file from what is live. Nothing changes on day one, and the plan proves it by showing no changes. A `removed` block backs a resource out of management without destroying it.
+- The estate stays in native form, so walking away means keeping the HCL and dropping everything else. There is no export bundle to build because there is nothing proprietary to export from.
 
 ## Watch
 

@@ -5,9 +5,11 @@ themes. The basis is one loop, abstracted from the Fountain apps Mend,
 Rounds and dns-desk ([the propose loop](../content/propose-loop.md)), applied to a use case. Every
 lesson can be run alone or conducted live with a group (decision 26).
 The lessons are in two parts: **foundations**, which teach Fountain and
-the propose loop, and **the scenario**, org IAM at splashdown, which applies them
-to a problem an ops crowd recognizes. IAM is one example of the loop,
-and it does not need to hit every property.
+the propose loop, and **the scenario**, water park's own org IAM, which
+applies them to a problem an ops crowd recognizes. The course repo is the
+estate ([the estate](../content/docs/estate.md)), so there is no fictional
+company. IAM is one example of the loop and it does not need to hit every
+property.
 
 ## The propose loop, in one paragraph
 
@@ -46,7 +48,7 @@ facilitator. Each lesson file carries the same sections:
 On the site the lessons live in two **courses** ([courses/](../content/courses/):
 `fountain/` is F1–F11, `iam/` is I1–I15); F0 and I0 are the course intros,
 IA is [the appendix](../content/docs/appendix.md). The courses are about the Accessible Ops
-properties (decision 26); course 2 is plain CloudFormation JSON with CloudFormation as the applier
+properties (decision 26); course 2 is Terraform with Terraform as the applier
 (decision 31), which the tables below, written for chant, do not reflect
 in their source columns; [the AWS desk](../content/docs/aws-desk.md) is the agent app. Each lesson page's front matter is its card: goal,
 done when, restart from, properties, prescriptions closed. The F/I ids
@@ -71,13 +73,13 @@ the upstream versions pinned in [upstream.md](upstream.md).
 | F10 | Your own machine | The self-hosted runner: trusted mode, no isolation, no egress policy, state that stays (ADR 0022) | A runner serves a sandbox; you can say what F3 no longer guarantees on it |
 | F11 | What Fountain will not do for you | No approval gate in the loop (ADR 0016 is proposed, unbuilt); the gate lives where the write lands; the audit trail is retrospective | You can point at the gate in each scenario and say why it is not in Fountain |
 
-## Part II — the scenario: IAM at splashdown
+## Part II — the scenario: water park's own IAM
 
-Builds [splashdown/access](../content/docs/demo-org.md) from nothing to a conforming
-access repo with a concierge and a watcher. chant is the toolchain
-(decision 23: backends are end states; the course teaches on chant).
-Solo mode deploys to Floci; live mode deploys to real sandbox accounts
-(decision 27).
+Builds [the access repo](../content/docs/estate.md) from nothing to a
+conforming access repo with a concierge and a watcher. Terraform is the
+applier (decision 31); the pattern is backend-blind and naming the pair is
+a course choice (decision 23). Solo mode deploys to Floci; live mode
+deploys to real sandbox accounts (decision 27).
 
 | # | Lesson | Theme (Accessible Ops) | Closes | Builds on | Source |
 |---|---|---|---|---|---|
@@ -99,8 +101,9 @@ Solo mode deploys to Floci; live mode deploys to real sandbox accounts
 | I15 | Walk away | I honor the lower layer; XII adopt in place | — | I6 | A21, A14 |
 | IA | Appendix: the org layer; the Terraform backend; cross-cloud; the threat model in full | — | — | — | A19, E, B, [threat-model](../content/docs/threat-model.md) |
 
-I14 is last among the numbered lessons because it waits on chant work
-that has not landed; I15 can run on a thin estate and should be written
+I14 no longer waits on anything, since Terraform's saved plan is the
+manifest and its stale-plan refusal is native; it stays late because it
+reads best after I6. I15 can run on a thin estate and should be written
 early, since it is the test of decision 2.
 
 ## Coverage
@@ -149,17 +152,20 @@ show. Live has the timing and the line. Properties tagged. Zero TODO
 chips visible on the page. The authoring checklist is in
 [page-model.md](page-model.md).
 
-0. **Verify the ground.** Floci: changesets, `detect-stack-drift`, resource
-   import, and `iam:PermissionsBoundary` on `CreateRole` under enforcement
-   (I4, I7, I8, I14, I15 solo paths hinge on these). Pin Fountain's
+0. **Verify the ground.** Floci against Terraform: enough IAM and S3 for a
+   plan and apply to converge, `plan -detailed-exitcode` reporting drift,
+   `import` blocks, and `iam:PermissionsBoundary` on `CreateRole` under
+   enforcement (I4, I7, I8, I15 solo paths hinge on these). Pin Fountain's
    canonical location and version. Record one Access Analyzer run. Decide
    media hosting (static files vs. YouTube). Output: [upstream](upstream.md)
    updated; each lesson's Self-paced bullet marked runs / recorded / live-only.
-1. **The reference repo.** Build `splashdown/access` for real as plain
-   CloudFormation JSON: layout, `assemble`, the JSON Schemas, `proofs`,
-   `render-delta`, generated CODEOWNERS, the apply workflow with the digest
-   check, the Floci local path; cut a checkpoint tag per IAM lesson. Without
-   it the IAM lessons are fiction. Its own repo; the lessons clone it.
+1. **The reference repo.** Build the access repo for real as Terraform:
+   the layout, the `tflint` rule pack, `proofs`, `render-delta`, the shared
+   `workload_role` module, generated CODEOWNERS, the apply workflow with
+   the digest check, the Floci local path; cut a checkpoint tag per IAM
+   lesson. Without it the IAM lessons are fiction. Whether it lives in this
+   repo or beside it is open, and the courses-repo-is-the-estate framing
+   argues for in-repo.
 2. **Fountain course, the runtime half (F1–F6, F10, F11).** Depends only on
    a Fountain instance. Write the cards and steps, verify live, tag or
    explicitly un-tag properties on F2/F5/F6/F7/F10.
@@ -174,10 +180,11 @@ chips visible on the page. The authoring checklist is in
 6. **Media.** Script the Watch sections; record the two course intros and
    the five marquee lessons (egress denial, guardrail in the editor, the
    double refusal, drift, the desk request); fill the `video:` blocks.
-7. **Polish and back office.** The tables in this doc and
-   [prescriptions](../content/docs/prescriptions.md) restated for the CloudFormation path;
-   [issues](archive/issues.md) mapped to it; the home video; an Education link on
-   accessibleops.net pointing here; the appendix written or retired.
+7. **Polish and back office.** The source columns in this doc's tables
+   still name chant; [issues](archive/issues.md) is kit-era and maps to
+   lessons but not to Terraform. Restate both. Then the home video, an
+   Education link on accessibleops.net pointing here, and the appendix
+   written or retired.
 
 Order is by dependency: 0 gates 1, 3, 4; 1 gates 4; 3 gates F7–F9 and
 I12–I13. Phase 2 can start today.
@@ -186,7 +193,7 @@ I12–I13. Phase 2 can start today.
 
 - **lesson** — one theme, one outcome, one check; runs solo or live.
 - **scenario** — the track of lessons that applies the loop to one ops
-  problem; IAM at splashdown is the one the course carries.
+  problem; water park's own IAM is the one the course carries.
 - **checkpoint** — the tagged state a lesson starts from; a live session
   restarts from it, never from scratch.
 - **principal / persona / grant / estate** — as the prescriptions use
@@ -197,3 +204,5 @@ I12–I13. Phase 2 can start today.
   digest (decision 24).
 - **kit** — the IAM access-repo product the kit-era docs designed; now the
   IAM scenario's backlog ([issues.md](archive/issues.md)).
+- **estate** — the AWS water park owns and the repo declares
+  ([the estate](../content/docs/estate.md)).

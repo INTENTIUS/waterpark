@@ -10,7 +10,7 @@ survey (item 1) can amend the set before it ships.
 - Human personas compile to Identity Center permission sets; workload
   personas to IAM roles. No IAM users, no IAM groups.
 - Grant vocabulary is typed access levels (the Policy Sentry model),
-  expanded to actions at synth.
+  expanded to actions by the module that renders the policy.
 - Every grant takes an optional `expires`; expired grants are drift.
 - Every role gets the permission boundary, enforced by lint.
 - Leaf files stay near-data: a principal file instantiates a persona and

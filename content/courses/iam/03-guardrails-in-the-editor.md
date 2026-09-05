@@ -28,10 +28,9 @@ activity:
 
 ## Context
 
-- JSON Schema checks shape in the editor. It requires the boundary, forbids inline policies, requires the owner tag and forbids CIDR sources on security groups.
-- Access Analyzer `validate-policy` checks policy documents for wildcard actions and open access. Rule ids map to the parliament and cloudsplaining taxonomies.
+- `terraform validate` catches shape and `tflint` catches the rules, both in the editor through the language server. The rules require the boundary, forbid inline policies, require the owner tag and forbid raw CIDR sources on security groups.
+- Access Analyzer `validate-policy` checks policy documents for wildcard actions and open access. It is a cloud API rather than part of any toolchain, so it works the same whatever the repo is written in. Rule ids map to the parliament and cloudsplaining taxonomies.
 - The agent and the PR job run the same checks and get the same diagnostic.
-- The design docs list cfn-lint and chant as alternatives. The site names neither.
 
 ## Watch
 

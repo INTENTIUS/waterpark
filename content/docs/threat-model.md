@@ -2,8 +2,9 @@
 title: "Threat and credential model"
 ---
 
-**Kit-era doc.** "water park" here names the IAM access-repo kit, now
-the course's IAM scenario; read in full as appendix lesson IA.
+Read in full as appendix lesson IA. The estate this describes is water
+park's own AWS ([the estate](estate.md)), managed as Terraform
+(decision 31).
 
 The repo's write path to org IAM runs through a git repo and its CI.
 That is the point, and it is also the attack surface. Sections marked
@@ -23,8 +24,8 @@ with less audit), but it must be stated.
 1. **The code host.** Merge rights are grant rights on the estate.
    Account security (MFA, branch protection, no force-push, signed
    commits *open*) is part of the posture; the code-host config itself
-   should be managed — the code-host lexicons can declare branch
-   protection and CODEOWNERS as watched resources.
+   should be managed, since the code host's own Terraform provider can
+   declare branch protection and CODEOWNERS as watched resources.
 2. **The CI runner.** A compromised runner in an apply job is full
    compromise. Mitigations: OIDC short-lived credentials, apply only
    from protected branches, no apply credentials in PR-triggered jobs,
@@ -89,8 +90,8 @@ Three tiers, never mixed in one job:
    ([design/multi-account.md](design/multi-account.md)).
 
 Floci needs none of these — every PR validates locally first. All three
-are federated short-lived credentials whose trust config is code
-(`src/trust/`); a loose subject condition on any federation trust is a
+are federated short-lived credentials whose trust config is code under
+`identity/`. A loose subject condition on any federation trust is a
 standing backdoor, so those resources get the strictest lint and drift
 severity in the estate.
 
@@ -98,8 +99,8 @@ severity in the estate.
 
 Root/management-account compromise. A malicious security-team insider
 with merge rights on guardrail paths. Cloud control-plane compromise.
-Unmanaged (foreign) resources — estate-wide scanning is the chant-audit
-funnel. Compromise of an enrolled intake identity: the holder can open
+Unmanaged (foreign) resources, since estate-wide scanning is an
+auditor's job. Compromise of an enrolled intake identity: the holder can open
 PRs in that principal's name, which CODEOWNERS still has to approve;
 revoking it is a PR against the same leaf file.
 

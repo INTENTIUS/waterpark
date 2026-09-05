@@ -1,1 +1,1 @@
-The story is splashdown, a fictional water-park company. Two hundred engineers, a dozen parks, card payments. All of its AWS access lives in one repo that anyone can change with a pull request.
+Here is the twist. The repo you cloned to take this course is also the repo the course works on. By the end, water park owns its own AWS access, in one repo that anyone can change with a pull request.

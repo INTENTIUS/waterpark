@@ -28,10 +28,10 @@ activity:
 
 ## Context
 
-- The reviewer approves the plan block. It holds the access delta, the proof verdicts and a digest over template, parameters and changeset. The apply job re-creates the changeset and refuses if the digest or the stack moved.
-- The changeset is the manifest. `describe-change-set` JSON is its native form. The kit's E1 schema is the cross-backend version.
-- A change marked `replacement` waits for a person.
-- Provenance is a stated gap. The digest proves the plan did not move and not who built the template. An OIDC-attested build checked before `deploy` is the follow-on lesson.
+- The reviewer approves the plan block. It holds the access delta, the proof verdicts and a digest over the saved plan file. The apply job replans and refuses if the digest or the estate moved. Terraform refuses a saved plan whose state has moved on its own, so the check and the applier agree.
+- The saved plan is the manifest. `terraform show -json tfplan` is its native form. The E1 schema is the cross-backend version of the same object (decision 23).
+- A change that replaces a resource rather than updating it waits for a person. Terraform names these in the plan, and on IAM a replacement means an ARN changes underneath whatever trusts it.
+- Provenance is a stated gap. The digest proves the plan did not move, not who produced it. An OIDC-attested build checked before apply is the follow-on lesson, and property XIV is only half closed until then.
 
 ## Watch
 

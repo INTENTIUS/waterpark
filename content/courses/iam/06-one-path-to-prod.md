@@ -29,8 +29,8 @@ activity:
 ## Context
 
 - CODEOWNERS is generated from the principal files. Branch protection is declared (A20).
-- PR jobs hold no cloud credential. They run `assemble`, the JSON Schema, `validate-policy` and a changeset against Floci. The real changeset and `check-no-new-access` run after the merge queue or behind a maintainer label (decision 22).
-- The three credential tiers use OIDC. The plan tier creates and describes changesets. The apply tier runs `cloudformation deploy` under its boundary. The org tier is separate.
+- PR jobs hold no cloud credential. They run `terraform validate`, `tflint`, `validate-policy` and a plan against Floci. The real plan and `check-no-new-access` run after the merge queue or behind a maintainer label (decision 22).
+- The three credential tiers use OIDC. The plan tier runs `terraform plan` and reads. The apply tier runs `terraform apply` under its own boundary, on protected branches only. The org tier is separate.
 - The PR job runs the checks the editor ran.
 
 ## Watch

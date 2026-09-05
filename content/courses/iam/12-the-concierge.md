@@ -28,8 +28,8 @@ activity:
 
 ## Context
 
-- The desk in repo mode takes a request in words, edits one file, runs `assemble`, creates a changeset, runs `check-no-new-access`, renders the access delta and opens a PR with a PR-only token. The merge is the approval (decision 18). The sandbox holds no cloud credential.
-- An unmapped requester gets a refusal that names the enrollment path. A boundary exception gets a refusal that names the platform path.
+- The desk in repo mode takes a request in words, edits one file, runs `terraform plan`, runs `check-no-new-access`, renders the access delta and opens a PR with a PR-only token. The merge is the approval (decision 18). The sandbox holds no cloud credential.
+- The worked request is "site-publisher needs read on waterpark-artifacts". An unmapped requester gets a refusal that names the enrollment path. A request that needs the boundary changed gets a refusal that names the platform path.
 - The desk's rows join the credential table from Fountain lesson 4. The parts table is filled from the propose loop page.
 
 ## Watch

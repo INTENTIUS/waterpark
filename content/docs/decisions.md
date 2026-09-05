@@ -7,13 +7,13 @@ it. Reversing one requires editing this file in the same PR.
 
 1. **The write path is always the PR.** No write GUI, ever. Browsing goes
    to behold over the graph. ([plan](https://github.com/INTENTIUS/waterpark/blob/main/project/plan.md), [positioning](https://github.com/INTENTIUS/waterpark/blob/main/project/archive/positioning.md))
-2. **No new format.** Typed source in, native artifacts out, export bundle
-   so the estate outlives the toolchain. The anti-IAMbic clause. Applies
-   to both backends: chant emits CloudFormation, Terraform keeps its own
-   plan/state. ([landscape](https://github.com/INTENTIUS/waterpark/blob/main/project/archive/landscape.md))
+2. **No new format.** Declared source in, native artifacts out, so the
+   estate outlives the toolchain. The anti-IAMbic clause. On Terraform
+   the native artifact is HCL the provider applies directly, and the
+   state file is bookkeeping, never the system of record (decision 32). ([landscape](https://github.com/INTENTIUS/waterpark/blob/main/project/archive/landscape.md))
 3. **Manages what it declares, audits what it owns.** Not a CSPM, not a
-   CIEM. Estate-wide scanning is the chant-audit funnel. Chat intake is
-   not a JIT catalog: a JIT product grants on approval, water park's
+   CIEM. Estate-wide scanning belongs to an auditor like Prowler. Chat intake is
+   not a JIT catalog. A JIT product grants on approval, water park's
    concierge produces a diff a human merges (decision 18).
    ([positioning](https://github.com/INTENTIUS/waterpark/blob/main/project/archive/positioning.md), [landscape](https://github.com/INTENTIUS/waterpark/blob/main/project/archive/landscape.md))
 4. **AWS is the wedge; cross-cloud is act two.** Track B is needs-design
@@ -31,10 +31,11 @@ it. Reversing one requires editing this file in the same PR.
 9. **Guardrails roll out warn-minor / error-major with ratchet
    baselines.** An upgrade cannot break a satellite without a warn cycle.
    ([design/guardrail-rollout](design/guardrail-rollout.md))
-10. **The context package is the delegation contract.** Rules, presets and
-    `WorkloadRole` live in `@org/waterpark-context`; a satellite is a
-    consumer from its first file. Built in lesson I8 (amended under
-    decision 26: it ships with the lesson, not "from the start" of a kit).
+10. **The shared module is the delegation contract.** The guardrail
+    checks, the boundary ARN and the `workload_role` module live in one
+    versioned module a satellite consumes from its first file. Built in
+    lesson I8 (amended under decision 26, it ships with the lesson, not
+    "from the start" of a kit).
     ([plan](https://github.com/INTENTIUS/waterpark/blob/main/project/plan.md), [IAM, lesson 8](../courses/iam/08-delegation-and-the-double-refusal.md))
 11. **Account vending is out of scope.** water park references accounts
     (registry, reference-existing); Control Tower / org-formation vend
@@ -57,10 +58,11 @@ it. Reversing one requires editing this file in the same PR.
     ([design/agentic](design/agentic.md),
     [design/workload-identity](design/workload-identity.md))
 16. **water park owns the AWS governance reconcile, or nobody does.**
-    chant's archived `aws-warden` — OU tree, SCPs, Identity Center,
-    org trail, protected break-glass — is adopted on water park's terms:
-    typed source instead of a YAML tree, the PR as the write path, the
-    cycle design and guardrail set taken verbatim.
+    The prior art here is chant's archived `aws-warden`, which covered
+    the OU tree, SCPs, Identity Center, the org trail and a protected
+    break-glass. It is adopted on water park's terms, which means
+    declared source instead of a YAML tree and the PR as the write path,
+    with the cycle design and guardrail set taken verbatim.
     ([upstream.md](https://github.com/INTENTIUS/waterpark/blob/main/project/upstream.md))
 17. **The requester's identity is declared, never asserted.** A chat or
     intake identity earns standing only by appearing in a principal's
@@ -96,19 +98,21 @@ it. Reversing one requires editing this file in the same PR.
     Access Analyzer proofs run post-merge-queue or behind a
     maintainer-applied label. Applies to fork PRs and agent-authored PRs
     identically. ([threat-model](threat-model.md))
-23. **Two backends, one manifest.** water park supports chant and
-    Terraform/OpenTofu as authoring backends, both first-class end
-    states. The normalized change manifest — chant's typed change set,
-    Terraform's plan JSON reduced to the same schema — is the common
-    review, evidence, and access-review object; everything
-    backend-specific stays behind it. `chant carve` is a chant feature
-    documented for orgs that choose to move, never a water park funnel.
+23. **The pattern is backend-blind; the course picks one.** water park is
+    a way of holding access, not a tool. Terraform and OpenTofu are what
+    the course teaches (decision 31), and chant is a typed backend the
+    design docs describe. What makes them interchangeable is the change
+    manifest, the plan reduced to a common shape, which is the review,
+    evidence and access-review object everywhere. Everything
+    backend-specific stays behind it.
     ([plan](https://github.com/INTENTIUS/waterpark/blob/main/project/plan.md), [pr-automation](https://github.com/INTENTIUS/waterpark/blob/main/project/archive/pr-automation.md))
-24. **Approval binds to the manifest; the PR is the envelope.** A
-    reviewer approves the rendered change manifest, identified by its
-    digest; apply refuses when the recompiled manifest or the live
-    estate diverges. The manifest is never the system of record —
-    declared source in git is (decision 2). Extends decision 6.
+24. **Approval binds to the manifest, and the PR is the envelope.** A
+    reviewer approves the rendered change manifest identified by its
+    digest, and apply refuses when the replanned manifest or the live
+    estate has moved. On Terraform the saved plan file is that object and
+    the refusal is native, since a saved plan will not apply against
+    state it no longer matches. The manifest is never the system of
+    record, declared source in git is (decision 2). Extends decision 6.
     ([pr-automation](https://github.com/INTENTIUS/waterpark/blob/main/project/archive/pr-automation.md))
 25. **The IAM kit is the IAM scenario's backlog.** Superseded in framing
     by decision 26: the kit is neither a product nor parked; tracks A–E
@@ -150,17 +154,34 @@ it. Reversing one requires editing this file in the same PR.
     the rules the prompt cannot, and renders the PR body from the same
     objects it reports. Where a human is present, Mend's form (the PR
     opened from the human's browser with the human's token) is enough.
-    No chant MCP verb service is built ahead of need.
+    No verb service is built ahead of need.
     ([propose loop](../propose-loop.md), [Fountain, lesson 8](../courses/fountain/08-propose-loop-interactive.md),
     [Fountain, lesson 9](../courses/fountain/09-propose-loop-ambient.md), [design/agentic](design/agentic.md))
-31. **The course uses no toolchain: the IAM repo is plain CloudFormation
-    JSON and the applier is CloudFormation.** One resource per file in the
-    shape CloudFormation expects, assembled into a template per stack by a
-    `jq` merge; changesets are the plan, `detect-stack-drift` is the watch,
-    resource import is adopt-in-place, Access Analyzer `validate-policy` and
-    `check-no-new-access` are the lint and the proof, a JSON Schema is the
-    editor check. The agent app is [the AWS desk](aws-desk.md): direct mode
-    is dns-desk's posture, repo mode is the course's. chant and Terraform
-    remain backends the kit-era docs describe (decision 23) and are not
-    named on the site; switching the course to one is an edit to this
-    decision. ([aws-desk](aws-desk.md), [plan](https://github.com/INTENTIUS/waterpark/blob/main/project/plan.md))
+31. **The course runs on Fountain and Terraform.** water park is a GitOps
+    pattern, not a toolchain. Any agent runtime and any declarative
+    applier can drive it, and naming the pair is a course decision rather
+    than a property of the pattern. This course pairs Fountain with
+    Terraform because both run free on a laptop and Terraform is where
+    most orgs already are. The repo is one resource per `.tf` file and the
+    directory is the module, so nothing assembles anything. `terraform
+    plan` is the plan, `terraform apply` in a gated job is the only write,
+    `plan -detailed-exitcode` is the drift watch, `import` blocks are
+    adopt-in-place, `terraform validate` and `tflint` are the editor
+    check, and Access Analyzer `validate-policy` and `check-no-new-access`
+    are the proofs, since those are cloud APIs and not part of any
+    toolchain. The agent app is [the AWS desk](aws-desk.md), where direct
+    mode is dns-desk's posture and repo mode is the course's. chant
+    remains a backend the design docs describe (decision 23) and is not
+    taught. Replacing either half is an edit to this decision.
+    ([aws-desk](aws-desk.md), [plan](https://github.com/INTENTIUS/waterpark/blob/main/project/plan.md))
+32. **The state file is a cost the course names out loud.** Accessible Ops
+    XI says the live system is the truth and warns about a tool that hosts
+    its own state. Terraform hosts one, and water park does not pretend
+    otherwise. The mitigations are that state lives in
+    `waterpark-security` with locking and is never the system of record
+    (decision 2), that every read of the estate in these lessons goes to
+    the cloud rather than to state, and that the drift watch compares
+    declared against live. Lesson I4 teaches the cost and lesson I7
+    teaches the mitigation. A backend without a state file scores better
+    on this property and the course says so rather than hiding it.
+    ([IAM, lesson 4](../courses/iam/04-deploy-to-floci.md), [IAM, lesson 7](../courses/iam/07-drift.md))

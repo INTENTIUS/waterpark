@@ -73,7 +73,7 @@ an expired grant surfaces as drift; snapshot tests over policy JSON.
 file under `src/principals/<team>/`, AWS leg only; no IAM users or
 groups (decision 5).
 AC: a new principal is addable by copying a sibling file; wrong persona
-name is a type error; demo-org names throughout.
+name is a type error; the estate names throughout.
 
 **A6. Baseline component. needs-design (boundary contents, warden
 cycle design)** Permission boundaries, org policy set (SCP + RCP +
@@ -129,7 +129,7 @@ edits; carve walkthrough validated against a sample TF state.
 **A15. SKILL.md + docs site.** Agent capability map, docs site, the
 pattern doc naming the central-repo layout and the no-write-GUI
 principle.
-AC: from a bare checkout an agent answers "add read access to bucket X
+AC: from a bare checkout an agent answers "add read access to the artifacts bucket
 for team Y" with the correct file path and PR flow.
 
 **A17. Threat-model hardening.** Apply-role boundary (with A6), OIDC
@@ -155,7 +155,7 @@ flagged within one cycle.
 as Ops over typed source: OU tree, SCPs, Identity Center, org trail.
 Ownership-gated deletes, removal-delta cap, dry-run by default, account
 creation surfacing in the plan rather than being attempted.
-AC: the four cycles reconcile splashdown's declared org; a removal beyond the
+AC: the four cycles reconcile water park's declared org; a removal beyond the
 cap refuses; the break-glass permission set cannot be removed by a
 reconcile.
 
@@ -168,7 +168,7 @@ high-severity.
 
 **A21. Export bundle (decision 2).** The walk-away artifact:
 synthesized CloudFormation, policy JSON, marker inventory, provenance.
-AC: build the splashdown estate, delete the kit and every chant dependency,
+AC: build the water park estate, delete the kit and every chant dependency,
 deploy the bundle with the AWS CLI alone, byte-identical. If the AC
 cannot run, decision 2 gets softened instead.
 
@@ -190,7 +190,7 @@ Design source: [pr-automation.md](../../project/archive/pr-automation.md).
 vs generated vs chant feature; output is a decision doc and, if
 warranted, a chant issue.
 
-**C2. Org context package.** `@org/waterpark-context`: config preset,
+**C2. Org context package.** `the shared module`: config preset,
 naming helper, guardrail rules (re-export shims until rule packages),
 typed refs per C1.
 AC: a new satellite is one dep + three-line config + one resource file
@@ -227,7 +227,7 @@ Design source: [design/agentic.md](../../content/docs/design/agentic.md). Depend
 and the threat-model agent boundary; D1 unblocks the rest.
 
 **Sequencing: demo-first against a fixture.** The request→PR loop is
-built end to end against a fixed splashdown estate checked into the repo,
+built end to end against a fixed water park estate checked into the repo,
 real Track A backfilling behind it. The rationale, re-derived after the
 chat front-end was deferred: the loop is the earliest end-to-end
 exercise of the verb layer and the manifest rendering, and scenario 6
@@ -254,7 +254,7 @@ estate, never on a workload principal), and the refusal path for
 unmapped identities — enrollment is access-relevant and gets CODEOWNERS
 routing.
 AC: `fountain apply` stands up the concierge; "who can reach the
-receipts bucket?" answers from the D0 projection; splashdown scenario 6
+receipts bucket?" answers from the D0 projection; water park scenario 6
 yields a correct one-file PR passing lint and CheckNoNewAccess with no
 human edit; an unmapped identity gets a refusal naming the enrollment
 path and no PR; a boundary-exception request gets a directed refusal.
@@ -288,7 +288,7 @@ CODEOWNERS and the delegation boundary unchanged (AWS mechanics, not
 backend mechanics). Honest scope: reconcile *authoring* is chant-only —
 cloud-to-code needs an emit path Terraform lacks, so this backend
 detects and reports drift and a human authors the fix.
-AC: the splashdown central repo in Terraform passes the same guardrail
+AC: the water park central repo in Terraform passes the same guardrail
 intent; scenario 5's double refusal holds with the Terraform deploy
 credential; drift on an owned resource is detected and reported within
 one cycle, and the docs state the no-auto-reconcile boundary.

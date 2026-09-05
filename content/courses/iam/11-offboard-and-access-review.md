@@ -27,8 +27,8 @@ activity:
 
 ## Context
 
-- Offboard removes a principal's files and every reference in one PR and one deploy. Zero references remain.
-- The quarterly artifact combines declared JSON with live reads from `get-role`, `list-attached-role-policies` and Access Analyzer unused-access findings. It lists every principal, what it can reach and what expires.
+- Offboard removes a principal's files and every reference to it in one PR and one apply. Zero references remain.
+- The quarterly artifact combines the declared HCL with live reads from `get-role`, `list-attached-role-policies` and Access Analyzer unused-access findings. It lists every principal, what it can reach and what expires.
 
 ## Watch
 
