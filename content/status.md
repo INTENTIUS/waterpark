@@ -29,6 +29,8 @@ not built by this workflow.
 |---|---|
 | 2026-08-23 | `just up`, then `just register`, then `just runner`. The runner came up connected and listed online. |
 | 2026-08-23, 2026-08-24 | The start skill walked end to end, an agent playing the student. |
+| 2026-09-05 | `just up` on a fresh volume, `just register`, `just runner`. The runner came up online; a real inference credential went in through the web UI. |
+| 2026-09-05 | Fountain lesson 1 on the compose stack. `fountain apply -f` created the three objects, the secrets endpoint returned keys with no value field, the conversation replied, and the second apply updated in place. The sandbox had `STAGE=dev`; a prompt naming the shell read it back. Two things did not match the page and are filed as [issue 37](https://github.com/INTENTIUS/waterpark/issues/37): the runtime refuses the manifest's model id and answers on the account default, and the page's prompt does not make the agent read STAGE. |
 
 ## Written, not yet verified
 
