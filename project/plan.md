@@ -97,7 +97,7 @@ deploys to real sandbox accounts (decision 27).
 | I11 | Offboard and the access review | IX attributable; XIII | — | I7 | A10, A11 |
 | I12 | The concierge | V, VIII, IX — the desk's form on IAM: estate on screen, request in words, plan as the access delta, propose is a PR | P13 | F4, F7, F8, I6 | D0, D1, [design/agentic](../content/docs/design/agentic.md), [propose loop](../content/propose-loop.md) |
 | I13 | The watcher | XIII — Rounds' form on IAM: Rounds as-is for the lint tier, the same form over the IAM projections | — | F6, F9, I7, I12 | D3, [propose loop](../content/propose-loop.md) |
-| I14 | Approve the change, not the diff | VIII; XIV | P3 | I6 | [pr-automation](archive/pr-automation.md), decisions 23, 24; gated on chant items 1, 2, 9 |
+| I14 | Approve the change, not the diff | VIII; XIV | P3 | I6 | [pr-automation](archive/pr-automation.md), decisions 23, 24, 31; C4 |
 | I15 | Walk away | I honor the lower layer; XII adopt in place | — | I6 | A21, A14 |
 | IA | Appendix: the org layer; the Terraform backend; cross-cloud; the threat model in full | — | — | — | A19, E, B, [threat-model](../content/docs/threat-model.md) |
 
@@ -181,8 +181,9 @@ chips visible on the page. The authoring checklist is in
    the five marquee lessons (egress denial, guardrail in the editor, the
    double refusal, drift, the desk request); fill the `video:` blocks.
 7. **Polish and back office.** The source columns in this doc's tables
-   still name chant; [issues](archive/issues.md) is kit-era and maps to
-   lessons but not to Terraform. Restate both. Then the home video, an
+   still name chant items; restate them. The GitHub backlog was reissued
+   on 2026-09-05 as one issue per lesson (#39 to #54, epic #1), and
+   [issues](archive/issues.md) maps the kit-era items to them. Then the home video, an
    Education link on accessibleops.net pointing here, and the appendix
    written or retired.
 

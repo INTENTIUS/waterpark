@@ -2,6 +2,35 @@
 items were filed for; under decision 26 the kit is the IAM scenario and
 each item is source material for a lesson. The map:
 
+The GitHub issues these items were filed as (#2 to #33) were closed on
+2026-09-05 and reissued as one issue per lesson, written for Terraform
+(decisions 31, 32) with each old issue cited as source material. Epic #1
+was restated to index them.
+
+| Lesson | Issue | Replaces |
+|---|---|---|
+| I1 | #39 | #2 A1, #3 A2 |
+| I2 | #40 | #6 A4, #7 A5 |
+| I3 | #41 | #4 A3 |
+| I4 | #42 | #15 A13 |
+| I5 | #43 | #8 A6, #9 A7 |
+| I6 | #44 | #5 A3b, #14 A12, #19 A17 (hardening), #23 B3 (code host) |
+| I7 | #45 | #10 A8 |
+| I8 | #46 | #25 C1, #26 C2, #27 C3 |
+| I9 | #47 | #18 A16, #20 A18, #19 A17 (rotation) |
+| I10 | #48 | #11 A9 |
+| I11 | #49 | #12 A10, #13 A11, #30 D0 (projections) |
+| I12 | #50 | #30 D0 (write verb), #31 D1, #17 A15 (last criterion) |
+| I13 | #51 | #33 D3 |
+| I14 | #52 | #28 C4, #29 C5 |
+| I15 | #53 | #16 A14 |
+| IA | #54 | #21 B1, #22 B2, #23 B3 (Kubernetes), #24 B4, #32 D2 |
+
+Closed with no replacement: #17 (the site and `skills/` exist), #18
+(folded into A17), #24 (no cross-cloud demo), #29 (the compiler premise),
+#32 (dropped), #33 (written into the desk doc). The lesson-to-item map
+the items were first sorted by:
+
 | Lesson | Items |
 |---|---|
 | I1 | A1, A2 |
