@@ -115,3 +115,59 @@ condition key is honored on `CreateRole` (I8 solo path; plan.md).
 Hugo; one page per property, expandable bars on the home page; each
 property tagged with the outcome it buys. The course borrows the site
 layout and uses the properties as lesson themes (F0).
+
+## Floci as a Terraform target, verified 2026-09-05
+
+Floci alone on port 4566, IAM enforcement on
+(`FLOCI_SERVICES_IAM_ENFORCEMENT_ENABLED=true`), hashicorp/aws against
+`endpoints { iam sts s3 }`. The `test` access key resolves to
+`arn:aws:iam::000000000000:root` and acts unrestricted under enforcement,
+so all four facts ran with enforcement on. Total wall time 4m 16s.
+
+| Fact | Result | Proving command | Evidence |
+|---|---|---|---|
+| 1. Converge | partial | `terraform apply -auto-approve` then `terraform plan -detailed-exitcode` | apply creates all 5 resources, none rejected; the immediate plan exits **2**, not 0, with `+ permissions_boundary = "arn:aws:iam::000000000000:policy/wp-permission-boundary"` |
+| 2. Drift | pass | `aws iam detach-role-policy --role-name wp-workload --policy-arn ...wp-workload-read` then `terraform plan -detailed-exitcode` | exit **2**, `# aws_iam_role_policy_attachment.workload_read will be created`; `aws iam tag-role` drift also lands, `- "owner" = "intruder" -> null` |
+| 3. Import | pass | `terraform plan -generate-config-out=generated.tf`, apply, then re-plan | `aws_iam_role.adopted: Import complete [id=wp-adopted]`; the adopted role appears in the next plan only as a `Refreshing state...` line, with no diff |
+| 4. Boundary enforcement | fail | `aws iam create-role` as a user allowed `iam:CreateRole` only under `StringEquals iam:PermissionsBoundary` | both calls denied: `An error occurred (AccessDenied) when calling the CreateRole operation: User is not authorized to perform: iam:CreateRole`, with and without `--permissions-boundary` |
+
+**Versions.** Floci image `floci/floci:latest`, digest
+`sha256:4e451c39c7bb88e3cd4f87e8fc0c25d5b47695a51185d521e2241fa00486e8eb`,
+image id `sha256:04d032aeba34ae0401fc4c0776c732384e557862abd8656c1e4bf74bdbb51a8b`,
+built 2026-09-01. The container reports `floci 2.0.1 native (powered by
+Quarkus 3.37.4)` and `AWS Local Emulator 2.0.1`. The host CLI is `floci
+0.2.0`, a different number for the same release line. Terraform v1.15.8
+selected hashicorp/aws **v6.63.0**. Account `000000000000`, region
+us-east-1, storage `memory`.
+
+**Two boundary bugs, and they are different.** The first is a read bug.
+Floci accepts `PermissionsBoundary` on `CreateRole` and accepts
+`PutRolePermissionsBoundary`, both without error, but `GetRole` and
+`ListRoles` return the field as `null` forever. Terraform therefore never
+sees the boundary it just set and plans the same in-place update on every
+run, so no estate carrying a boundary can ever reach a clean plan. That is
+what makes fact 1 a partial. Any lesson that ends on a green
+`plan -detailed-exitcode` has to avoid `permissions_boundary` on the Floci
+path or teach the diff as expected.
+
+The second is an authorization bug, and it settles the question this file
+listed as open. Floci does not populate the `iam:PermissionsBoundary`
+request context key, so a policy conditioned on it matches nothing and
+denies every call. A control user granted `iam:CreateRole` with no
+condition creates roles fine, which rules out policy evaluation being
+broken in general. Four spellings were tried, `StringEquals` and
+`ArnEquals` and `StringLike` on `iam:PermissionsBoundary`, plus the
+lowercase `iam:permissionsboundary`, and all four denied even when
+`--permissions-boundary` was passed.
+
+The consequence for I8 is that the double refusal does not demonstrate
+against Floci. The lesson needs the second call to succeed once the
+boundary is supplied, and Floci refuses both. It fails closed, so nothing
+unsafe gets through, but a student on the solo path sees deny then deny
+and learns the wrong lesson. I8 needs a real account, a recorded run, or
+a rewrite until Floci populates the key.
+
+**Clean on the rest.** `terraform destroy -auto-approve` removed all six
+resources with no errors. `import` blocks and `-generate-config-out` both
+work, which is I15 unblocked. Drift detection works on both the
+attachment and the tag path, which is I7 unblocked.

@@ -39,9 +39,15 @@ not built by this workflow.
 - The reference access repo does not exist yet. The IAM lessons describe
   a repo nobody has cloned.
 - The AWS desk is a design doc, not code.
-- Whether Floci supports enough of IAM for `terraform plan` and
-  `-detailed-exitcode` to behave, and whether it honors the
-  `iam:PermissionsBoundary` condition on `CreateRole`, is unverified.
+- Floci as a Terraform target was verified on 2026-09-05 (plan phase 0,
+  recorded in
+  [project/upstream.md](https://github.com/INTENTIUS/waterpark/blob/main/project/upstream.md)).
+  Plan and apply converge, drift reports under `-detailed-exitcode`, and
+  `import` blocks work. Two gaps remain: Floci never returns a role's
+  permissions boundary on read, so a bounded role replans forever, and it
+  never populates the `iam:PermissionsBoundary` condition key, so the
+  double refusal in lesson 8 denies both ways. How the self-paced path
+  handles both is not yet decided.
 
 The phases that close these gaps are in
 [project/plan.md](https://github.com/INTENTIUS/waterpark/blob/main/project/plan.md).
