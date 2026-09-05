@@ -10,7 +10,7 @@ skill: ""
 goal: ""
 done_when: ""
 restart_from: "lesson 3"
-properties: ["XI", "I", "VII"]
+properties: ["XI", "I"]
 closes: ["P6 (part)"]
 # media. provider is youtube, vimeo, file or todo
 video:
@@ -28,10 +28,11 @@ activity:
 
 ## Context
 
-- `scripts/assemble` then `aws cloudformation deploy` against Floci endpoints needs no account and no keys. Live sessions use a real sandbox account.
-- Floci runs CloudFormation, IAM, STS and EC2 security groups in process. It has no Organizations, Identity Center or Access Analyzer. Those verdicts are recorded.
-- `get-role` reads a role back. The file predicted it.
-- A failed update rolls the stack back on its own. A change marked `replacement` is the risky case and waits for a person in lesson 14.
+- A provider block with endpoint overrides points Terraform at Floci, so `terraform apply` needs no account and no keys. Live sessions point the same code at a real sandbox account.
+- Floci runs IAM, STS, S3 and EC2 security groups in process. It has no Organizations, Identity Center or Access Analyzer. Those verdicts are recorded.
+- `get-role` reads a role back from the cloud rather than from state. The file predicted it.
+- Terraform keeps a state file, which is the thing property XI warns about. The lesson names the cost rather than hiding it (decision 32). State goes in its own bucket with locking, it is never the system of record, and every read in these lessons goes to the cloud instead.
+- A failed apply stops and leaves behind what it already made, with no automatic rollback. That is a real difference from an applier that rolls back, and the answer is small changes planned first, not a bigger apply.
 
 ## Watch
 

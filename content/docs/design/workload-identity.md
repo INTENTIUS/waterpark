@@ -51,7 +51,7 @@ verb service's trust anchor, its role, and the lint on both.
 ## The cross-cloud upside
 
 For workloads, SPIFFE offers the universal principal name cross-cloud
-personas otherwise lack: `spiffe://splashdown.io/tickets/api` is one
+personas otherwise lack: `spiffe://waterpark.io/site/publisher` is one
 identity every cloud's federation config can reference. A workload leaf
 file carries an optional SPIFFE ID; each leg compiles to that cloud's
 trust for the same ID. The workload half of OrgPrincipal goes

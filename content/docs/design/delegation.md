@@ -2,11 +2,12 @@
 title: "Design: delegated role creation (decision 20)"
 ---
 
-Track C says a satellite declares an SQS queue. Under the layout as
-first written, the role that reads it took a second PR in
-`splashdown/access` — the ticket queue the product exists to remove, wearing
-a git costume. This doc says satellites create their own workload roles,
-and names the mechanism that makes it safe.
+A satellite declares a resource of its own, say the registry the sandbox
+runner image is pushed to. Under the layout as first written, the role
+that pushes to it took a second PR in the access repo, which is the ticket
+queue this pattern exists to remove wearing a git costume. This doc says
+satellites create their own workload roles, and names the mechanism that
+makes it safe.
 
 ## The mechanism was already in the repo
 
@@ -27,7 +28,7 @@ the boundary, in the editor, with a fix-it. The fast layer contributors
 feel.
 
 **At apply, the cloud.** A satellite that defeats the lint — patched
-rules, hand-rolled CloudFormation, a compromised runner — still cannot
+rules, hand-rolled HCL, a compromised runner, still cannot
 create an unbounded role, because IAM refuses the call.
 
 Same layering as break-glass: the convenient layer gives fast
@@ -37,13 +38,13 @@ first one cheap.
 
 ## What stays central
 
-| Central (`splashdown/access`) | Satellite |
+| Central (the access repo) | Satellite |
 |---|---|
 | The boundary policy itself | Workload roles inside it |
 | Personas | Which persona a workload instantiates |
 | Human principals and assignments | Nothing — humans are never satellite-declared |
 | The org layer | Nothing |
-| Guardrail rules (via context package) | Consumes them |
+| Guardrail rules (via the shared module) | Consumes them |
 | The account registry | References its own account |
 
 The line: **a satellite may create identities that act on its own
@@ -55,16 +56,19 @@ matters: if humans could get IAM users, a satellite could mint one.)
 
 ## The composite is the contract
 
-Satellites do not write `new Role({...})`. The context package exports
-`WorkloadRole`, which takes a persona and a grant list and applies the
-boundary, ownership marker, and naming itself:
+Satellites do not write a raw `aws_iam_role`. The shared module exports
+`workload_role`, which takes a persona and a grant list and applies the
+boundary, the ownership marker and the naming itself.
 
-```ts
-// splashdown-tickets/src/roles/queue-consumer.ts — the whole file
-export default WorkloadRole({
-  persona: "service",
-  grants: [read(queue), write(deadLetterQueue)],
-});
+```hcl
+# waterpark-runner/iam_role.runner_builder.tf, the whole file
+module "runner_builder" {
+  source  = "waterpark/workload-role/aws"
+  version = "~> 1.2"
+
+  persona = "service"
+  grants  = [local.push_registry, local.read_artifacts]
+}
 ```
 
 A satellite that needs something the composite cannot express is a
@@ -79,9 +83,9 @@ intended. Expect it to be the most-revised object in the baseline —
 and tightening it can break existing roles at apply time, which lint
 will not catch, so guardrail-rollout's warn discipline applies.
 
-**Reachability spans repos.** Either satellites publish a graph
-artifact the access review folds in, or A11's evidence states the gap
-(the reachability unknown, issues.md).
+**Reachability spans repos.** Either satellites publish an artifact the
+access review folds in, or A11's evidence states the gap (the
+reachability unknown, issues.md).
 
 **Ownership crosses a repo boundary.** A satellite-created role carries
 the satellite's marker; central reconcile treats it as foreign, and

@@ -53,8 +53,8 @@ dialects.
 Intent compiles to source deterministically, so the source diff is a
 build artifact and the wrong altitude for security review. The reviewable
 object is the **manifest**: the typed change set, rendered as the
-semantic access delta ("grants `s3:GetObject` on `splashdown-receipts` to
-`tickets-api`, expires 2026-11-01"), with proof verdicts and Op-manifest
+semantic access delta ("grants `s3:GetObject` on `waterpark-artifacts` to
+`site-publisher`, expires 2026-11-01"), with proof verdicts and Op-manifest
 diffs beside it.
 
 Approval binds to the manifest's digest, not the source sha. Apply

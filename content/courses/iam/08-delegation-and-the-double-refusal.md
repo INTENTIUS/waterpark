@@ -28,9 +28,9 @@ activity:
 
 ## Context
 
-- A satellite repo declares a queue and the role that reads it as CloudFormation inside the boundary. Its deploy role may call `CreateRole` only when `iam:PermissionsBoundary` equals the central ARN. The JSON Schema requires the boundary at build.
-- Stripping the boundary fails the schema at build and fails IAM at apply. Floci enforcement of the condition key is unverified.
-- The shared schema and the boundary ARN are the delegation contract. A new rule ships as a warning in a minor version and an error in a major version.
+- The `waterpark-runner` repo is the satellite. It declares the registry its image is pushed to and the `runner-builder` role that pushes, as Terraform, inside the boundary. Its deploy role may call `CreateRole` only when `iam:PermissionsBoundary` equals the central ARN, and the shared module requires the boundary at build.
+- Stripping the boundary fails the checks at build and fails IAM at apply, independently. Floci enforcement of the condition key is unverified.
+- The shared module and the boundary ARN are the delegation contract. A new rule ships as a warning in a minor version and an error in a major version.
 
 ## Watch
 

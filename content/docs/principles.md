@@ -35,12 +35,13 @@ look like on org IAM.
 8. **Identity is declared, never asserted.** A requester earns standing
    by appearing in a reviewed leaf file; anything else is an unverified
    claim, rendered as one. (decision 17; IX)
-9. **No new formats.** Typed source in, native artifacts out; the
-   estate must outlive the toolchain that produced it. (decision 2; I,
+9. **No new formats.** Declared source in, native artifacts out, so the
+   estate outlives the toolchain that produced it. (decision 2; I,
    XII)
-10. **Meet the org where it is.** AWS first; authoring backends are
-    first-class end states; the course teaches on chant; migration is
-    offered, never pushed. (decisions 4, 11, 23; XII)
+10. **Meet the org where it is.** AWS first, the pattern is
+    backend-blind, and the course teaches on Terraform because that is
+    where most orgs already are. Migration is offered, never pushed.
+    (decisions 4, 11, 23, 31; XII)
 
 Accessible Ops III (documentation is law) has no invariant of its own:
 the decisions ledger is the worked example, and lesson I0 teaches it. X

@@ -33,12 +33,13 @@ not built by this workflow.
 ## Written, not yet verified
 
 - All 26 lesson bodies (11 Fountain, 15 IAM) are skeletons with TODO
-  markers. `just todos` counts 190 today.
-- The reference IAM repo, `splashdown/access`, does not exist yet. The
-  IAM lessons describe a repo nobody has cloned.
+  markers, except Fountain lesson 1. `just todos` counts 181 today.
+- The reference access repo does not exist yet. The IAM lessons describe
+  a repo nobody has cloned.
 - The AWS desk is a design doc, not code.
-- Whether Floci supports changesets, drift detection, and the
-  `iam:PermissionsBoundary` condition on `CreateRole` is unverified.
+- Whether Floci supports enough of IAM for `terraform plan` and
+  `-detailed-exitcode` to behave, and whether it honors the
+  `iam:PermissionsBoundary` condition on `CreateRole`, is unverified.
 
 The phases that close these gaps are in
 [project/plan.md](https://github.com/INTENTIUS/waterpark/blob/main/project/plan.md).

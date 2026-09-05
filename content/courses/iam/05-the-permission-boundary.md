@@ -28,10 +28,10 @@ activity:
 
 ## Context
 
-- The baseline stack holds the boundary as an `AWS::IAM::ManagedPolicy`. Every role references it by name.
+- The `baseline/` module holds the boundary as an `aws_iam_policy`. Every role references it, and the shared module applies it for you.
 - The apply role carries its own boundary so the system cannot escalate itself (decision 12). The org policy set deploys live only. Default-deny security groups live in the baseline too.
 - The boundary contents follow the lean in the delegation note.
-- The why lives in the repo. The boundary `Description` and the baseline README say why each deny exists. A grant carries its rationale beside `expires`. The decisions ledger is the long form.
+- The why lives in the repo. The boundary's `description`, and a comment beside each deny, say why it is there. A grant carries its rationale beside its expiry. The decisions ledger is the long form.
 
 ## Watch
 

@@ -3,7 +3,7 @@ title: "Drift"
 id: "I7"
 lesson: 7
 weight: 7
-summary: "CloudFormation detects drift and a PR restores the declared state."
+summary: "A scheduled plan detects drift and a PR restores the declared state."
 # skill. a directory in this repo with a SKILL.md that drives the lesson. empty renders nothing
 skill: ""
 # card. empty renders as TODO
@@ -28,8 +28,8 @@ activity:
 
 ## Context
 
-- `detect-stack-drift` and `describe-stack-resource-drifts` run on a schedule over owned stacks. Security group and trust drift pages someone. Other drift opens a PR.
-- The reconcile PR restores the declared state under Rounds' rules (decision 28). The watcher in lesson 13 opens it.
+- `terraform plan -detailed-exitcode` runs on a schedule over every workspace. Exit 0 means the estate matches, exit 2 means it moved and the plan JSON says which resources and attributes. Security group and trust drift pages someone. Other drift opens a PR.
+- The reconcile PR restores what the repo declares, under Rounds' rules (decision 28). The watcher in lesson 13 opens it. Restoring is automatic because the file already says what should be true. Keeping an out-of-band change instead means a human writes it into the file, and that asymmetry is deliberate.
 - Expired grants surface in the same watch.
 
 ## Watch

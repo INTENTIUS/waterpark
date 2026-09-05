@@ -28,9 +28,9 @@ activity:
 
 ## Context
 
-- Humans are `AWS::SSO::PermissionSet` and `AWS::SSO::Assignment` resources. Workloads are `AWS::IAM::Role` resources. There are no IAM users or groups (decision 5).
-- A persona is a permission set or role file copied by convention. Each principal is one file. The examples are `tickets-api`, `tickets` and `rides-board`.
-- A grant's `expires` is a date in the policy `Condition` on `aws:CurrentTime` plus a tag. `scripts/proofs` flags expired grants.
+- Humans are `aws_ssoadmin_permission_set` and `aws_ssoadmin_account_assignment`. Workloads are `aws_iam_role`. There are no IAM users and no IAM groups (decision 5).
+- A persona is a call to a shared module, so a principal file is that call plus a list of grants and nothing else. Each principal is one file. The examples are `site-publisher`, `course-author` and `runner-builder`.
+- A grant's expiry is a date in the policy `Condition` on `aws:CurrentTime` plus a tag carrying the same date. `scripts/proofs` flags the ones past due.
 
 ## Watch
 

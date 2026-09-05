@@ -1,5 +1,8 @@
-Taken 2026-08-22 against the current structure (two courses, 26 lesson
-skeletons, the AWS desk design, plain CloudFormation JSON for the IAM repo).
+Taken 2026-08-22 against the then-current structure (two courses, 26
+lesson skeletons, the AWS desk design). It predates the 2026-08-25
+reframe, which removed the fictional company and moved the IAM course to
+Terraform (decisions 31, 32), so read its property table as still valid
+and its toolchain references as stale.
 Two questions: does the material demonstrate the fourteen properties, and
 what does a learner actually meet. Times are estimates for a learner,
 self-paced and live, with build effort per phase at the end.
@@ -8,17 +11,17 @@ self-paced and live, with build effort per phase at the end.
 
 | Property | Lessons | Strength | Gap / fix |
 |---|---|---|---|
-| I Honor the lower layer | I1, I15 | strong: the repo is the platform's own JSON | tag I4 (read a role back; the file predicted it) |
+| I Honor the lower layer | I1, I15 | strong: the repo is the platform's own format | tag I4 (read a role back; the file predicted it) |
 | II The same check, left of the commit | I3 | single but central | tag I6 (the PR job runs the identical checks); F-side has no lesson where editor check = agent check except I3 step 4 |
 | III Documentation is law | F1 | weak: one tag, on the manifest | no lesson shows the *why* living in the repo (decisions ledger, `Description` on the boundary, rationale next to a grant). Add a short IAM lesson or a step in I5; tag I2 once `expires` and rationale are fields |
 | IV One path to prod | F8, I6 | strong | — |
 | V Named secrets, least privilege | F4, I2, I9, I12 | strong | — |
 | VI Bounded blast radius | F3, F4, I5, I8 | strong | tag F10 as the counterexample (a runner has no bound) |
-| VII Reversible before risky | I10 | single | tag I14 (a changeset `replacement: true` is the risky case that waits) and I4 (stack rollback) |
+| VII Reversible before risky | I10 | single | tag I14 (a plan that replaces rather than updates is the risky case that waits). I4 no longer qualifies: Terraform has no automatic rollback |
 | VIII Escalate the judgment | F8, F11, I10, I12, I14 | strong | — |
 | IX Attributable | I6, I11, I12 | medium | tag F5 (one thread per agent) and F7 (the conversation is the record); CloudTrail `sts:SourceIdentity` appears in the desk doc but in no lesson; add to I12 |
 | X Secret rotation is cheap | I9 | single | tag F4 (revoke by removing the vault) |
-| XI The live system is the truth | I4, I7 | medium | tag F8 (re-read before apply is this property on the agent side) |
+| XI The live system is the truth | I4, I7 | medium, and now contested: Terraform keeps a state file | tag F8 (re-read before apply is this property on the agent side); decision 32 names the cost and I4 teaches it |
 | XII Adopt in place | I15 | single, literal | fine |
 | XIII Manage only what you declare | F9, I7, I11, I13 | strong | — |
 | XIV Verify the artifact | I6, I14 | medium: digest yes, signature/provenance no | nothing signs anything. Either a lesson on provenance for the assembled template (OIDC-attested build, attestation checked before `deploy`) or state the gap on I14 |
@@ -130,7 +133,7 @@ from F3, F8, I3, I6, I7, I8, I12.
 | Phase | Effort |
 |---|---|
 | 0 Verify the ground | 1–2 days |
-| 1 Reference repo `splashdown/access` | 2–3 weeks |
+| 1 Reference access repo | 2–3 weeks |
 | 2 Fountain course, runtime half | 3–5 days |
 | 3 AWS desk v0 + F7–F9 | 2–3 weeks |
 | 4 IAM bodies + desk v1 | 2–3 weeks |
