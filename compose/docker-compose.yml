@@ -53,7 +53,11 @@ services:
       retries: 40
 
   floci:
-    image: floci/floci:${FLOCI_IMAGE_TAG:-latest}
+    # a patched build from the lex00/floci fork. upstream 2.0.1 never returns a role's
+    # permissions boundary on read and never populates iam:PermissionsBoundary, so
+    # bounded roles replan forever and lesson 8's double refusal denies both ways.
+    # branch fix/iam-permissions-boundary. set FLOCI_IMAGE=floci/floci FLOCI_IMAGE_TAG=latest for upstream
+    image: ${FLOCI_IMAGE:-ghcr.io/lex00/floci}:${FLOCI_IMAGE_TAG:-iam-boundary}
     ports:
       - "${FLOCI_PORT:-4566}:4566"
     environment:
