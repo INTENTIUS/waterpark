@@ -78,5 +78,10 @@ sentence, not an integration.
    consumer sits adjacent to an untrusted sandbox.
 3. Whether the SPIFFE ID lives on the principal or in the trust layer.
    Lean: on the principal — it is the principal's cross-cloud name.
-4. Roles Anywhere vs OIDC as the documented AWS default. Lean: OIDC
-   (no CA plumbing); Roles Anywhere noted.
+4. **Settled. OIDC is the documented AWS default.** Workloads federate
+   through `aws_iam_openid_connect_provider` entries under
+   `access/identity/`, issuer and audience pinned, no wildcard `sub`
+   claim. Roles Anywhere gets one paragraph as the option for a fleet
+   with an existing PKI. The rotation check for the few static secrets
+   that remain runs on the watch's weekday schedule, so one cron drives
+   both (decision 39).

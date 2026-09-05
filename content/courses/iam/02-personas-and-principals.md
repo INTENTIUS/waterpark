@@ -30,6 +30,7 @@ activity:
 
 - Humans are `aws_ssoadmin_permission_set` and `aws_ssoadmin_account_assignment`. Workloads are `aws_iam_role`. There are no IAM users and no IAM groups (decision 5).
 - A persona is a call to a shared module, so a principal file is that call plus a list of grants and nothing else. Each principal is one file. The examples are `site-publisher`, `course-author` and `runner-builder`.
+- The persona set is four and it is closed. `reader` and `platform` are the human ones, `service` and `deployer` the workload ones, and `platform` is the one that owns the guardrail path. Team scoping is a module parameter rather than a persona of its own, and there is no standing admin, because permissions management always goes through the repo (decision 41).
 - A grant's expiry is a date in the policy `Condition` on `aws:CurrentTime` plus a tag carrying the same date. `access/scripts/proofs` flags the ones past due.
 
 ## Watch

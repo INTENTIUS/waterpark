@@ -38,20 +38,22 @@ dies:
 With layer 1, the workflow engine being down cannot extend access, only
 delay cleanup. That is the honest guarantee statement for the docs.
 
-## To decide
+## Settled, and what is left
 
-1. Grant mechanism: time-conditioned inline policy vs temporary
-   Identity Center assignment vs a dedicated break-glass permission set.
-   Lean: assignment + time-condition policy; validate mechanics.
-2. Signal auth: who may approve, how authenticated, and whether the
-   approver's identity lands in both the workflow history and the
-   grant's tags.
-3. Max TTL, and whether it is lint-enforced as a baseline constant.
-4. TEAM interop: TEAM for routine elevated access, water park
-   break-glass for when the paved road itself is down — confirm the
-   boundary.
-5. Code-host-down operation, with a CLI confirmation by a second human
-   as the documented fallback.
+1. **Grant mechanism.** A temporary Identity Center assignment whose
+   policy carries an `aws:CurrentTime` condition. Floci cannot run
+   Identity Center, so the self-paced path uses the time-conditioned
+   policy on a role and lesson I10 says so (decision 37).
+2. **Signal auth.** The approver is the reviewer of the break-glass PR,
+   and the apply job copies that identity into the grant's tags, so the
+   approval and the artifact name the same human (decision 37).
+3. **Max TTL is two hours.** It is a constant in `access/baseline/` and
+   a tflint rule refuses a longer one (decision 37).
+4. Still to decide. TEAM interop: TEAM for routine elevated access,
+   water park break-glass for when the paved road itself is down —
+   confirm the boundary.
+5. **Code-host-down operation.** A CLI confirmation by a second human is
+   the documented fallback (decision 37).
 
 ## Acceptance test (drives A9's AC)
 

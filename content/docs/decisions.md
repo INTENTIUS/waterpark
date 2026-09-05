@@ -225,3 +225,91 @@ it. Reversing one requires editing this file in the same PR.
     grants added and removed. I14 previously claimed P3, which belongs to
     I2 and I7.
     ([prescriptions](prescriptions.md), [IAM, lesson 14](../courses/iam/14-approve-the-change-not-the-diff.md))
+36. **One permissions boundary for the whole estate.** It lives in
+    `access/baseline/` as an `aws_iam_policy` and it denies all IAM
+    write, Organizations and Identity Center, the guardrail-path
+    resources by name, and boundary detachment, while allowing the
+    service surface an app team plausibly needs. That is the lean the
+    delegation note carried, adopted as written. Splitting per OU is
+    deferred until an OU needs it. The Sandbox OU carries no boundary at
+    all, because sandboxes exist to be broken and the live session guide
+    has the room break things there. `deployer` is not delegable, so a
+    satellite creates only `service` roles. The cost is that the
+    boundary becomes the most-revised object in the baseline, and
+    tightening it can break an existing role at apply time where lint
+    will not catch it, so guardrail-rollout's warn discipline applies.
+    Settles delegation items 1, 2, 4 and 5.
+    ([design/delegation](design/delegation.md), [IAM, lesson 5](../courses/iam/05-the-permission-boundary.md), [demo](demo.md))
+37. **Break-glass is a temporary Identity Center assignment carrying a
+    time condition.** The assignment's policy carries an
+    `aws:CurrentTime` condition, so the cloud ends the access even if
+    every job dies. Max TTL is two hours, held in `access/baseline/` as
+    a constant, and a tflint rule refuses a longer one. The approver is
+    the reviewer of the break-glass PR, and the apply job copies that
+    identity into the grant's tags, so the approval and the artifact
+    name the same human. With the code host down the fallback is a CLI
+    confirmation by a second human, as the break-glass note already
+    documents. The cost is that Floci cannot run Identity Center, so the
+    self-paced path uses the time-conditioned policy on a role and the
+    page says so. Settles break-glass items 1, 2, 3 and 5. Item 4, TEAM
+    interop, stays open.
+    ([design/break-glass](design/break-glass.md), [IAM, lesson 10](../courses/iam/10-break-glass.md))
+38. **Adopt in place is import from live, one resource at a time.** The
+    documented first path for an existing estate is an `import` block
+    per resource, `terraform plan -generate-config-out` reviewed by hand
+    into the one-file-per-resource layout, and a plan that proves
+    nothing changes on day one, with a `removed` block to back out.
+    Greenfield is the course's own path and needs no adoption story.
+    Carve was chant-only (decision 23). Bulk import is not the
+    documented path, because water park manages what it declares
+    (decision 3, Accessible Ops XIII) and a bulk import declares a pile
+    nobody has read. The old export-bundle criterion is moot now that
+    the HCL is the artifact, and decision 2 stands. The cost is that
+    adoption is slow by design and a large estate takes many PRs.
+    ([IAM, lesson 15](../courses/iam/15-adopt-in-place.md))
+39. **Workloads federate through declared OIDC providers.** The trust
+    anchors are `aws_iam_openid_connect_provider` entries under
+    `access/identity/`, issuer and audience pinned, no wildcard `sub`
+    claim. Roles Anywhere gets one paragraph as the option for a fleet
+    with an existing PKI, and nothing more. The rotation check for the
+    few remaining static secrets runs on the same weekday schedule as
+    the watch, so one cron drives both and lesson I13 teaches the
+    schedule once. The cost is that an org whose workloads sit outside a
+    CI or a cluster reads that one paragraph and builds the rest itself.
+    Settles workload-identity item 4 and the rotation cadence.
+    ([design/workload-identity](design/workload-identity.md), [IAM, lesson 9](../courses/iam/09-federation-trust.md))
+40. **The watcher holds at most five open PRs.** The watcher's prompt
+    says so, and the credential-free PR job counts open PRs carrying the
+    desk marker and fails a sixth, so the cap holds when the prompt is
+    ignored. No propose endpoint is built, because a job that already
+    reads the code host can do the counting. Five is a constant in
+    `access/baseline/` so lesson I13 can show a student changing it. The
+    cost is that a real backlog takes several cycles to clear and the
+    sixth finding waits.
+    ([aws-desk](aws-desk.md), [design/agentic](design/agentic.md), [IAM, lesson 13](../courses/iam/13-the-watcher.md))
+41. **The persona set is four, and it is closed.** The personas are
+    `reader`, `deployer`, `service`, and the `platform` persona that
+    owns the guardrail path. That is what this estate needs, and adding
+    one is a module release rather than a leaf-file edit. Team scoping
+    is module parameters. There is no standing admin, because
+    permissions management always goes through the repo. The three-org
+    survey is dropped as out of scope for a course whose estate is one
+    small org, and the personas note says in one sentence that a larger
+    org would revisit the set. Cross-cloud equivalence stays parked with
+    Track B (decision 19). The cost is that a reader running a
+    centralized enterprise gets a set that was never tested against one.
+    Settles personas items 1, 2 and 3.
+    ([design/personas](design/personas.md), [estate](estate.md), [IAM, lesson 2](../courses/iam/02-personas-and-principals.md))
+42. **The access review reads live, never a satellite's HCL.** It reads
+    the live account through `get-role`,
+    `list-attached-role-policies` and Access Analyzer unused-access
+    findings, so anything a satellite created appears regardless of
+    which repo declared it. That closes the cross-repo reachability
+    question by not needing an answer to it, which retires delegation
+    item 3 and the archive's C1 and C6 unknown for this course. The
+    read-only queries, `whocan`, `expiring` and `offboard --preview`,
+    stay scripts under `access/scripts/` that the desk's estate pane
+    calls, so there is no separate Q&A page. The cost is that the review
+    is only as current as its last read and it says nothing about a
+    resource nobody has permission to read. Lessons I11 and I8.
+    ([design/delegation](design/delegation.md), [design/agentic](design/agentic.md), [IAM, lesson 11](../courses/iam/11-offboard-and-access-review.md))

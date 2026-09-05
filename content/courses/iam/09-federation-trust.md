@@ -28,8 +28,8 @@ activity:
 
 ## Context
 
-- Trust for CI OIDC, Kubernetes service accounts and SPIFFE is the `assume_role_policy` of each role plus `aws_iam_openid_connect_provider` resources under `identity/`. These carry the strictest checks and the highest drift severity in the repo. The repo never operates an issuer.
-- Credentials are short-lived everywhere. The few static secrets rotate on a policy window.
+- Trust for CI OIDC, Kubernetes service accounts and SPIFFE is the `assume_role_policy` of each role plus `aws_iam_openid_connect_provider` resources under `access/identity/`, issuer and audience pinned and no wildcard `sub` claim. These carry the strictest checks and the highest drift severity in the repo. The repo never operates an issuer. Roles Anywhere is one paragraph, the option for a fleet with an existing PKI (decision 39).
+- Credentials are short-lived everywhere. The rotation check for the few static secrets that remain runs on the same weekday schedule as the watch, so one cron drives both and lesson 13 teaches the schedule once.
 - The agent sandbox is never a federation subject (decision 15).
 
 ## Watch
