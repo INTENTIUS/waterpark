@@ -32,26 +32,32 @@ per-conversation source identity is the record for applies.
 ## The target: a repo of Terraform, one resource per file
 
 ```
-envs/
-  prod/
-    main.tf                                    provider, backend, locals
-    iam_role.site_publisher.tf                 one resource
-    iam_policy.site_publisher_read_artifacts.tf
-    s3_bucket.waterpark_artifacts.tf
-    ecr_repository.waterpark_runner.tf
-  dev/                                          the same shapes, no traffic
-baseline/
-  iam_policy.boundary.tf
-  security_group.default_deny.tf
-identity/
-  sso_permission_set.course_author.tf
-  sso_assignment.course_author_prod.tf
-modules/
-  workload_role/                                boundary, marker and naming, applied for you
-scripts/
-  render-delta                                  plan JSON -> the access delta text
-  proofs                                        validate-policy and check-no-new-access
+access/                                          the HCL root, top level in this repo
+  envs/
+    prod/
+      main.tf                                    provider, backend, locals
+      iam_role.site_publisher.tf                 one resource
+      iam_policy.site_publisher_read_artifacts.tf
+      s3_bucket.waterpark_artifacts.tf
+      ecr_repository.waterpark_runner.tf
+    dev/                                         the same shapes, no traffic
+  baseline/
+    iam_policy.boundary.tf
+    security_group.default_deny.tf
+  identity/
+    sso_permission_set.course_author.tf
+    sso_assignment.course_author_prod.tf
+  modules/
+    workload_role/                               boundary, marker and naming, applied for you
+  scripts/
+    render-delta                                 plan JSON to the access delta text
+    proofs                                       validate-policy and check-no-new-access
 ```
+
+`access/` sits beside `content/` and `skills/` in the water park repo
+itself, because the access repo is this repo (decision 33). The clone the
+desk keeps is the course repo, and a course PR and an access PR go through
+the same queue.
 
 The path is the index. A file is named `<resource_type>.<label>.tf` and
 holds exactly one `resource` block whose type and label the file name
@@ -103,7 +109,7 @@ aws-plan    {"id":"plan-7f3a","workspace":"prod","mode":"repo",
                          "address":"aws_iam_policy.site_publisher_read_artifacts"}],
              "delta":"grants s3:GetObject on waterpark-artifacts to site-publisher",
              "proofs":[{"check":"CheckNoNewAccess","result":"FAIL","reason":"new access: s3:GetObject"}],
-             "files":["envs/prod/iam_policy.site_publisher_read_artifacts.tf"],
+             "files":["access/envs/prod/iam_policy.site_publisher_read_artifacts.tf"],
              "diff":"…unified diff of the file edit…","digest":"sha256:…"}
 aws-result  {"plan_id":"plan-7f3a","status":"pr-opened"|"applied"|"refused"|"stale",
              "detail":"https://github.com/…/pull/42"|"Apply complete"|"…"}
@@ -125,8 +131,10 @@ words.
 1. **Read.** Refresh the clone, then read the estate from the cloud and
    emit `aws-state`, one workspace at a time.
 2. **Edit.** Locate the file by convention (a principal maps to
-   `envs/<env>/iam_role.<name>.tf` and its grants to the policy file
-   beside it) and make the one edit.
+   `access/envs/<env>/iam_role.<name>.tf` and its grants to the policy
+   file beside it) and make the one edit. The desk makes that edit itself.
+   There is no request script standing between the words and the diff
+   (decision 34).
 3. **Plan.** `terraform plan -out=tfplan` against the target account with
    the plan role, or against Floci. `terraform show -json tfplan` for the
    typed changes. `proofs` on every changed policy document.

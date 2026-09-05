@@ -83,9 +83,18 @@ shows instead.
     *Check:* a wildcard subject condition fails the checks, and a
     hand-edited trust policy is flagged within one cycle.
 13. **(I12, I13) The agent proposes, the pipeline verifies, humans
-    approve.** Intake extracts intent, a deterministic path authors the
-    edit, and the PR carries the verification. The agent never approves,
-    applies or signals a gate, its sandbox holds no cloud credentials, and
-    its egress is a default-deny allowlist.
-    *Check:* the same command an agent invokes produces the same PR with
-    no agent involved, and a refusal names the escalation path.
+    approve.** Intake is plain words, the desk makes the one file edit
+    itself (decision 34), and the PR carries the verification. The agent
+    never approves, applies or signals a gate, its sandbox holds no cloud
+    credentials, and its egress is a default-deny allowlist.
+    *Check:* a human who makes the same edit by hand and opens a PR goes
+    through the identical validate, tflint, proofs and plan jobs and lands
+    the same rendered access delta, and a refusal names the escalation
+    path.
+14. **(I14) Approve the change, not the diff.** The saved plan is the
+    manifest, `terraform show -json` renders the typed changes, the apply
+    job refuses a plan whose digest does not match what was approved, and
+    the PR shows the semantic access delta, the grants added and removed
+    by principal and by resource (decisions 24, 31).
+    *Check:* an apply against a stale or altered plan fails, and the PR
+    comment names the grants added and removed.

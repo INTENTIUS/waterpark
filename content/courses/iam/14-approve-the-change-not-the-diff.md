@@ -11,7 +11,7 @@ goal: ""
 done_when: ""
 restart_from: "lesson 6"
 properties: ["VIII", "XIV", "VII"]
-closes: ["P3"]
+closes: ["P14"]
 # media. provider is youtube, vimeo, file or todo
 video:
   provider: todo
