@@ -28,8 +28,8 @@ activity:
 
 ## Context
 
-- The grant carries cloud-side expiry through a time-conditioned policy or a temporary Identity Center assignment with a two-hour TTL. A scheduled cleanup removes the artifact. The watch flags leftovers.
-- The gate is a second human in the workflow. Revocation never depends on the gate.
+- The grant is a temporary Identity Center assignment whose policy carries an `aws:CurrentTime` condition, so the cloud ends the access with no job alive. The max TTL is two hours, a constant in `access/baseline/` that a tflint rule enforces. A scheduled cleanup removes the artifact. The watch flags leftovers (decision 37).
+- The approver is the reviewer of the break-glass PR, and the apply job copies that identity into the grant's tags. With the code host down the fallback is a CLI confirmation by a second human. Revocation never depends on either gate.
 - Killing the cleanup mid-grant still ends access at the TTL.
 
 ## Watch

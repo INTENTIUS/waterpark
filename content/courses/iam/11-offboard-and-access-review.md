@@ -28,7 +28,8 @@ activity:
 ## Context
 
 - Offboard removes a principal's files and every reference to it in one PR and one apply. Zero references remain.
-- The quarterly artifact combines the declared HCL with live reads from `get-role`, `list-attached-role-policies` and Access Analyzer unused-access findings. It lists every principal, what it can reach and what expires.
+- The quarterly artifact reads the live account, through `get-role`, `list-attached-role-policies` and Access Analyzer unused-access findings, and never a satellite's HCL. So a role a satellite created is in the review whichever repo declared it (decision 42). It lists every principal, what it can reach and what expires.
+- The read-only queries stay scripts under `access/scripts/`, which are `whocan`, `expiring` and `offboard --preview`, and the desk's estate pane calls them. There is no separate Q&A page.
 
 ## Watch
 

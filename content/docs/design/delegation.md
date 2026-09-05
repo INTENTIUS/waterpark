@@ -83,27 +83,31 @@ intended. Expect it to be the most-revised object in the baseline —
 and tightening it can break existing roles at apply time, which lint
 will not catch, so guardrail-rollout's warn discipline applies.
 
-**Reachability spans repos.** Either satellites publish an artifact the
-access review folds in, or A11's evidence states the gap (the
-reachability unknown, issues.md).
+**Reachability spans repos.** The access review answers that by reading
+the live account instead of the declared HCL, so a role a satellite
+created is in the evidence whoever declared it (decision 42).
 
 **Ownership crosses a repo boundary.** A satellite-created role carries
 the satellite's marker; central reconcile treats it as foreign, and
 each satellite watches its own.
 
-## To decide
+## Decided
 
-1. **Boundary contents.** Lean: deny all IAM write, org and Identity
-   Center, guardrail-path resources by name, boundary detachment; allow
-   the service surface an app team plausibly needs. Belongs to A6 with
-   the apply-role boundary — same mechanism, two tiers.
-2. **One boundary or several.** Lean: start with one; split per OU when
-   needed.
-3. **Cross-repo reachability** — the refs and reachability unknowns
-   (issues.md).
-4. **Whether `deployer` is delegable.** Lean: no — satellites create
-   only `service` roles. Confirm against A18.
-5. **Sandbox accounts.** Looser boundary or none for the Sandbox OU.
+1. **Boundary contents.** It denies all IAM write, Organizations and
+   Identity Center, the guardrail-path resources by name, and boundary
+   detachment, and it allows the service surface an app team plausibly
+   needs. It sits with the apply-role boundary in A6, one mechanism at
+   two tiers (decision 36).
+2. **One boundary, not several.** One policy covers the whole estate,
+   and splitting per OU waits until an OU needs it (decision 36).
+3. **Cross-repo reachability.** The access review reads the live
+   account rather than any satellite's HCL, so a satellite-created role
+   shows up whoever declared it. The question does not need an answer
+   (decision 42).
+4. **`deployer` is not delegable.** A satellite creates only `service`
+   roles (decision 36).
+5. **Sandbox accounts.** The Sandbox OU carries no boundary, because
+   sandboxes exist to be broken (decision 36).
 
 ## Acceptance test (drives C3's AC)
 

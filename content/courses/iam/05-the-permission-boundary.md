@@ -30,7 +30,7 @@ activity:
 
 - The `baseline/` module holds the boundary as an `aws_iam_policy`. Every role references it, and the shared module applies it for you.
 - The apply role carries its own boundary so the system cannot escalate itself (decision 12). The org policy set deploys live only. Default-deny security groups live in the baseline too.
-- The boundary contents follow the lean in the delegation note.
+- One boundary covers the whole estate. It denies all IAM write, Organizations and Identity Center, the guardrail-path resources by name, and boundary detachment, and it allows the service surface an app team plausibly needs. Splitting per OU waits until an OU needs it, and the Sandbox OU carries no boundary at all, because sandboxes exist to be broken (decision 36).
 - The why lives in the repo. The boundary's `description`, and a comment beside each deny, say why it is there. A grant carries its rationale beside its expiry. The decisions ledger is the long form.
 
 ## Watch

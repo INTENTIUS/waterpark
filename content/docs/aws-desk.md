@@ -164,7 +164,10 @@ resource, open one PR on `desk/drift/<workspace>/<address>` that restores
 what the repo declares, which is usually an empty diff whose job is to
 trigger the apply, with a marker in the body. Never a second PR for the
 same resource while one is open. A PR closed unmerged is a no until it is
-labeled `desk:reconsider`. At most N open. Expired grants come through the
+labeled `desk:reconsider`. At most five open, a constant in
+`access/baseline/`, which the credential-free PR job enforces by counting
+open PRs carrying the desk marker and failing a sixth, so the cap holds
+when the prompt is ignored (decision 40). Expired grants come through the
 same path as burndown PRs. State lives at GitHub, as Rounds does it.
 
 ## The credential table
@@ -215,9 +218,10 @@ blocks and `removed` blocks. Access Analyzer `validate-policy` and
 `check-no-new-access`. Floci's IAM, STS and S3 for the solo path.
 
 To build: the page, `spec.ts` and `protocol.ts`, `render-delta`, `proofs`,
-the apply workflow with the digest check, and, if the watcher's cap needs
-enforcing outside the prompt, a small propose endpoint in Rounds' shape.
-None of it is a toolchain. All of it is repo scripts, a page and a prompt.
+the apply workflow with the digest check, and the open-PR count in the PR
+job that enforces the watcher's cap. No propose endpoint, because a job
+that already reads the code host can do the counting (decision 40). None
+of it is a toolchain. All of it is repo scripts, a page and a prompt.
 
 ## Where it lands in the courses
 

@@ -151,8 +151,14 @@ tracker the org uses.
    stretches the plan tier — wherever it lands, it lives in a verb
    service, never the sandbox; likely a dedicated `who-changed-this`
    projection.
-2. Hygiene-agent cadence and PR volume caps (40 PRs on day one is
-   noise, not hygiene).
-3. Whether level-1 Q&A ships as a read-only page as well as the
-   concierge.
+2. **Settled. The cadence is the watch's weekday schedule and the cap is
+   five open PRs.** One cron drives the watch and the rotation check
+   (decision 39). The watcher's prompt carries the cap and the
+   credential-free PR job counts open PRs with the desk marker and fails
+   a sixth, so 40 PRs on day one cannot happen even if the prompt is
+   ignored (decision 40).
+3. **Settled. No separate Q&A page.** `access/scripts/whocan`,
+   `access/scripts/expiring` and `access/scripts/offboard --preview`
+   stay scripts, and the desk's estate pane calls them, so level-1 Q&A
+   is a pane of the page that already exists (decision 42).
 4. The ticket-lifecycle comment format.

@@ -27,7 +27,8 @@ activity:
 
 ## Context
 
-- The desk on a schedule turns drift, expired grants and unused-access findings into reconcile and burndown PRs. One PR per finding. A cap on open PRs. Declines stick under Rounds' rules.
+- The desk on a schedule turns drift, expired grants and unused-access findings into reconcile and burndown PRs. One PR per finding. Declines stick under Rounds' rules. The same weekday cron drives the rotation check from lesson 9.
+- At most five desk PRs are open at once. Five is a constant in `access/baseline/`, the watcher's prompt says so, and the credential-free PR job counts open PRs carrying the desk marker and fails a sixth, so the cap holds when the prompt is ignored (decision 40).
 - Rounds as-is can enroll the repo for what its catalogs cover. The IAM projections use the same form.
 
 ## Watch
