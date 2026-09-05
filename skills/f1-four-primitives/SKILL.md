@@ -76,7 +76,7 @@ kind: Agent
 metadata:
   name: lesson1-agent
 spec:
-  model: anthropic/claude-sonnet-4-6
+  model: anthropic/sonnet
   runtime: claude
   environment: lesson1-env
 ---
@@ -95,8 +95,11 @@ and write-only, once stored the API never returns the value again, only
 the key and a timestamp. The Vault carries its own `secrets` and, on a
 key collision with the Environment's, the vault's value wins when
 Fountain builds the conversation's env vars. The Agent names a `model` as
-`provider/model-id`, a `runtime` (`claude` here, matching the provider),
-and references the Environment by name.
+`provider/alias`, a `runtime` (`claude` here, matching the provider), and
+references the Environment by name. The runtime here accepts the aliases
+`sonnet`, `opus` and `haiku` and refuses fully qualified ids, and an alias
+resolves to whatever the provider currently calls it, so a later run may
+answer with a different model version.
 
 Save it as `manifest.yaml` in the checkout, or wherever the student
 prefers, the path below just has to match.
@@ -154,16 +157,24 @@ environment page.
 **confirm**, then
 
 ```sh
-fountain run lesson1-agent -p "Say hello and tell me what STAGE is set to."
+fountain run lesson1-agent -p 'Run the shell command  echo STAGE=$STAGE  and reply with exactly the line it prints.'
 ```
 
-Say before running it that this spends the student's own inference
-credits, on the key they set in Start here, and provisions a real sandbox
-for the agent to run in. `fountain run` creates the conversation and
-streams it until the turn finishes, so the reply shows up in the same
-terminal. `fountain conv list` and `fountain conv show <id>` are read
-commands and need no confirmation if the student wants to look at it
-again afterward.
+Single quotes keep `$STAGE` from expanding in the student's own shell,
+it is the sandbox's shell that reads it. Say before running it that this
+spends the student's own inference credits, on the key they set in Start
+here, and provisions a real sandbox for the agent to run in. `fountain
+run` creates the conversation and streams it until the turn finishes, so
+the reply shows up in the same terminal. The reply should be exactly the
+line `STAGE=dev`, an agent that answers without running the command
+tends to guess or claim the variable is unset instead. `fountain conv
+list` and `fountain conv show <id>` are read commands and need no
+confirmation if the student wants to look at it again afterward.
+
+If the stream shows `model: failed` instead of a reply, the model id in
+the manifest is not an alias. Fix the Agent's `model` in `manifest.yaml`
+back to `anthropic/sonnet` (or `opus` or `haiku`) and re-apply before
+trying again.
 
 ### 3e. Re-apply, see idempotence
 
@@ -177,9 +188,10 @@ second Agent. Same name, same object, reconciled in place. That is what
 
 Both of these have to be true.
 
-- The conversation from 3d actually replied. Ask the student what it
-  said, do not assume from the stream output alone, they should be able
-  to tell you the agent's answer named the stage, dev.
+- The conversation from 3d actually replied, and the reply was the line
+  `STAGE=dev`. Ask the student what it said, do not assume from the
+  stream output alone, a reply that only claims the value instead of
+  printing the line means the agent answered without running the shell.
 - The environment's secrets read back as keys only, never a value. Verify
   this yourself by running `fountain env show <id>` (or the curl in
   3c) again and checking the `secrets` entries have no `value` field.

@@ -49,7 +49,7 @@ Start here kept the CLI optional and said it would earn its place once it appear
    metadata:
      name: lesson1-agent
    spec:
-     model: anthropic/claude-sonnet-4-6
+     model: anthropic/sonnet
      runtime: claude
      environment: lesson1-env
    ---
@@ -72,7 +72,7 @@ Start here kept the CLI optional and said it would earn its place once it appear
 
    Then `fountain env show <id>`. The response names the key `DEMO_API_KEY` with an id and timestamps and no `value` field. `curl` `GET /api/environments/<id>/secrets` with your Bearer key returns the same shape. The environment's page under `/environments` in the web UI shows the same thing, a key name and nothing else.
 
-4. Start a conversation with the agent using `fountain run lesson1-agent -p "say hello"`, or `curl -X POST /api/conversations` with `agent_id` and `prompt` in the body. With the inference key you set in Start here, the sandbox provisions and the agent's reply streams into your terminal, or onto the conversation's page under `/conversations` in the web UI.
+4. Start a conversation with the agent using `fountain run lesson1-agent -p 'Run the shell command  echo STAGE=$STAGE  and reply with exactly the line it prints.'`, or `curl -X POST /api/conversations` with `agent_id` and `prompt` in the body. With the inference key you set in Start here, the sandbox provisions and the agent's reply streams into your terminal, or onto the conversation's page under `/conversations` in the web UI. Single quotes keep `$STAGE` from expanding in your own shell, it is the sandbox's shell that reads it, and the reply is the line `STAGE=dev`.
 
 5. Change one field and apply again. Edit `STAGE` under the environment's `env_vars`, then run `fountain apply -f manifest.yaml` a second time. The environment updates in place, `~` instead of `+`, and `fountain env list` still shows one row, not two.
 
