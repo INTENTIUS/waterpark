@@ -5,3 +5,8 @@ terraform.tfstate.backup
 .terraform.tfstate.lock.info
 *.tfplan
 generated.tf
+
+# The copy access/scripts/double-refusal works on. It is created and destroyed
+# by the script, and it holds a credential while it runs.
+satellites/.double-refusal/
+

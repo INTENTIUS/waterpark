@@ -34,6 +34,14 @@ roots=(
 	modules/persona
 )
 
+# Satellite roots. A satellite is a sibling root under access/ (decision 49)
+# and it gets the same checks as central, because the delegation contract is
+# worth nothing if the satellite runs a weaker one. A satellite joins this
+# list by existing.
+for d in satellites/*/; do
+	[ -f "${d}versions.tf" ] && roots+=("${d%/}")
+done
+
 # rule directory under tests/fixtures : the Rego function that implements it.
 # The function-name prefix is the severity, deny_ for an error and warn_ for a
 # warning, so promoting a rule is a one-word edit in the policy plus a line
@@ -233,19 +241,28 @@ run_plan() {
 		return
 	fi
 
-	terraform -chdir=envs/prod init -input=false -no-color >/dev/null 2>&1
-	terraform -chdir=envs/prod plan -detailed-exitcode -input=false -no-color >/dev/null 2>&1
-	case $? in
-	0) ok "envs/prod matches the account, exit 0" ;;
-	2)
-		if [ "$plan_mode" = ci ]; then
-			ok "envs/prod plans the change this branch proposes, exit 2"
-		else
-			fail "envs/prod has an unapplied diff. Run terraform -chdir=access/envs/prod plan"
-		fi
-		;;
-	*) fail "terraform plan against Floci errored" ;;
-	esac
+	# envs/prod first, then every satellite, because a satellite reads the
+	# central boundary live and cannot plan before central has applied it.
+	planned=(envs/prod)
+	for d in satellites/*/; do
+		[ -f "${d}versions.tf" ] && planned+=("${d%/}")
+	done
+
+	for root in "${planned[@]}"; do
+		terraform -chdir="$root" init -input=false -no-color >/dev/null 2>&1
+		terraform -chdir="$root" plan -detailed-exitcode -input=false -no-color >/dev/null 2>&1
+		case $? in
+		0) ok "$root matches the account, exit 0" ;;
+		2)
+			if [ "$plan_mode" = ci ]; then
+				ok "$root plans the change this branch proposes, exit 2"
+			else
+				fail "$root has an unapplied diff. Run terraform -chdir=access/$root plan"
+			fi
+			;;
+		*) fail "terraform plan against Floci errored in $root" ;;
+		esac
+	done
 }
 
 # What a plan that is not empty means depends on the account it ran against.

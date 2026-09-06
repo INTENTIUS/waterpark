@@ -11,3 +11,7 @@
 
 platform: @INTENTIUS/platform
 course: @INTENTIUS/course-authors
+
+# The satellite reviews its own files, which is the whole point of lesson 8.
+# Nobody from platform is on this line.
+runner: @INTENTIUS/waterpark-runner

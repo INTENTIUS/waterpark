@@ -1,0 +1,78 @@
+#!/usr/bin/env bash
+# Swap a satellite between the two module sources.
+#
+#   access/scripts/satellite-source local                 the path in this repo
+#   access/scripts/satellite-source git checkpoint/i8      the pinned git source
+#   access/scripts/satellite-source show                   which one is in place
+#
+# The shared module is consumed by a git source pinned to a tag (decision 50).
+# The pin is the whole delegation contract, because it is what makes a
+# guardrail upgrade a deliberate act rather than something that happens to a
+# satellite overnight.
+#
+# In this repo the satellite is a sibling root under access/ (decision 49),
+# so the local path is what ships committed. Two reasons, and both are
+# practical rather than principled. A checkout has to be green on its own, and
+# the tag these commits get is cut after they land, so a committed git source
+# would point at a ref that does not exist yet. And a student on a plane can
+# still run the lesson.
+#
+# Terraform will not take a variable in a module source, so this is a file
+# rewrite rather than a flag. That is the same mechanism as
+# access/scripts/backend, for the same reason.
+set -euo pipefail
+
+access_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+sat_dir="${SATELLITE_DIR:-$access_root/satellites/waterpark-runner}"
+leaf="$sat_dir/iam_role.runner_builder.tf"
+tflint_cfg="$sat_dir/.tflint.hcl"
+
+local_source='../../modules/persona'
+git_prefix='git::https://github.com/INTENTIUS/waterpark.git//access/modules/persona?ref='
+
+usage() {
+	echo "usage: access/scripts/satellite-source <local|git <tag>|show>" >&2
+	exit 2
+}
+
+[ -f "$leaf" ] || {
+	echo "satellite-source: no leaf file at $leaf" >&2
+	exit 1
+}
+
+current() {
+	sed -n 's/^[[:space:]]*source[[:space:]]*=[[:space:]]*"\(.*\)".*/\1/p' "$leaf" | head -1
+}
+
+case "${1:-}" in
+show)
+	src="$(current)"
+	printf '%s\n' "$src"
+	case "$src" in
+	git::*) echo "the pinned git source. terraform init needs network to GitHub and the ref has to exist." ;;
+	*) echo "the local path in this repo. Nothing is fetched." ;;
+	esac
+	;;
+local)
+	sed -i.bak "s|^\([[:space:]]*source[[:space:]]*=[[:space:]]*\)\".*\"|\1\"$local_source\"|" "$leaf"
+	rm -f "$leaf.bak"
+	echo "$leaf now takes the module from $local_source"
+	echo "Run: terraform -chdir=${sat_dir#"$access_root"/} init -reconfigure"
+	;;
+git)
+	tag="${2:-}"
+	[ -n "$tag" ] || usage
+	sed -i.bak "s|^\([[:space:]]*source[[:space:]]*=[[:space:]]*\)\".*\"|\1\"$git_prefix$tag\"|" "$leaf"
+	rm -f "$leaf.bak"
+	echo "$leaf now takes the module from $git_prefix$tag"
+	echo "The rule pack pins the same ref. Vendor it with:"
+	echo "  git clone --depth 1 --branch $tag https://github.com/INTENTIUS/waterpark.git .waterpark-guardrails"
+	echo "  export TFLINT_OPA_POLICY_DIR=.waterpark-guardrails/access/.tflint.d/policies"
+	echo "See $tflint_cfg."
+	echo "Run: terraform -chdir=${sat_dir#"$access_root"/} init -reconfigure"
+	;;
+*)
+	usage
+	;;
+esac

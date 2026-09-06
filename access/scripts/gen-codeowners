@@ -91,8 +91,10 @@ HEADER
 	while IFS= read -r f; do
 		[ -n "$f" ] || continue
 		owners=""
+		named=0
 		while IFS= read -r team; do
 			[ -n "$team" ] || continue
+			named=1
 			if ! handle="$(handle_for "$team")"; then
 				printf 'gen-codeowners: %s names team %q, which access/codeowners.map does not map\n' "$f" "$team" >&2
 				missing=1
@@ -102,8 +104,10 @@ HEADER
 		done < <(teams_in "$f")
 
 		if [ -z "$owners" ]; then
-			printf 'gen-codeowners: %s names no team. Add a teams list, or the file routes to nobody\n' "$f" >&2
-			missing=1
+			if [ "$named" -eq 0 ]; then
+				printf 'gen-codeowners: %s names no team. Add a teams list, or the file routes to nobody\n' "$f" >&2
+				missing=1
+			fi
 			continue
 		fi
 		printf '/access/%s%s\n' "$f" "$owners"

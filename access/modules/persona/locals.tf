@@ -12,6 +12,20 @@ locals {
     read  = ["s3:GetObject", "s3:GetObjectVersion", "s3:GetBucketLocation"]
     list  = ["s3:ListBucket", "s3:ListBucketVersions"]
     write = ["s3:PutObject", "s3:DeleteObject", "s3:AbortMultipartUpload"]
+
+    # Pushing an image to a registry. Added in lesson 8, because a satellite
+    # that declares its own registry needs a level that means it, and a
+    # satellite writing raw actions would be a leaf file that is no longer
+    # near-data (prescription 2).
+    push = [
+      "ecr:BatchCheckLayerAvailability",
+      "ecr:BatchGetImage",
+      "ecr:CompleteLayerUpload",
+      "ecr:GetDownloadUrlForLayer",
+      "ecr:InitiateLayerUpload",
+      "ecr:PutImage",
+      "ecr:UploadLayerPart",
+    ]
   }
 
   # A bucket level acts on the bucket, an object level acts on its contents.
@@ -19,6 +33,16 @@ locals {
     read  = ["arn:aws:s3:::%s/*"]
     list  = ["arn:aws:s3:::%s"]
     write = ["arn:aws:s3:::%s/*"]
+    push  = ["arn:aws:ecr:*:*:repository/%s"]
+  }
+
+  # Some levels need one action the service refuses to scope to a resource.
+  # ecr:GetAuthorizationToken mints the registry login and is account wide by
+  # the API's own design, so it is a second statement rather than a wildcard
+  # smuggled into the first one. A level with nothing here renders exactly the
+  # one statement it always did.
+  account_wide_actions = {
+    push = ["ecr:GetAuthorizationToken"]
   }
 
   grants = { for g in var.grants : "${g.access}-${g.resource}" => g }

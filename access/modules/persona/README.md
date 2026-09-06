@@ -54,8 +54,18 @@ is lesson 9.
 ## Grants
 
 A grant is a typed access level against a resource with an optional expiry
-and a reason, not a list of actions. The module expands `read`, `list` and
-`write` into actions and ARNs, so widening a level is one edit here.
+and a reason, not a list of actions. The module expands `read`, `list`,
+`write` and `push` into actions and ARNs, so widening a level is one edit
+here.
+
+`push` arrived in lesson 8, because a satellite that declares its own
+registry needs a level that means it and a satellite writing raw actions
+would be a leaf file that is no longer near-data. It carries one action the
+service refuses to scope to a resource, `ecr:GetAuthorizationToken`, which
+mints the registry login and is account wide by the API's own design. That
+lands as a second statement rather than as a wildcard smuggled into the
+first. Every level with nothing account wide renders exactly the one
+statement it always did, so no existing policy moved when `push` was added.
 
 An expiry becomes a `DateLessThan` condition on `aws:CurrentTime` in the
 policy document, which the cloud enforces whether or not any job runs, plus

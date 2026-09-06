@@ -1,0 +1,189 @@
+#!/usr/bin/env bash
+# Prescription 8. Strip the boundary and be refused twice, independently, with
+# nobody from platform involved either time.
+#
+#   access/scripts/double-refusal
+#
+# The two refusals, and why both have to exist.
+#
+#   at build   the rule pack fails boundary-required, in the editor, before
+#              the commit. Fast, convenient, and defeatable by anyone who
+#              edits the rules or skips the linter.
+#   at apply   IAM refuses CreateRole, because the satellite deploy credential
+#              may create a role only when iam:PermissionsBoundary equals the
+#              central ARN. Slow, inconvenient, and not defeatable from the
+#              satellite at all.
+#
+# Neither refusal knows about the other. That is the whole point. The
+# convenient layer gives fast feedback and the cloud layer gives the
+# guarantee, and a satellite that defeats the first still cannot get past the
+# second.
+#
+# What this script works on. It copies the satellite root to a sibling
+# directory and renames the role and the registry with a -proof suffix, so the
+# proof can create and destroy its own resources without touching the applied
+# satellite. Renaming is the only difference from the real file, and the
+# stripped copy is otherwise the satellite's own leaf file with one line
+# removed.
+set -uo pipefail
+
+access_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$access_root" || exit 1
+
+endpoint="${FLOCI_ENDPOINT:-http://localhost:4566}"
+account="${FLOCI_ACCOUNT:-000000000000}"
+boundary_arn="arn:aws:iam::${account}:policy/${BOUNDARY_NAME:-waterpark-estate-boundary}"
+
+src="satellites/waterpark-runner"
+proof="satellites/.double-refusal"
+
+failures=0
+say() { printf '%s\n' "$*"; }
+ok() { printf 'ok    %s\n' "$*"; }
+fail() {
+	printf 'FAIL  %s\n' "$*"
+	failures=$((failures + 1))
+}
+
+root() {
+	AWS_ACCESS_KEY_ID=test AWS_SECRET_ACCESS_KEY=test \
+		AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION:-us-east-1}" \
+		aws --endpoint-url "$endpoint" "$@"
+}
+
+cleanup() {
+	if [ -d "$proof" ]; then
+		AWS_ACCESS_KEY_ID=test AWS_SECRET_ACCESS_KEY=test \
+			AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION:-us-east-1}" \
+			terraform -chdir="$proof" destroy -auto-approve -no-color >/dev/null 2>&1
+		rm -rf "$proof"
+	fi
+	root ecr delete-repository --repository-name waterpark-runner-proof --force >/dev/null 2>&1
+	root iam delete-role --role-name runner-builder-proof >/dev/null 2>&1
+	"$access_root/scripts/mint-satellite-credential" --delete >/dev/null 2>&1
+}
+trap cleanup EXIT
+
+if [ "$(curl -s -o /dev/null -m 3 -w '%{http_code}' "$endpoint/" 2>/dev/null)" = "000" ]; then
+	say "skip  Floci is not answering on $endpoint, so nothing was proven and nothing is claimed."
+	exit 0
+fi
+if ! root iam get-policy --policy-arn "$boundary_arn" >/dev/null 2>&1; then
+	say "skip  the estate boundary is not applied, so there is no boundary to strip."
+	say "      terraform -chdir=access/envs/prod apply -auto-approve"
+	exit 0
+fi
+
+say "== the copy this proof works on"
+cleanup
+mkdir -p "$proof"
+cp "$src"/*.tf "$src"/.tflint.hcl "$proof"/
+# The sibling directory sits at the same depth, so the module source in the
+# leaf file still resolves and nothing about the delegation contract changes.
+sed -i.bak 's/"runner-builder"/"runner-builder-proof"/; s/"waterpark-runner"$/"waterpark-runner-proof"/' \
+	"$proof/iam_role.runner_builder.tf" "$proof/ecr_repository.waterpark_runner.tf"
+rm -f "$proof"/*.bak
+ok "$proof, the same files with the role and the registry renamed"
+
+say
+say "== the credential the satellite deploys with"
+"$access_root/scripts/mint-satellite-credential" --env >"$proof/.creds" || {
+	fail "could not mint the satellite deploy credential"
+	exit 1
+}
+# shellcheck disable=SC1091
+. "$proof/.creds"
+deploy_key="$AWS_ACCESS_KEY_ID"
+ok "waterpark-runner-deploy, allowed iam:CreateRole only inside the boundary"
+
+deploy() {
+	AWS_ACCESS_KEY_ID="$deploy_key" AWS_SECRET_ACCESS_KEY="$AWS_SECRET_ACCESS_KEY" \
+		AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION:-us-east-1}" "$@"
+}
+
+say
+say "== the control, so the refusals below are about the boundary and not the key"
+terraform -chdir="$proof" init -input=false -no-color >/dev/null 2>&1
+if deploy terraform -chdir="$proof" apply -var credentials_from_env=true \
+	-auto-approve -input=false -no-color >"$proof/control.log" 2>&1; then
+	live="$(root iam get-role --role-name runner-builder-proof |
+		jq -r '.Role.PermissionsBoundary.PermissionsBoundaryArn // "none"')"
+	if [ "$live" = "$boundary_arn" ]; then
+		ok "the satellite created runner-builder-proof, and it carries $boundary_arn"
+	else
+		fail "the role was created carrying boundary $live"
+	fi
+else
+	tail -12 "$proof/control.log"
+	fail "the satellite could not apply with the boundary in place, so this proves nothing"
+	exit 1
+fi
+
+deploy terraform -chdir="$proof" destroy -var credentials_from_env=true \
+	-auto-approve -input=false -no-color >/dev/null 2>&1
+ok "torn down again, so the refusals below are a create rather than an update"
+
+say
+say "== refusal one, at build"
+before="$(grep -c 'permissions_boundary' "$proof/iam_role.runner_builder.tf")"
+sed -i.bak '/permissions_boundary[[:space:]]*=/d' "$proof/iam_role.runner_builder.tf"
+rm -f "$proof"/*.bak
+after="$(grep -c 'permissions_boundary' "$proof/iam_role.runner_builder.tf" || true)"
+say "      the boundary line is gone, $before before and $after after"
+
+export TFLINT_OPA_POLICY_DIR="$access_root/.tflint.d/policies"
+lint_out="$(tflint --chdir="$proof" --config="$access_root/$proof/.tflint.hcl" \
+	--only=opa_deny_boundary_required --minimum-failure-severity=error --format=compact 2>&1)"
+lint_code=$?
+if [ "$lint_code" -ne 0 ] && printf '%s' "$lint_out" | grep -q boundary_required; then
+	ok "the rule pack refuses the build"
+	printf '%s\n' "$lint_out" | sed -n 's|.*: \(Error - .*\)|      \1|p'
+else
+	printf '%s\n' "$lint_out"
+	fail "boundary-required did not fire on a role declared without a boundary"
+fi
+
+say
+say "== refusal two, at apply, with the linter switched off"
+say "      This is the satellite defeating its own guardrails, which is the"
+say "      case the second layer exists for."
+apply_out="$(deploy terraform -chdir="$proof" apply -var credentials_from_env=true \
+	-auto-approve -input=false -no-color 2>&1)"
+if printf '%s' "$apply_out" | grep -q 'AccessDenied'; then
+	ok "IAM refuses the call"
+	printf '%s\n' "$apply_out" | grep -o 'AccessDenied[^"]*' | head -1 | sed 's/^/      /'
+	printf '%s\n' "$apply_out" | grep -o 'not authorized to perform: iam:CreateRole' | head -1 | sed 's/^/      /'
+else
+	printf '%s\n' "$apply_out" | tail -15
+	fail "the apply was not refused, so the boundary condition is not holding"
+fi
+
+if root iam get-role --role-name runner-builder-proof >/dev/null 2>&1; then
+	fail "an unbounded runner-builder-proof exists in the account"
+else
+	ok "no unbounded role was created"
+fi
+
+say
+say "== restore"
+cleanup
+if [ -d "$src" ]; then
+	AWS_ACCESS_KEY_ID=test AWS_SECRET_ACCESS_KEY=test \
+		AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION:-us-east-1}" \
+		terraform -chdir="$src" apply -auto-approve -no-color >/dev/null 2>&1
+fi
+if [ "$(root iam get-role --role-name runner-builder 2>/dev/null |
+	jq -r '.Role.PermissionsBoundary.PermissionsBoundaryArn // "none"')" = "$boundary_arn" ]; then
+	ok "the real satellite is applied and runner-builder carries the boundary"
+else
+	fail "the satellite did not come back cleanly"
+fi
+
+say
+if [ "$failures" -eq 0 ]; then
+	say "double-refusal passed. Refused at build by the checks and at apply by IAM,"
+	say "independently, with nobody from platform involved either time."
+	exit 0
+fi
+say "double-refusal failed, $failures problem(s)"
+exit 1
