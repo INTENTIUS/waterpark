@@ -108,6 +108,7 @@ check the remote is `INTENTIUS/waterpark`.
 ```sh
 mkdir -p access/envs/prod access/envs/dev access/backends access/scripts
 cp ../waterpark/access/envs/prod/versions.tf ../waterpark/access/envs/prod/provider.tf ../waterpark/access/envs/prod/variables.tf ../waterpark/access/envs/prod/locals.tf access/envs/prod/
+cp ../waterpark/access/envs/dev/README.md access/envs/dev/
 cp ../waterpark/access/backends/backend.local.tf ../waterpark/access/backends/backend.s3.tf access/backends/
 cp ../waterpark/access/scripts/backend access/scripts/backend
 cp ../waterpark/access/.gitignore access/.gitignore
@@ -250,6 +251,11 @@ terraform fmt -check -recursive access
 terraform -chdir=access/envs/prod init
 terraform -chdir=access/envs/prod validate
 ```
+
+The backend script's own last line offers `init -reconfigure`. Say that the
+flag matters only when a backend that was already initialised is being
+swapped, which is the live path in lesson 6, and that plain `init` is right
+here.
 
 `fmt -check` prints nothing and exits 0 when every file is formatted. If
 it prints a file name, run `terraform fmt -recursive access` and look at

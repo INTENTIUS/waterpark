@@ -55,9 +55,16 @@ Lesson 4 applied an estate whose roles carry no ceiling, and left one warning st
      -e FLOCI_SERVICES_IAM_ENFORCEMENT_ENABLED=true \
      ghcr.io/lex00/floci:iam-boundary
 
+   curl -s --retry 15 --retry-all-errors --retry-delay 1 \
+     -o /dev/null -w '%{http_code}\n' http://localhost:4566/
+
    terraform -chdir=access/envs/prod init
    terraform -chdir=access/envs/prod apply -auto-approve
    ```
+
+   The curl prints `200` and the apply lands nineteen resources. The retry
+   flags are there because the container binds the port before it answers on
+   it, and the apply behind them would fail rather than print `000`.
 
    Then confirm there is no ceiling yet.
 
@@ -69,7 +76,7 @@ Lesson 4 applied an estate whose roles carry no ceiling, and left one warning st
 
    It prints `null`. Every command from here on uses that same three-variable prefix for the AWS CLI, and none of it is a credential.
 
-2. Write the baseline module. Four files under a new `access/baseline/` directory, and the file naming rule from lesson 1 still holds, so the policy goes in `iam_policy.boundary.tf`.
+2. Write the baseline module. Five files under a new `access/baseline/` directory, and the file naming rule from lesson 1 still holds, so the policy goes in `iam_policy.boundary.tf`.
 
    `access/baseline/versions.tf`, the same pins the other roots carry.
 
@@ -213,6 +220,13 @@ Lesson 4 applied an estate whose roles carry no ceiling, and left one warning st
    `access/baseline/iam_policy.boundary.tf`, the policy itself. Four statements, one allow and three denies, each carrying its reason beside it.
 
    ```hcl
+   # One boundary for the whole estate (decision 36). A boundary caps what an
+   # identity-based policy can grant, because effective permissions are the
+   # intersection of the two, so this file is the ceiling every workload role in
+   # the estate sits under. Splitting it per OU waits until an OU needs it.
+   #
+   # The description below is on the policy in the account, so the why travels
+   # with the artifact rather than staying in the repo. Property III.
    resource "aws_iam_policy" "boundary" {
      count = var.sandbox ? 0 : 1
 
@@ -311,7 +325,7 @@ Lesson 4 applied an estate whose roles carry no ceiling, and left one warning st
 
    Seven errors, all `opa_deny_no_wildcard_action` on `baseline/iam_policy.boundary.tf`, one per wildcard in the service surface. `s3:*`, `logs:*`, `cloudwatch:*`, `ecr:*`, `sqs:*`, `sns:*` and `dynamodb:*`. The rule is right about what it sees and wrong about what it means. In a grant, `s3:*` is unreviewable because nobody can say what it will allow when the service adds an API next year. In a ceiling, `s3:*` says a role may be given S3 access by its own policy and nothing more, and every action outside the list is refused however the grant is written. Widening a grant widens access. Widening a ceiling still grants nothing.
 
-4. Exempt a boundary, by tag rather than by name. Open `access/.tflint.d/policies/security.rego` and add the helper.
+4. Exempt a boundary, by tag rather than by name. Open `access/.tflint.d/policies/security.rego` and add the helper straight under the one-line `owner_tagged` clause near the top, so the two tag helpers sit together above the rules that use them.
 
    ```rego
    # A permission boundary is a ceiling rather than a grant, so a wildcard in it
@@ -376,7 +390,7 @@ Lesson 4 applied an estate whose roles carry no ceiling, and left one warning st
    }
    ```
 
-6. Apply the boundary to every role the persona module makes, so no grant restates it and no leaf file can forget it. Add the variable to `access/modules/persona/variables.tf`.
+6. Apply the boundary to every role the persona module makes, so no grant restates it and no leaf file can forget it. Add the variable to `access/modules/persona/variables.tf`, between `grants` and `trusted_services`.
 
    ```hcl
    variable "permissions_boundary" {
@@ -403,13 +417,17 @@ Lesson 4 applied an estate whose roles carry no ceiling, and left one warning st
 
    A leaf file mentioning the boundary looks like the opposite of what step 6 just bought, so it is worth saying why it is there. That line is the dependency edge. It is what tells Terraform that `module.baseline` produces something `module.site_publisher` consumes, so the policy is created before the roles that reference it, in one apply, with no `depends_on` and no two-phase bootstrap. Ten grants across three files still say nothing about the boundary, which is the property that was wanted. One line per principal file, always the same line, is what buys the ordering.
 
-8. Promote the rule. In `access/.tflint.d/policies/security.rego`, rename one function.
+8. Promote the rule. In `access/.tflint.d/policies/security.rego`, rename one function and rewrite the comment above it, which is still describing a warning.
 
    ```rego
+   # An error since lesson 5. It landed as a warning in lesson 3, because the
+   # boundary it asks for did not exist yet, and it is promoted here now that
+   # every role carries one. That is the warn cycle decision 9 asks for, and the
+   # promotion is the one-word edit from warn_ to deny_.
    deny_boundary_required contains issue if {
    ```
 
-   The prefix is the severity, so `warn_` to `deny_` is the whole promotion. Then tell the fixture runner the new function name, in `access/scripts/check`.
+   The prefix is the severity, so `warn_` to `deny_` is the whole promotion, and the comment is the only other thing that has to move with it. Then tell the fixture runner the new function name, in `access/scripts/check`.
 
    ```sh
    	"boundary-required:deny_boundary_required"
@@ -467,13 +485,13 @@ Lesson 4 applied an estate whose roles carry no ceiling, and left one warning st
 
     ```sh
     git add -A access
-    git diff --cached checkpoint/i5 -- access
+    git diff --cached --stat checkpoint/i5 -- access ':!*README.md'
 
     terraform -chdir=access/envs/prod destroy -auto-approve
     docker rm -f wp-i5-floci
     ```
 
-    The only file the diff should name is `access/README.md`, which is the prose the reference repo carries for what you just built. If it names anything under `baseline`, read the difference rather than pasting over it. A boundary you can defend line by line is worth more than a boundary that matches ours.
+    Nothing printed means every file you wrote is the reference file. The `README.md` files are excluded because the reference repo carries prose for `access/`, for `access/baseline` and for the persona module that describes lessons you have not reached, and none of them is something this lesson has you write. If the diff names anything under `baseline`, read the difference rather than pasting over it. A boundary you can defend line by line is worth more than a boundary that matches ours.
 
 ## Self-paced
 

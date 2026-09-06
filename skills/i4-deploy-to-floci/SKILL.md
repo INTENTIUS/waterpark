@@ -93,11 +93,14 @@ docker run -d --name wp-i4-floci -p 4566:4566 \
   -e FLOCI_SERVICES_IAM_ENFORCEMENT_ENABLED=true \
   ghcr.io/lex00/floci:iam-boundary
 
-curl -s -o /dev/null -w '%{http_code}\n' http://localhost:4566/
+curl -s --retry 15 --retry-all-errors --retry-delay 1 \
+  -o /dev/null -w '%{http_code}\n' http://localhost:4566/
 ```
 
-The curl prints `200`. Say before running it that this starts a container and
-pulls an image the first time.
+The curl prints `200`. The retry flags are there because the container binds
+the port before it answers on it, so the same curl without them prints `000`
+the first time. Say before running it that this starts a container and pulls
+an image the first time.
 
 The image is a patched fork build rather than the upstream Floci release.
 Upstream 2.0.1 never returns a role's permission boundary on read, which
@@ -117,7 +120,7 @@ going on. That is the check reporting it rather than you assuming it.
 terraform -chdir=access/envs/prod init
 ```
 
-The first line back is `Successfully configured the backend "local"`.
+It prints `Successfully configured the backend "local"`, two lines in.
 
 Say the cost out loud here, because it is half of what this lesson teaches.
 Terraform hosts a state file. Accessible Ops XI says the live system is the
@@ -214,10 +217,16 @@ run_plan() {
 }
 ```
 
-Then three small wiring edits in the same file. Add `plan) run_plan ;;` to
-the `case` at the bottom, add `run_plan` as the last line of the `all`
-branch, and put `plan` in the usage string and in the comment header beside
-`fmt`, `lint` and `fixtures`.
+Then four small wiring edits in the same file. Add `plan) run_plan ;;` to
+the `case` at the bottom, under `fixtures) run_fixtures ;;`. Add `run_plan`
+as the last line of the `all` branch. Change the usage string to
+`usage: access/scripts/check [all|fmt|validate|lint|fixtures|plan]`. And in
+the comment header at the top of the file, add `, plan` to the end of the
+first line and this line under the `fixtures` one, spaced to line up with it.
+
+```sh
+#   access/scripts/check plan       just the credential-free plan against Floci
+```
 
 The file is tab indented. Keep it that way, because `terraform fmt` does not
 touch it but a mixed-indent shell function is a nuisance to read.
@@ -292,7 +301,7 @@ somehow lacks one). Leave every other field untouched. Write it in the
 original checkout rather than in the `../waterpark-i4` worktree.
 
 ```json
-{"...": "...", "completed": ["start", "i4"]}
+{"...": "...", "completed": ["start", "i1", "i2", "i3", "i4"]}
 ```
 
 ## 9. Hand off
