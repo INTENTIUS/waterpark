@@ -380,3 +380,45 @@ it. Reversing one requires editing this file in the same PR.
     `checkpoint/i0` to `checkpoint/i5` mark the repo after each lesson,
     so lesson N starts from i(N-1).
     ([plan](https://github.com/INTENTIUS/waterpark/blob/main/project/plan.md), [issues](https://github.com/INTENTIUS/waterpark/blob/main/project/archive/issues.md))
+49. **The satellite lives in this repo.** `waterpark-runner` names the one
+    satellite, a sibling root under `access/`, named in `access/README.md`.
+    It declares its registry and the `runner-builder` role inside the
+    boundary, with no human principal. It is not a second GitHub repository.
+    Decision 33 already made this repo the estate, one clone and one PR
+    flow, and a second repository would put the marquee double-refusal
+    lesson behind a repo the student does not have. The satellite shares CI
+    and CODEOWNERS with the central repo, so the cost is that the lesson has
+    to say what a separate repo would change (its own PR job, its own deploy
+    credential minted centrally), and the double refusal is demonstrated
+    with a separate deploy credential rather than a separate repo.
+    ([estate](estate.md), [design/delegation](design/delegation.md),
+    [IAM, lesson 8](../courses/iam/08-delegation-and-the-double-refusal.md))
+50. **The shared module is a git source, not a registry module.** Issue 46
+    and decision 10 said `waterpark/workload-role/aws`. The satellite
+    consumes the module as
+    `git::https://github.com/INTENTIUS/waterpark.git//access/modules/<name>?ref=<tag>`,
+    pinned to a checkpoint or release tag, and the same for the rule pack
+    path. A registry namespace is a thing to run and an account to hold, and
+    a git ref carries the same version pin. This also answers C1's open
+    question about how a satellite consumes central identifiers, with module
+    outputs and pinned refs rather than `terraform_remote_state`. The cost
+    is that a git source has no semantic version constraint syntax, so
+    warn-minor and error-major (decision 9) is a tagging convention and a
+    line in the rule pack's README rather than a registry feature.
+    ([issues](https://github.com/INTENTIUS/waterpark/blob/main/project/archive/issues.md),
+    [design/delegation](design/delegation.md),
+    [design/guardrail-rollout](design/guardrail-rollout.md),
+    [IAM, lesson 8](../courses/iam/08-delegation-and-the-double-refusal.md))
+51. **The apply job runs against Floci, like everything else.** I6's gated
+    apply on protected branches is a GitHub Actions job whose target is a
+    Floci service container in the same job, so the whole path from PR to
+    apply runs with no AWS account, and the digest check on the saved plan
+    (P14) is what the job proves. The OIDC tiers into a real account
+    (decision 12) are declared as code and described on the page, and their
+    first run is live-only until an account exists. The cost is that an
+    apply against a service container that dies with the job proves the
+    pipeline, not persistence, so the lesson says which, and the drift
+    lesson (I7) seeds its drift locally rather than in CI.
+    ([threat-model](threat-model.md),
+    [IAM, lesson 6](../courses/iam/06-one-path-to-prod.md),
+    [IAM, lesson 7](../courses/iam/07-drift.md))
