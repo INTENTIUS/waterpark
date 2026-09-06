@@ -35,6 +35,13 @@ What you get and what you do not.
   does not provision on a runner, so Fountain lesson 3, the egress
   allowlist, needs a hosted sandbox provider. Set `SANDBOX_PROVIDER=sprites`
   and `SPRITES_TOKEN` in `.env` for that, and restart with `docker compose up -d`.
+- The two sandbox bounds from Fountain ADR 0017, `SANDBOX_IDLE_TIMEOUT_MINUTES`
+  and `SANDBOX_MAX_LIFETIME_HOURS`. Fountain's defaults are 60 and 24. The
+  class stack parks an idle sandbox after 2 minutes so Fountain lesson 2 can
+  watch it happen, and a parked sandbox keeps its directory and wakes on the
+  next prompt. Set either in `.env` and `docker compose up -d` to change it.
+  `just runner-sh <cmd>` runs a shell command in the runner container, where
+  each sandbox is a directory under `/sandboxes`.
 - Nothing else. No mail, no billing, no TLS.
 
 `bin/register.sh` talks to the API. `POST /api/auth/register`, then

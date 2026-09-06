@@ -3,3 +3,6 @@ resources/
 .hugo_build.lock
 compose/.env
 compose/runner/bin/
+
+# a student's progress file, written by the skills
+.waterpark/

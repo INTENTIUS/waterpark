@@ -195,7 +195,7 @@ Every step here runs before a model is ever called, so none of it needs an infer
 
 ## Self-paced
 
-This is the only lesson in the course you can finish with no inference key at all. The refusal in step 4 and the successful provisioning in step 8 both happen before the model is called, so an account with no key set reaches every line of output above. Floci plays no part.
+Like lesson 2, this lesson needs no inference key at all. The refusal in step 4 and the successful provisioning in step 8 both happen before the model is called, so an account with no key set reaches every line of output above. Floci plays no part.
 
 The class stack's sandbox provider is the self-hosted runner, so what you get here is the declaration and the refusal, not enforced egress. Sprites, E2B and Daytona advertise the network policy capability, which is what `provider: runner` in that event reason is telling you about your own stack. If you have an account with one of them, `SANDBOX_PROVIDER` and its token in `compose/.env` followed by `docker compose up -d` will get you the enforcement and turn step 4 into a sandbox that starts and cannot reach `example.com`. That is optional and it is never a prerequisite. The course already asks you for one inference key and that is the ceiling.
 
