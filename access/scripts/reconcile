@@ -1,0 +1,230 @@
+#!/usr/bin/env bash
+# Turn a drift report into reconcile PRs, under Rounds' rules (decision 28).
+#
+#   access/scripts/reconcile                    run the watch, print the plan
+#   access/scripts/reconcile --report r.json     use a report already taken
+#   access/scripts/reconcile --open              actually open the PRs
+#
+# --dry-run is the default and printing is all it does. Opening needs --open
+# and a gh that can write, and it says which of those is missing rather than
+# failing silently.
+#
+# The rules, and where each one is enforced.
+#
+#   owned resources only        structural, see below
+#   one PR per resource         the branch name is derived from the address
+#   never a second while one    an open PR on that branch is a skip
+#     is open
+#   capped in volume            the cap is watcher_max_open_prs in
+#                               access/baseline, read rather than restated
+#   a marker in the body        so the count above can find them again
+#   a page is not a PR          severity page means wake a human, and this
+#                               script refuses to file it as paperwork
+#
+# The asymmetry, which is the point of the lesson. Restoring is automatic.
+# The repo already says what the resource should be, so the reconcile PR
+# carries no file change at all and its whole job is to trigger the apply that
+# puts the account back. Adopting an out-of-band change is not automatic and
+# never will be. Somebody decided that change was right, and the way to keep
+# it is to edit the file that declares the resource so the repo says it too.
+# A watcher that could adopt would be a watcher that ratifies whatever
+# happened, which is the opposite of managing what you declare.
+set -uo pipefail
+
+access_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+repo_root="$(cd "$access_root/.." && pwd)"
+cd "$access_root" || exit 1
+
+report=""
+do_open=false
+marker="wp-drift-reconcile"
+
+while [ $# -gt 0 ]; do
+	case "$1" in
+	--report)
+		report="${2:-}"
+		shift 2
+		;;
+	--open)
+		do_open=true
+		shift
+		;;
+	--dry-run)
+		do_open=false
+		shift
+		;;
+	*)
+		echo "usage: access/scripts/reconcile [--report <r.json>] [--open|--dry-run]" >&2
+		exit 2
+		;;
+	esac
+done
+
+work="$(mktemp -d -t wp-reconcile)"
+trap 'rm -rf "$work"' EXIT
+
+if [ -z "$report" ]; then
+	report="$work/report.json"
+	"$access_root/scripts/drift" --json >"$report"
+	case $? in
+	0 | 2) ;;
+	*)
+		echo "reconcile: the watch could not run, so there is nothing to reconcile from" >&2
+		exit 1
+		;;
+	esac
+fi
+
+[ -f "$report" ] || {
+	echo "reconcile: no such report: $report" >&2
+	exit 1
+}
+
+# The cap. It lives in access/baseline as a constant so a student changes one
+# number in one place and watches the checks move with it (decision 40). Read
+# from the applied outputs first, because that is the value the estate is
+# actually carrying, and from the source when there is no state to read.
+cap="$(terraform -chdir=envs/prod output -raw watcher_max_open_prs 2>/dev/null)"
+case "$cap" in
+'' | *[!0-9]*)
+	cap="$(sed -n 's/^[[:space:]]*watcher_max_open_prs[[:space:]]*=[[:space:]]*\([0-9]*\).*/\1/p' \
+		"$access_root/baseline/locals.tf" | head -1)"
+	;;
+esac
+case "$cap" in
+'' | *[!0-9]*)
+	echo "reconcile: could not read watcher_max_open_prs from access/baseline" >&2
+	exit 1
+	;;
+esac
+
+gh_ready=false
+if command -v gh >/dev/null 2>&1 && gh auth status >/dev/null 2>&1; then
+	gh_ready=true
+fi
+
+open_prs=0
+if [ "$gh_ready" = true ]; then
+	open_prs="$(gh pr list --state open --search "$marker in:body" --json number --jq 'length' 2>/dev/null || echo 0)"
+fi
+
+say() { printf '%s\n' "$*"; }
+
+say "reconcile plan"
+say
+say "  cap            $cap open reconcile PRs at once (access/baseline)"
+say "  open already   $open_prs"
+if [ "$gh_ready" = true ]; then
+	say "  gh             authenticated"
+else
+	say "  gh             not available, so nothing can be opened from here"
+fi
+say
+
+# Ownership is structural rather than a tag lookup. Every finding comes out of
+# terraform plan over a root this repo declares, so a resource nobody here
+# declares cannot appear in one. A resource a satellite created shows up in
+# the satellite root, which the satellite watches. That is decision 28's
+# never-a-PR-for-a-foreign-resource, held by the shape of the input rather
+# than by a filter that could be got wrong.
+pages="$(jq -c '.findings[] | select(.severity == "page")' "$report")"
+if [ -n "$pages" ]; then
+	say "  These page a human and are not filed as PRs."
+	printf '%s\n' "$pages" | jq -r '"    " + .root + "  " + (.address // "the root") +
+    "\n      " + ((.attributes // []) | map(.attribute) | join(", "))'
+	say
+fi
+
+errors="$(jq -c '.findings[] | select(.kind == "error")' "$report")"
+if [ -n "$errors" ]; then
+	say "  These are the watch failing rather than the estate drifting."
+	printf '%s\n' "$errors" | jq -r '"    " + .root + "  " + (.detail // "unknown")'
+	say
+fi
+
+slug() {
+	printf '%s' "$1" | tr 'A-Z' 'a-z' | sed 's/[^a-z0-9]\{1,\}/-/g; s/^-//; s/-$//' | cut -c1-60
+}
+
+planned=0
+skipped=0
+would_exceed=0
+
+findings="$(jq -c '.findings[] | select(.severity == "pr")' "$report")"
+if [ -z "$findings" ]; then
+	say "  Nothing to file. Every finding is either a page or the watch itself."
+	exit 0
+fi
+
+while IFS= read -r f; do
+	[ -n "$f" ] || continue
+	root="$(printf '%s' "$f" | jq -r .root)"
+	address="$(printf '%s' "$f" | jq -r '.address // "root"')"
+	kind="$(printf '%s' "$f" | jq -r .kind)"
+	branch="desk/drift/$(slug "$root")/$(slug "$address")"
+
+	# One PR per resource, and never a second while one is open. The branch
+	# name is derived from the address, so this is a lookup rather than
+	# bookkeeping the script has to keep.
+	if [ "$gh_ready" = true ] &&
+		[ "$(gh pr list --state open --head "$branch" --json number --jq 'length' 2>/dev/null || echo 0)" != "0" ]; then
+		say "  skip   $address"
+		say "         a PR is already open on $branch"
+		skipped=$((skipped + 1))
+		continue
+	fi
+
+	if [ $((open_prs + planned)) -ge "$cap" ]; then
+		say "  hold   $address"
+		say "         the cap of $cap is reached, so this waits for the next cycle"
+		would_exceed=$((would_exceed + 1))
+		continue
+	fi
+
+	body="$work/body-$planned.md"
+	{
+		printf 'The account moved and the repo did not.\n\n'
+		printf 'Root `%s`, resource `%s`.\n\n' "$root" "$address"
+		printf 'What differs.\n\n'
+		printf '%s' "$f" | jq -r '(.attributes // [])[] |
+      "- `" + .attribute + "`\n  - declared `" + ((.declared // "absent") | tostring) +
+      "`\n  - live `" + ((.live // "absent") | tostring) + "`"'
+		printf '\n\nThis PR carries no file change. The repo already says what this\n'
+		printf 'resource should be, so merging it is what runs the apply that puts\n'
+		printf 'the account back. If the change in the account was the right one,\n'
+		printf 'do not merge this. Edit `%s` so the repo declares it, and this\n' "$root"
+		printf 'finding stops recurring.\n\n'
+		printf 'Severity `pr`. A security group or a trust policy would have paged\n'
+		printf 'instead of opening this.\n\n'
+		printf '<!-- %s kind=%s root=%s address=%s -->\n' "$marker" "$kind" "$root" "$address"
+	} >"$body"
+
+	say "  file   $address"
+	say "         branch $branch"
+	say "         $(printf '%s' "$f" | jq -r '(.attributes // []) | map(.attribute) | join(", ")')"
+	planned=$((planned + 1))
+
+	if [ "$do_open" = true ] && [ "$gh_ready" = true ]; then
+		(
+			cd "$repo_root" || exit 1
+			git switch -c "$branch" >/dev/null 2>&1 || git switch "$branch" >/dev/null 2>&1
+			git commit --allow-empty -m "reconcile: restore $address" \
+				-m "$(cat "$body")" >/dev/null
+			git push -u origin "$branch" >/dev/null 2>&1
+			gh pr create --title "reconcile: restore $address" --body-file "$body" \
+				--head "$branch" --base main
+			git switch - >/dev/null 2>&1
+		)
+	fi
+done <<EOF
+$findings
+EOF
+
+say
+say "  $planned to file, $skipped already open, $would_exceed held by the cap"
+if [ "$do_open" = false ]; then
+	say
+	say "  This was the dry run. Nothing was branched, committed, pushed or opened."
+	say "  Add --open with a gh that can write to file them."
+fi
+exit 0

@@ -1,0 +1,131 @@
+# The drift watch.
+#
+# One cron drives the watch and the rotation check (decision 39), and it is
+# the same schedule the desk teammate runs on, weekdays at 06:00 UTC.
+#
+# What this job actually proves, said plainly, because otherwise it looks like
+# more than it is. The job starts an empty Floci, applies the estate into it,
+# and then asks whether the estate matches. It always does, because nothing
+# else has touched that container. So a green run here means the declared
+# estate converges and stays converged, and it means nothing at all about a
+# real account, where drift comes from a human in a console.
+#
+# The lesson seeds drift by hand against a laptop Floci and watches the same
+# script report it. See "Lesson 7, drift" in access/README.md for the exact
+# commands. The job is the schedule and the shape. The laptop is where the
+# finding comes from.
+name: drift
+
+on:
+  schedule:
+    - cron: "0 6 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  TERRAFORM_VERSION: 1.15.8
+  FLOCI_ENDPOINT: http://localhost:4566
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+
+    services:
+      floci:
+        image: ghcr.io/lex00/floci:iam-boundary
+        ports:
+          - 4566:4566
+        env:
+          FLOCI_SERVICES_IAM_ENFORCEMENT_ENABLED: "true"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Wait for Floci
+        run: |
+          for i in $(seq 1 60); do
+            code=$(curl -s -o /dev/null -m 2 -w '%{http_code}' "$FLOCI_ENDPOINT/" || echo 000)
+            [ "$code" != "000" ] && { echo "Floci answered with $code"; exit 0; }
+            sleep 2
+          done
+          echo "Floci did not answer on $FLOCI_ENDPOINT"
+          exit 1
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          terraform_wrapper: false
+
+      - name: Apply the estate into this job's own account
+        env:
+          AWS_ACCESS_KEY_ID: test
+          AWS_SECRET_ACCESS_KEY: test
+          AWS_DEFAULT_REGION: us-east-1
+        run: |
+          terraform -chdir=access/envs/prod init -input=false -no-color
+          terraform -chdir=access/envs/prod apply -auto-approve -input=false -no-color
+          for d in access/satellites/*/; do
+            [ -f "$d/versions.tf" ] || continue
+            terraform -chdir="$d" init -input=false -no-color
+            terraform -chdir="$d" apply -auto-approve -input=false -no-color
+          done
+
+      - name: The watch
+        id: watch
+        env:
+          AWS_ACCESS_KEY_ID: test
+          AWS_SECRET_ACCESS_KEY: test
+          AWS_DEFAULT_REGION: us-east-1
+        run: |
+          set +e
+          access/scripts/drift | tee drift.txt
+          code=${PIPESTATUS[0]}
+          access/scripts/drift --json > drift.json
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: The reconcile plan
+        if: steps.watch.outputs.code == '2'
+        run: |
+          access/scripts/reconcile --report drift.json --dry-run | tee reconcile.txt
+
+      - name: The report
+        if: always()
+        run: |
+          {
+            echo "### Drift"
+            echo
+            echo '```'
+            cat drift.txt
+            echo '```'
+            if [ -f reconcile.txt ]; then
+              echo
+              echo "### Reconcile plan, dry run"
+              echo
+              echo '```'
+              cat reconcile.txt
+              echo '```'
+            fi
+            echo
+            echo "This ran against a Floci container this job created and applied"
+            echo "into, so a clean result is expected and proves convergence rather"
+            echo "than the state of any real account."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: drift-${{ github.run_id }}
+          path: |
+            drift.txt
+            drift.json
+          retention-days: 30
+          if-no-files-found: warn
+
+      - name: Fail on drift
+        if: steps.watch.outputs.code == '2'
+        run: |
+          echo "::error::The estate did not converge in a container nothing else touched."
+          exit 1
