@@ -26,6 +26,13 @@ and the human principals live in `access/identity/`, which is validated on
 every check but applied only against a real account. That is prescription 3
 standing as written rather than being softened for the emulator.
 
+## The boundary is applied here
+
+Every workload role the module makes carries `permissions_boundary`, so a
+grant never restates it and no leaf file can forget it. The ARN comes from
+`access/baseline`, which is one boundary for the whole estate (decision 36).
+It is null only in a sandbox, which carries no boundary at all.
+
 ## Grants
 
 A grant is a typed access level against a resource with an optional expiry

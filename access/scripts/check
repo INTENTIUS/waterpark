@@ -21,6 +21,7 @@ tflint_config="$access_root/.tflint.hcl"
 roots=(
 	envs/prod
 	identity
+	baseline
 	modules/persona
 )
 
@@ -35,7 +36,7 @@ rules=(
 	"no-inline-policy:deny_no_inline_policy"
 	"no-iam-user-or-group:deny_no_iam_user_or_group"
 	"tag-owner-required:deny_tag_owner_required"
-	"boundary-required:warn_boundary_required"
+	"boundary-required:deny_boundary_required"
 	"no-open-ingress:warn_no_open_ingress"
 	"sg-reference-not-cidr:warn_sg_reference_not_cidr"
 )

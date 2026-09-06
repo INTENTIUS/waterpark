@@ -45,6 +45,15 @@ statement_actions(st) := [st.Action] if is_string(st.Action)
 
 owner_tagged(r) if r.config.tags.unknown
 
+# A permission boundary is a ceiling rather than a grant, so a wildcard in it
+# narrows the estate instead of widening it, and no-wildcard-action does not
+# apply. The exemption is a tag on the policy rather than a name match, so it
+# is deliberate and greppable.
+is_boundary(r) if {
+	not r.config.tags.unknown
+	r.config.tags.value.guardrail == "boundary"
+}
+
 owner_tagged(r) if {
 	not r.config.tags.unknown
 	r.config.tags.value.owner != ""
@@ -53,7 +62,8 @@ owner_tagged(r) if {
 # A wildcard action is not reviewable, because nobody can say what it grants
 # next year when the service adds an API.
 deny_no_wildcard_action contains issue if {
-	some r in terraform.resources("aws_iam_policy", {"policy": "string"}, {"expand_mode": "none"})
+	some r in terraform.resources("aws_iam_policy", {"policy": "string", "tags": "map(string)"}, {"expand_mode": "none"})
+	not is_boundary(r)
 	not r.config.policy.unknown
 	doc := json.unmarshal(r.config.policy.value)
 	some st in policy_statements(doc)
@@ -111,9 +121,11 @@ deny_tag_owner_required contains issue if {
 	)
 }
 
-# Warning today. Lesson 5 builds the boundary and promotes this to deny_,
-# which is the warn cycle decision 9 asks for.
-warn_boundary_required contains issue if {
+# An error since lesson 5. It landed as a warning in lesson 3, because the
+# boundary it asks for did not exist yet, and it is promoted here now that
+# every role carries one. That is the warn cycle decision 9 asks for, and the
+# promotion is the one-word edit from warn_ to deny_.
+deny_boundary_required contains issue if {
 	some r in terraform.resources("aws_iam_role", {"permissions_boundary": "string"}, {"expand_mode": "none"})
 	not r.config.permissions_boundary
 	issue := tflint.issue(

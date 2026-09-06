@@ -17,6 +17,7 @@ access/
     prod/        waterpark-prod, the published site and the artifacts bucket
     dev/         waterpark-dev, the same shapes with no traffic, empty for now
   identity/      the human principals, live only, validated on every check
+  baseline/      the estate boundary, and the constants later lessons read
   modules/
     persona/     the four archetypes a principal file instantiates
   backends/      the two backend files, one of which is copied into an env
@@ -67,6 +68,32 @@ The file naming rule reads the same for a module call. A leaf file named
 `iam_role.site_publisher.tf` holds the module call that produces
 `aws_iam_role.site_publisher`, so the path still predicts the address.
 
+## The boundary
+
+One permission boundary covers the whole estate, and it lives in
+[baseline](baseline/README.md) as an `aws_iam_policy` under a deterministic
+name (decision 36). Every workload role carries it, applied by
+`modules/persona` so no grant restates it, and a leaf file names it once as
+`permissions_boundary = module.baseline.boundary_arn`.
+
+A boundary caps what an identity-based policy can grant, because effective
+permissions are the intersection of the two. So a role inside the estate
+cannot be made more powerful than the boundary says, whatever its own policy
+claims, and that is what makes delegating role creation safe in lesson 8.
+
+There are two enforcement layers and they are deliberately redundant. At
+build, `boundary-required` fails a role declared without it, in the editor.
+At apply, IAM refuses the call. The convenient layer gives fast feedback and
+the cloud layer gives the guarantee.
+
+The Sandbox OU carries no boundary at all, because sandboxes exist to be
+broken. Pass `sandbox = true` to the baseline module and it emits no policy
+and hands back a null ARN.
+
+`baseline` also holds the constants later lessons read, the two hour
+break-glass maximum (decision 37) and the watcher's cap of five open PRs
+(decision 40), as outputs rather than numbers in a page.
+
 ## The checks
 
 ```sh
@@ -102,17 +129,25 @@ are Rego like the rest rather than a side script.
 | `no-inline-policy` | error | `aws_iam_role_policy` and its user and group siblings |
 | `no-iam-user-or-group` | error | any IAM user, group, access key or attachment to one |
 | `tag-owner-required` | error | a role, policy, bucket, registry or permission set with no `owner` tag |
-| `boundary-required` | warning | a role with no `permissions_boundary` |
+| `boundary-required` | error | a role with no `permissions_boundary` |
 | `no-open-ingress` | warning | an ingress rule naming `0.0.0.0/0` or `::/0` |
 | `sg-reference-not-cidr` | warning | an ingress rule naming a raw CIDR instead of a source group |
 
 Severity is the function-name prefix in the Rego, `deny_` for an error and
 `warn_` for a warning, so a new rule lands as a warning and is promoted in a
 later lesson once the estate conforms (decision 9). `boundary-required` is
-the worked example. It is a warning here and lesson 5 promotes it, because
-the boundary it asks for does not exist until then. `no-open-ingress` and
-`sg-reference-not-cidr` stay warnings because the estate declares no security
-groups yet, so there is nothing live for them to ratchet against.
+the worked example. It landed as a warning in lesson 3, because the boundary
+it asks for did not exist yet, and lesson 5 promoted it to an error once
+every role carried one. The promotion is the one-word edit from `warn_` to
+`deny_` in `security.rego` plus the matching line in `scripts/check`.
+`no-open-ingress` and `sg-reference-not-cidr` stay warnings because the
+estate declares no security groups yet, so there is nothing live for them to
+ratchet against.
+
+`no-wildcard-action` skips a policy tagged `guardrail = "boundary"`, because
+a boundary is a ceiling rather than a grant and a wildcard there narrows the
+estate instead of widening it. The exemption is a tag rather than a name
+match, so it is deliberate and greppable, and it has its own passing fixture.
 
 Every rule has a failing and a passing fixture under `tests/fixtures`, and
 `check fixtures` runs each pair with `--only` set to that one rule, so a
@@ -194,9 +229,12 @@ AWS_ACCESS_KEY_ID=test AWS_SECRET_ACCESS_KEY=test AWS_DEFAULT_REGION=us-east-1 \
   aws --endpoint-url http://localhost:4566 iam get-role --role-name site-publisher
 ```
 
-`RoleName`, `Description`, the `owner` and `persona` tags and the trust
-policy all come back as `iam_role.site_publisher.tf` and `modules/persona`
-wrote them.
+`RoleName`, `Description`, the `owner` and `persona` tags, the trust policy
+and the `PermissionsBoundary` block all come back as
+`iam_role.site_publisher.tf` and `modules/persona` wrote them. The boundary
+reading back is the fact that fails on the upstream Floci image and passes on
+the patched one, and it is why a bounded estate can reach a clean plan on a
+laptop.
 
 When you are done.
 
