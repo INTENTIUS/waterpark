@@ -1,0 +1,19 @@
+resource "aws_iam_policy" "named" {
+  name = "named"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Action = [
+        "s3:GetObject",
+        "s3:GetObjectVersion",
+      ]
+      Resource = ["arn:aws:s3:::waterpark-artifacts/*"]
+    }]
+  })
+
+  tags = {
+    owner = "platform"
+  }
+}
