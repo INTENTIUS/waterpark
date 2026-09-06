@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 # Everything a PR job would run over access/, in the order it runs it.
 #
-#   access/scripts/check            format, validate, lint, fixtures
+#   access/scripts/check            format, validate, lint, fixtures, plan
 #   access/scripts/check lint       just tflint over the real roots
 #   access/scripts/check fixtures   just the rule fixtures
+#   access/scripts/check plan       just the credential-free plan against Floci
 #
 # The same command runs in the editor, from an agent and in CI, and produces
 # the same diagnostic. That is prescription 4.
@@ -127,19 +128,46 @@ run_fixtures() {
 	done
 }
 
+floci_endpoint="${FLOCI_ENDPOINT:-http://localhost:4566}"
+
+# The plan a PR job runs. It reaches Floci and no cloud, so it holds no
+# credential, which is the half of prescription 6 lesson 4 closes. Skipped
+# with a line rather than a failure when Floci is not up, because the rest of
+# the stack is still worth running.
+run_plan() {
+	say "== terraform plan against Floci"
+	if [ "$(curl -s -o /dev/null -m 3 -w '%{http_code}' "$floci_endpoint/" 2>/dev/null)" = "000" ]; then
+		say "skip  Floci is not answering on $floci_endpoint. Start it with:"
+		say "      docker run -d --name wp-access-floci -p 4566:4566 \\"
+		say "        -e FLOCI_SERVICES_IAM_ENFORCEMENT_ENABLED=true \\"
+		say "        ghcr.io/lex00/floci:iam-boundary"
+		return
+	fi
+
+	terraform -chdir=envs/prod init -input=false -no-color >/dev/null 2>&1
+	terraform -chdir=envs/prod plan -detailed-exitcode -input=false -no-color >/dev/null 2>&1
+	case $? in
+	0) ok "envs/prod matches the account, exit 0" ;;
+	2) fail "envs/prod has an unapplied diff. Run terraform -chdir=access/envs/prod plan" ;;
+	*) fail "terraform plan against Floci errored" ;;
+	esac
+}
+
 case "${1:-all}" in
 fmt) run_fmt ;;
 validate) run_validate ;;
 lint) run_lint ;;
 fixtures) run_fixtures ;;
+plan) run_plan ;;
 all)
 	run_fmt
 	run_validate
 	run_lint
 	run_fixtures
+	run_plan
 	;;
 *)
-	echo "usage: access/scripts/check [all|fmt|validate|lint|fixtures]" >&2
+	echo "usage: access/scripts/check [all|fmt|validate|lint|fixtures|plan]" >&2
 	exit 2
 	;;
 esac

@@ -77,7 +77,9 @@ just access-check     # fmt, validate, tflint, and the rule fixtures
 
 `access/scripts/check` is everything a PR job runs, in the order it runs it,
 and `just access-check` is a thin wrapper over it. It takes `fmt`, `validate`,
-`lint` or `fixtures` to run one stage.
+`lint`, `fixtures` or `plan` to run one stage. The `plan` stage runs the
+credential-free plan against Floci and says so and moves on when Floci is not
+up.
 
 Three layers. `terraform fmt -check` catches shape, `terraform validate`
 catches types and the persona set, and `tflint` catches the rules. Nothing in
@@ -162,10 +164,50 @@ it the throwaway `test` key pair and skips every call that would resolve a
 real account. The live path passes `-var floci=false` and the same code talks
 to `waterpark-prod`.
 
+## Deploy to Floci
+
+Floci runs the AWS APIs in process, so the Terraform is real, the IAM is real
+and the account is not. Use the patched image, which fixes the two permission
+boundary bugs the upstream one has (see
+[upstream](../project/upstream.md)). Start it, apply, and prove the estate
+converged.
+
 ```sh
+docker run -d --name wp-access-floci -p 4566:4566 \
+  -e FLOCI_SERVICES_IAM_ENFORCEMENT_ENABLED=true \
+  ghcr.io/lex00/floci:iam-boundary
+
 terraform -chdir=access/envs/prod init
-terraform -chdir=access/envs/prod validate
-terraform -chdir=access/envs/prod plan
+terraform -chdir=access/envs/prod apply -auto-approve
+terraform -chdir=access/envs/prod plan -detailed-exitcode
 ```
 
-Lesson 4 starts the emulator and adds the apply.
+The third command is the check. `-detailed-exitcode` exits 0 for no changes,
+2 for a diff and 1 for an error, so a green apply that has not converged is
+caught rather than believed.
+
+Read a role back from the cloud rather than from state, and it matches the
+file that declared it.
+
+```sh
+AWS_ACCESS_KEY_ID=test AWS_SECRET_ACCESS_KEY=test AWS_DEFAULT_REGION=us-east-1 \
+  aws --endpoint-url http://localhost:4566 iam get-role --role-name site-publisher
+```
+
+`RoleName`, `Description`, the `owner` and `persona` tags and the trust
+policy all come back as `iam_role.site_publisher.tf` and `modules/persona`
+wrote them.
+
+When you are done.
+
+```sh
+terraform -chdir=access/envs/prod destroy -auto-approve
+docker rm -f wp-access-floci
+```
+
+Two things Floci cannot show. It runs no Organizations and no Identity
+Center, which is why the human principals in `identity/` are live only, and
+it runs no Access Analyzer, so the `validate-policy` proofs are live only
+too. A failed apply also stops where it failed and leaves behind what it
+already made, with no rollback, which is why a change lands as a small plan
+rather than a big one.
