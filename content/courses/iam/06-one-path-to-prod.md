@@ -23,7 +23,7 @@ activity:
     - "terraform 1.9 or newer"
     - "tflint from terraform-linters/tap/tflint"
     - "jq"
-    - "gh, logged in, to read one finished run"
+    - "gh, to read one finished public run. It need not be logged in"
     - "just access-init run once per clone"
     - "lesson 5 finished or at least read"
 ---
@@ -273,7 +273,7 @@ Lesson 5 left a bounded estate that a person applies from a laptop. This lesson 
    }
    ```
 
-   One repository, one branch, one audience, and a `sub` that is a string rather than a pattern. Now the proof.
+   One repository, one branch, one audience, and a `sub` that is one exact subject rather than a pattern. IAM holds it as a one element list, which is the shape the condition key takes, and the value inside it carries no wildcard. Now the proof.
 
    ```sh
    access/scripts/prove-no-detach
@@ -333,8 +333,8 @@ Lesson 5 left a bounded estate that a person applies from a laptop. This lesson 
 
    ```text
    gen-codeowners: .github/CODEOWNERS does not match the principal files.
-   --- .github/CODEOWNERS
-   +++ -
+   --- /your/worktree/.github/CODEOWNERS	2026-09-05 23:13:39
+   +++ -	2026-09-05 23:13:39
    @@ -29,4 +29,3 @@
     /access/github/** @INTENTIUS/platform
     /.github/workflows/access.yml @INTENTIUS/platform
@@ -638,7 +638,12 @@ Lesson 5 left a bounded estate that a person applies from a laptop. This lesson 
    ```text
    == the fork-PR property
    ok    no job reachable from pull_request names a secret or asks to federate
+
+   check passed
    ```
+
+   One stage runs and the script still prints its own verdict at the end,
+   because `check` summarises whichever stage it was asked for.
 
    Now put a cloud credential where a fork could reach it. Add an `env` block to the `pr` job's check step.
 
@@ -656,13 +661,17 @@ Lesson 5 left a bounded estate that a person applies from a laptop. This lesson 
    ```text
    == the fork-PR property
    FAIL  job pr runs on pull_request and names a secret
+
+   check failed, 1 problem(s)
    ```
 
-   Take that back out, and try the other door. Add `id-token: write` to the `pr` job's `permissions` block.
+   Take that back out, and try the other door. Add `id-token: write` to the `pr` job's own `permissions` block, the one indented under `pr` rather than the workflow-level block near the top of the file.
 
    ```text
    == the fork-PR property
    FAIL  job pr runs on pull_request and asks for id-token: write
+
+   check failed, 1 problem(s)
    ```
 
    Take that back out too. Those are the two ways a cloud credential gets into a job an untrusted author can trigger, and prescription 6 now has a test instead of a paragraph. Try the same two edits inside the `apply` job and the check stays quiet, because that job is gated to `push` and a pull request cannot reach it.
@@ -705,7 +714,9 @@ Lesson 5 left a bounded estate that a person applies from a laptop. This lesson 
       grep -v '36;1m' | grep 'The check stack'
     ```
 
-    Same stage names and the same `ok` lines, with one difference. The plan stage reads `ok    envs/prod plans the change this branch proposes, exit 2` rather than `exit 0`, because that job filled its Floci from the base branch and a diff there is the pull request. That is `--plan-mode ci` earning its keep.
+    Every line comes back prefixed with the job name, the step name and a timestamp, tab separated, because that is how `gh run view --log` writes a log. The `grep -v` drops the colour codes and not the prefix, so read the tail of each line.
+
+    Same stage names as the stack you just ran, and two differences. The plan stage reads `ok    envs/prod plans the change this branch proposes, exit 2` rather than `exit 0`, because that job filled its Floci from the base branch and a diff there is the pull request. That is `--plan-mode ci` earning its keep. And three extra `ok` lines name `access/satellites/waterpark-runner`, under validate, under tflint and under the plan, because that run is of the branch that carries lessons 7 and 8 and its tree has a satellite root your tree does not have yet.
 
     Then the half a laptop cannot have at all.
 
@@ -714,6 +725,8 @@ Lesson 5 left a bounded estate that a person applies from a laptop. This lesson 
       grep -v '36;1m' |
       grep -E "rebuilds its account|head was|pr job ran as|approved  sha256|recomputed sha256|plan being applied"
     ```
+
+    Six lines, each one prefixed the same way. Their tails are
 
     ```text
     this apply rebuilds its account from bbfc3e76a9f6167bc068a54a4ac61f6870ef61a7

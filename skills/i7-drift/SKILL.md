@@ -54,16 +54,23 @@ truth, so when they disagree believe the check. If `completed` does not carry
 and offer to run this anyway since the checkpoint carries lesson 6's work.
 
 Require `waterpark.checkout` true and `tools.docker.installed` true. The check
-does not report `terraform` or `jq`, so ask for those directly.
+does not report `terraform`, `jq`, `tflint` or `gh`, so ask for those directly.
 
 ```sh
 terraform version
 jq --version
+tflint --version
+gh auth status
 ```
 
 Terraform 1.9 or newer. `jq` is what `drift` and `reconcile` read the plan
-JSON with, and neither runs without it. tflint is not needed in this lesson,
-because nothing here runs the lint stages.
+JSON with, and neither runs without it. No stage in this lesson runs tflint,
+but step 3's `just access-init` is `tflint --init`, so the recipe fails without
+it. `gh` is what `reconcile` counts open reconcile PRs with. Without it the
+dry run still works and its third line reads
+`gh             not available, so nothing can be opened from here` rather than
+`gh             authenticated`, so say that before the student reads it as a
+mistake.
 
 Note the check's `floci.reachable`. It is usually false, because this lesson
 starts its own container in step 3. If it is already true, ask whether that is

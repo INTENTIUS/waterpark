@@ -271,10 +271,10 @@ Eight resources added, then "No changes." and `0`. Reads run freely from here.
 
 ```sh
 aws --endpoint-url http://localhost:4566 iam get-role \
-  --role-name runner-builder --query 'Role.PermissionsBoundary'
+  --role-name runner-builder --query 'Role.PermissionsBoundary.PermissionsBoundaryArn'
 ```
 
-It returns `arn:aws:iam::000000000000:policy/waterpark-estate-boundary`. Ask
+It returns `"arn:aws:iam::000000000000:policy/waterpark-estate-boundary"`. Ask
 the student to grep the satellite directory for that ARN before you say
 anything. It is not there. `data.tf` asked the account for a policy by name
 and the module put what came back on the role.
@@ -302,10 +302,12 @@ what makes a second satellite free.
 access/scripts/mint-satellite-credential
 ```
 
-Read the summary with the student before using the key.
-`iam:CreateRole` and `iam:PutRolePermissionsBoundary` allowed only under
-`StringEquals iam:PermissionsBoundary` equal to the central boundary ARN,
-`iam:DeleteRolePermissionsBoundary` denied outright, and the rest ordinary.
+Read the summary with the student before using the key. Three lines.
+`iam:CreateRole` allowed only under `StringEquals iam:PermissionsBoundary`
+equal to the central boundary ARN, `iam:DeleteRolePermissionsBoundary` denied
+outright, and the rest ordinary. `iam:PutRolePermissionsBoundary` is in the
+same conditioned statement in the policy and the summary does not name it, so
+point at the policy in the script if the student asks where it went.
 
 Say the two things about this credential that a student will otherwise ask
 later. It is an IAM user in a course whose fifth decision bans IAM users,
@@ -434,7 +436,7 @@ earlier output on trust.
 
   ```sh
   aws --endpoint-url http://localhost:4566 iam get-role \
-    --role-name runner-builder --query 'Role.PermissionsBoundary'
+    --role-name runner-builder --query 'Role.PermissionsBoundary.PermissionsBoundaryArn'
   ```
 
   returns the `waterpark-estate-boundary` ARN.

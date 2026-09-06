@@ -24,7 +24,7 @@ activity:
     - "tflint from terraform-linters/tap/tflint"
     - "jq"
     - "just access-init run once per clone"
-    - "lesson 5 finished or at least read"
+    - "lesson 7 finished or at least read"
 ---
 
 ## Context
@@ -148,7 +148,7 @@ Lesson 7 left an estate that watches itself. This lesson hands one role to someb
    }
    ```
 
-   That last block is the one lesson 7 will notice. The `satellite` tag is how central reconcile tells a foreign resource from a drifted one and leaves it to the repo that owns it.
+   That last block is the one the drift watch from lesson 7 reads. The `satellite` tag is how central reconcile tells a foreign resource from a drifted one and leaves it to the repo that owns it.
 
    `access/satellites/waterpark-runner/variables.tf`.
 
@@ -433,7 +433,7 @@ Lesson 7 left an estate that watches itself. This lesson hands one role to someb
 
    `.gitignore` gains the working directory `double-refusal` builds and destroys, which holds a credential while it runs.
 
-5. Route the satellite's review to the satellite. Add one line to the bottom of `access/codeowners.map`.
+5. Route the satellite's review to the satellite. Add one mapping line and its two comment lines to the bottom of `access/codeowners.map`, after a blank line. All three are compared against the reference tree in step 11, so take the block whole.
 
    ```
    # The satellite reviews its own files, which is the whole point of lesson 8.
@@ -482,10 +482,10 @@ Lesson 7 left an estate that watches itself. This lesson hands one role to someb
 
    ```sh
    aws --endpoint-url http://localhost:4566 iam get-role \
-     --role-name runner-builder --query 'Role.PermissionsBoundary'
+     --role-name runner-builder --query 'Role.PermissionsBoundary.PermissionsBoundaryArn'
    ```
 
-   It returns `arn:aws:iam::000000000000:policy/waterpark-estate-boundary`. No
+   It returns `"arn:aws:iam::000000000000:policy/waterpark-estate-boundary"`. No
    file in `satellites/waterpark-runner/` holds that ARN. `data.tf` asked the
    account for a policy by name and the module put what came back on the role,
    so the boundary the satellite is under is the boundary that exists rather
@@ -512,12 +512,15 @@ Lesson 7 left an estate that watches itself. This lesson hands one role to someb
    access/scripts/mint-satellite-credential
    ```
 
-   It prints an access key and the three things that matter. `iam:CreateRole`
-   and `iam:PutRolePermissionsBoundary` are allowed only under
-   `StringEquals iam:PermissionsBoundary` equal to the central boundary ARN,
-   `iam:DeleteRolePermissionsBoundary` is denied outright, and the rest is the
-   ordinary role, policy and registry calls an apply needs. That condition is
-   the cloud half of the delegation contract, and it is four lines of JSON.
+   It prints an access key and three summary lines. `iam:CreateRole` is allowed
+   only under `StringEquals iam:PermissionsBoundary` equal to the central
+   boundary ARN, `iam:DeleteRolePermissionsBoundary` is denied outright, and
+   the rest is the ordinary role, policy and registry calls an apply needs.
+   `iam:PutRolePermissionsBoundary` sits in the same conditioned statement in
+   the policy and the summary does not name it, so read the policy in
+   `access/scripts/mint-satellite-credential` rather than the summary if you
+   want the whole of it. That condition is the cloud half of the delegation
+   contract, and it is four lines of JSON.
 
    Two things about this credential are worth saying out loud.
 

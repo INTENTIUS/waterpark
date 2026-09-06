@@ -377,9 +377,12 @@ reach it, by adding an `env` block to the `pr` job's check step.
 access/scripts/check workflow
 ```
 
-`FAIL  job pr runs on pull_request and names a secret`. Have them take it out,
-then add `id-token: write` to the `pr` job's `permissions` block and run the
-same command. `FAIL  job pr runs on pull_request and asks for id-token:
+`FAIL  job pr runs on pull_request and names a secret`, and then the script's
+own `check failed, 1 problem(s)`, because `check` summarises whichever stage it
+was asked for. Have them take the `env` block out, then add `id-token: write`
+to the `pr` job's own `permissions` block, the one indented under `pr` rather
+than the workflow-level block near the top of the file, and run the same
+command. `FAIL  job pr runs on pull_request and asks for id-token:
 write`. Have them take that out too, and verify the file is back by running
 `access/scripts/check workflow` once more.
 
@@ -445,11 +448,19 @@ gh run view 34011731889 --repo INTENTIUS/waterpark --log |
   grep -v '36;1m' | grep 'The check stack'
 ```
 
-The same stage names and the same `ok` lines the student just ran, with one
-difference. The plan stage reads
-`ok    envs/prod plans the change this branch proposes, exit 2` rather than
-`exit 0`, because that job filled its Floci from the base branch and a diff
-there is the pull request. That is `--plan-mode ci`.
+Every line comes back prefixed with the job name, the step name and a
+timestamp, tab separated, because that is how `gh run view --log` writes a log.
+The `grep -v` drops the colour codes and not the prefix, so read the tail of
+each line.
+
+The same stage names the student just ran, and two differences. The plan stage
+reads `ok    envs/prod plans the change this branch proposes, exit 2` rather
+than `exit 0`, because that job filled its Floci from the base branch and a
+diff there is the pull request. That is `--plan-mode ci`. And three extra `ok`
+lines name `access/satellites/waterpark-runner`, under validate, under tflint
+and under the plan, because that run is of the branch carrying lessons 7 and 8
+and its tree has a satellite root the student's does not have yet. Say that
+before the student goes looking for what they got wrong.
 
 ```sh
 gh run view 34011867194 --repo INTENTIUS/waterpark --log |
@@ -457,7 +468,8 @@ gh run view 34011867194 --repo INTENTIUS/waterpark --log |
   grep -E "rebuilds its account|head was|pr job ran as|approved  sha256|recomputed sha256|plan being applied"
 ```
 
-Six lines. The apply job resolved the merged pull request, rebuilt the same
+Six lines, each one prefixed the same way, so read the tails. The apply job
+resolved the merged pull request, rebuilt the same
 account from the same base commit, re-planned, and only then compared the two
 digests. Say the point. An approval that binds to a number somebody else
 calculated binds to nothing, so the apply job recomputes. Two identical inputs
