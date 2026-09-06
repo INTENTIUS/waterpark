@@ -5,13 +5,13 @@ directory. For a class or a laptop. Not for the internet.
 
 ```sh
 cd compose
-bin/env.sh                                  # .env with the two generated keys
-docker compose up -d                        # Fountain :4000, Floci :4566
-bin/register.sh you@example.com 'password'  # account, API key, CLI login, runner key
-docker compose --profile runner up -d       # sandboxes
+bin/env.sh                              # .env with the two generated keys
+docker compose up -d                    # Fountain :4000, Floci :4566
+bin/register.sh you@example.com         # prompts for a password, account, API key, CLI login, runner key
+docker compose --profile runner up -d   # sandboxes
 ```
 
-From the repo root `just up`, `just register EMAIL PASSWORD`, `just runner`, `just down`.
+From the repo root `just up`, `just register EMAIL`, `just runner`, `just down`. `register.sh` and `just register` both prompt for the password so it never lands in shell history.
 
 What you get and what you do not.
 

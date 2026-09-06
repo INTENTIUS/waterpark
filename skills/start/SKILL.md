@@ -50,9 +50,9 @@ with the install line under each missing item. You read the JSON, the
 student reads the doctor. They report
 the OS, which package managers are present (brew, apt, winget, scoop and
 so on), whether this is a water park checkout, which of `docker`,
-`fountain`, `floci`, `aws`, `jq` and `gh` are installed with versions,
-whether the Fountain URL answers and the CLI is logged in, and whether
-Floci answers. Do not guess at anything the check can report.
+`fountain`, `floci`, `aws`, `jq`, `gh` and `just` are installed with
+versions, whether the Fountain URL answers and the CLI is logged in, and
+whether Floci answers. Do not guess at anything the check can report.
 
 ## 4. Docker, yes or no
 
@@ -185,7 +185,13 @@ https://console.anthropic.com (or the facilitator hands them out).
 Two ways, the student picks.
 
 - **Browser.** Open the instance URL, sign in with the account from
-  step 5, and the onboarding wizard asks for the key.
+  step 5, and open Inference Keys in the left sidebar, not API keys,
+  which lists the CLI key the register script minted. The onboarding
+  wizard may ask for the key too, but it does not always appear after
+  sign in. If it does not, `/onboarding` on the instance URL opens it
+  directly. Either the Anthropic API key slot or the Claude Code OAuth
+  token slot satisfies this lesson, the check reports `inference_set`
+  true for either.
 - **Terminal, theirs.** Print this command with `PASTE-KEY-HERE` left in
   it, and have the student replace the placeholder and run it in their
   own terminal. Do not run it for them and do not watch for the value.

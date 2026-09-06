@@ -42,8 +42,9 @@ Every skill follows the same shape so a student knows what to expect.
    software, starts a service, writes a file, spends money, touches a real
    account, or approves. Mark those steps **confirm** in the skill so the
    agent's caution and the skill's flow line up.
-5. Never fetch and execute code from a URL. Clone the repo, then run its
-   scripts from the checkout, and say in the skill what each script does.
+5. Never fetch and execute scripts or code from a URL. A `SKILL.md` fetched
+   from the repo's raw URL is instructions to read, not code to run. The
+   scripts it names still run from the cloned checkout.
 6. Never ask the agent to discover a repo location from a web page. Name
    the location. If it is unreachable, stop and ask the student.
 7. Ask the student's OS and shell before giving a command. Offer the OS
@@ -56,9 +57,9 @@ Every skill follows the same shape so a student knows what to expect.
 9. Never assume a package manager. The check reports which are present.
    Offer Homebrew, winget or Scoop first when none is, and name the
    no-package-manager path for every install.
-7. Verify *done when*. If it fails, name the restart point from the card.
-8. Write progress to `.waterpark/profile.json` in the student's working
-   directory so the next skill can pick up.
+10. Verify *done when*. If it fails, name the restart point from the card.
+11. Write progress to `.waterpark/profile.json` in the student's working
+    directory so the next skill can pick up.
 
 ## Link from a page
 
