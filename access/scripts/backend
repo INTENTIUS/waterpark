@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+# Swap an env directory between the two backends.
+#
+#   access/scripts/backend local envs/prod   state in the directory, no AWS
+#   access/scripts/backend s3    envs/prod   state in waterpark-security
+#
+# Exactly one backend file is present at a time, because Terraform allows one
+# backend block per root module. Run terraform init after a swap.
+set -euo pipefail
+
+access_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+usage() {
+  echo "usage: access/scripts/backend <local|s3> [env-dir, default envs/prod]" >&2
+  exit 2
+}
+
+[ $# -ge 1 ] || usage
+which="$1"
+env_dir="${2:-envs/prod}"
+dir="$access_root/$env_dir"
+
+[ -d "$dir" ] || {
+  echo "no such env directory: $dir" >&2
+  exit 1
+}
+
+case "$which" in
+local)
+  rm -f "$dir/backend.s3.tf"
+  cp "$access_root/backends/backend.local.tf" "$dir/backend.local.tf"
+  ;;
+s3)
+  rm -f "$dir/backend.local.tf"
+  cp "$access_root/backends/backend.s3.tf" "$dir/backend.s3.tf"
+  ;;
+*)
+  usage
+  ;;
+esac
+
+echo "$env_dir now uses the $which backend. Run: terraform -chdir=access/$env_dir init -reconfigure"
