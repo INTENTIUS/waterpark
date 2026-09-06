@@ -21,7 +21,9 @@ activity:
     - "Docker running"
     - "the patched Floci image ghcr.io/lex00/floci:iam-boundary"
     - "terraform 1.9 or newer"
+    - "tflint from terraform-linters/tap/tflint, because just access-init runs it"
     - "jq"
+    - "gh, to count open reconcile PRs. Without it the dry run says so and carries on"
     - "just access-init run once per clone"
     - "lesson 6 finished or at least read"
 ---
@@ -161,6 +163,8 @@ Lesson 6 made the pull request the only way in. This lesson asks the harder ques
    ```
 
    ```text
+   drift report, 2026-09-06T04:47:12Z
+
      [pr] envs/prod  module.runner_builder.aws_iam_role.this[0]
          update
          tags
@@ -216,6 +220,11 @@ Lesson 6 made the pull request the only way in. This lesson asks the harder ques
      This was the dry run. Nothing was branched, committed, pushed or opened.
      Add --open with a gh that can write to file them.
    ```
+
+   The `gh` line is a live probe rather than a claim. Without `gh` on the path
+   it reads `gh             not available, so nothing can be opened from here`,
+   the plan still prints and nothing else changes, because `--dry-run` opens
+   nothing either way.
 
    Four of decision 28's rules are visible in that output. The cap of five is
    the constant lesson 5 put in `access/baseline`, read out of the applied
