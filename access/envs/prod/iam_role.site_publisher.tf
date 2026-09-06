@@ -1,18 +1,27 @@
-resource "aws_iam_role" "site_publisher" {
+module "site_publisher" {
+  source = "../../modules/persona"
+
+  persona     = "service"
   name        = "site-publisher"
   description = "Builds the site and writes it to the site bucket."
+  owner       = local.owner
+  teams       = ["platform"]
 
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Effect    = "Allow"
-      Principal = { Service = "codebuild.amazonaws.com" }
-      Action    = "sts:AssumeRole"
-    }]
-  })
-
-  tags = {
-    owner   = local.owner
-    persona = "service"
-  }
+  grants = [
+    {
+      resource = "waterpark-site"
+      access   = "write"
+      reason   = "Publishes the built site."
+    },
+    {
+      resource = "waterpark-site"
+      access   = "list"
+      reason   = "Compares the build against what is already published."
+    },
+    {
+      resource = "waterpark-artifacts"
+      access   = "read"
+      reason   = "Picks up the checkpoint bundle a lesson restarts from."
+    },
+  ]
 }
