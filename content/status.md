@@ -33,16 +33,19 @@ not built by this workflow.
 | 2026-09-05 | Fountain lesson 1 on the compose stack. `fountain apply -f` created the three objects, the secrets endpoint returned keys with no value field, the conversation replied, and the second apply updated in place. The sandbox had `STAGE=dev`; a prompt naming the shell read it back. Two things did not match the page and are filed as [issue 37](https://github.com/INTENTIUS/waterpark/issues/37): the runtime refuses the manifest's model id and answers on the account default, and the page's prompt does not make the agent read STAGE. |
 | 2026-09-05 | Floci as a Terraform target, plan phase 0. Upstream 2.0.1 converged, reported drift and imported, but never returned a role's permissions boundary on read and never populated the `iam:PermissionsBoundary` condition key. A patched build of the `lex00/floci` fork (`ghcr.io/lex00/floci:iam-boundary`) passes all four facts, and the compose stack now pulls it. Both runs are recorded in [project/upstream.md](https://github.com/INTENTIUS/waterpark/blob/main/project/upstream.md). |
 | 2026-09-05 | IAM lessons 1 to 5 written against `checkpoint/i0` to `checkpoint/i5` and taken end to end by an agent playing the student from a fresh clone with only the pages, the skills and the tags. Lessons 3, 4 and 5 passed their done-when as written, 1 and 2 failed on a checkpoint compare that could not be silent. Nineteen stumbles filed and fixed, the changed steps re-run clean. |
+| 2026-09-05 | IAM lessons 6 to 8 written against `checkpoint/i5` to `checkpoint/i8` and taken end to end by an agent playing the student from a fresh clone. All three done-whens passed as written and every promised compare was silent. Sixteen stumbles filed, fifteen fixed in text, one left as a script finding. The access workflow's PR job and apply job each ran for real on PR 71 and its merge, the apply job matching the approved plan digest and applying. |
 
 ## Written, not yet verified
 
-- 20 of the 26 lesson bodies are skeletons with TODO markers. Written
-  and student-run: Fountain lesson 1 and IAM lessons 1 to 5. `just todos`
-  counts 146 today.
-- The access repo exists under `access/` for what IAM lessons 1 to 5
+- 17 of the 26 lesson bodies are skeletons with TODO markers. Written
+  and student-run: Fountain lesson 1 and IAM lessons 1 to 8. `just todos`
+  counts 125 today.
+- The access repo exists under `access/` for what IAM lessons 1 to 8
   need (layout, personas, the check stack, the Floci deploy, the
-  boundary), tagged `checkpoint/i0` to `checkpoint/i5`. Everything
-  lessons 6 onward need is not built.
+  boundary, the PR and apply jobs, drift and reconcile, the satellite and
+  the double refusal), tagged `checkpoint/i0` to `checkpoint/i8`. The
+  proofs are live only, since Access Analyzer is a stub on Floci, and
+  everything lessons 9 onward need is not built.
 - The AWS desk is a design doc, not code.
 - Floci as a Terraform target was verified on 2026-09-05 (plan phase 0,
   recorded in
