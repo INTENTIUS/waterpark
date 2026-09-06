@@ -242,3 +242,18 @@ list, and carries several services 2.0.1 does not, including `ivs`,
 `iam`, `sts`, or `s3`, and none of the five resource types under test was
 rejected or produced a different error shape. No regression found in the
 four facts against the prior run.
+
+**Two more probes on the patched build, 2026-09-05.** Access Analyzer is
+listed among the enabled services, but `validate-policy`,
+`check-no-new-access` and `check-access-not-granted` all answer
+`UnknownOperationException`, an AWS-shaped error with no verdict. The
+proofs in lesson 6 are therefore live only on the solo path, and the PR job
+prints a named skip line when the API does not answer. The OpenID Connect
+side is half there. `aws_iam_openid_connect_provider` and a role trusting it
+apply and plan clean, and `get-open-id-connect-provider` round-trips the
+url, client ids and thumbprint. `AssumeRoleWithWebIdentity` is a stub that
+mints credentials for any non-empty token, reports `Provider` as
+`accounts.google.com` whatever the provider declared, uses a fixed subject,
+and enforces no `aud` or `sub` condition. Floci fails open on federation, so
+lesson 9 can manage trust on a laptop and cannot show a forged token
+refused.
