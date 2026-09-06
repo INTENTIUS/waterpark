@@ -77,3 +77,4 @@ skill: "skills/start"
 |---|---|---|
 | `start` | Start here. Clone water park, install and log in to Fountain, Floci for self-paced. macOS, Linux and Windows, OS install or Docker where both exist. `check.sh` and `check.ps1`. | first draft |
 | `f1-four-primitives` | Fountain lesson 1, Four primitives. Writes an Environment/Vault/Agent manifest, `fountain apply -f`, reads secret keys back with no values, starts a conversation, re-applies for idempotence. Reuses `skills/start/check.sh`. | first draft |
+| `i4-deploy-to-floci` | IAM lesson 4, Deploy to Floci. Worktree at `checkpoint/i3`, starts the patched Floci image, `terraform apply` with no AWS account, `plan -detailed-exitcode` exits 0, `aws iam get-role` read back against the file, adds the credential-free plan stage to `access/scripts/check`. Reuses `skills/start/check.sh`. | first draft |
