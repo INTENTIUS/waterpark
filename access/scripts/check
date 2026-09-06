@@ -1,0 +1,153 @@
+#!/usr/bin/env bash
+# Everything a PR job would run over access/, in the order it runs it.
+#
+#   access/scripts/check            format, validate, lint, fixtures
+#   access/scripts/check lint       just tflint over the real roots
+#   access/scripts/check fixtures   just the rule fixtures
+#
+# The same command runs in the editor, from an agent and in CI, and produces
+# the same diagnostic. That is prescription 4.
+set -uo pipefail
+
+access_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$access_root" || exit 1
+
+export TFLINT_OPA_POLICY_DIR="$access_root/.tflint.d/policies"
+tflint_config="$access_root/.tflint.hcl"
+
+# The Terraform roots and modules the checks cover. envs/dev is a README
+# until a lesson needs it.
+roots=(
+	envs/prod
+	identity
+	modules/persona
+)
+
+# rule directory under tests/fixtures : the Rego function that implements it.
+# The function-name prefix is the severity, deny_ for an error and warn_ for a
+# warning, so promoting a rule is a one-word edit in the policy plus a line
+# here (decision 9).
+rules=(
+	"one-type-per-file:deny_one_type_per_file"
+	"path-matches-name:deny_path_matches_name"
+	"no-wildcard-action:deny_no_wildcard_action"
+	"no-inline-policy:deny_no_inline_policy"
+	"no-iam-user-or-group:deny_no_iam_user_or_group"
+	"tag-owner-required:deny_tag_owner_required"
+	"boundary-required:warn_boundary_required"
+	"no-open-ingress:warn_no_open_ingress"
+	"sg-reference-not-cidr:warn_sg_reference_not_cidr"
+)
+
+failures=0
+
+say() { printf '%s\n' "$*"; }
+
+fail() {
+	printf 'FAIL  %s\n' "$*"
+	failures=$((failures + 1))
+}
+
+ok() { printf 'ok    %s\n' "$*"; }
+
+run_fmt() {
+	say "== terraform fmt"
+	if terraform fmt -check -recursive . >/dev/null; then
+		ok "every .tf under access/ is formatted"
+	else
+		terraform fmt -check -recursive .
+		fail "terraform fmt -check. Run: terraform fmt -recursive access"
+	fi
+}
+
+run_validate() {
+	say "== terraform validate"
+	for root in "${roots[@]}"; do
+		if ! terraform -chdir="$root" init -backend=false -input=false -no-color >/dev/null 2>&1; then
+			fail "terraform init in access/$root"
+			continue
+		fi
+		if terraform -chdir="$root" validate -no-color >/dev/null; then
+			ok "access/$root"
+		else
+			terraform -chdir="$root" validate -no-color
+			fail "terraform validate in access/$root"
+		fi
+	done
+}
+
+# tflint over one directory. Errors fail, warnings are reported and do not.
+run_lint() {
+	say "== tflint"
+	for root in "${roots[@]}"; do
+		out="$(tflint --chdir="$root" --config="$tflint_config" \
+			--minimum-failure-severity=error --format=compact 2>&1)"
+		code=$?
+		[ -n "$out" ] && printf '%s\n' "$out"
+		if [ "$code" -eq 0 ]; then
+			ok "access/$root"
+		else
+			fail "tflint in access/$root"
+		fi
+	done
+}
+
+# Every rule has a failing and a passing fixture, and each pair is checked
+# with only that one rule enabled.
+run_fixtures() {
+	say "== rule fixtures"
+	for entry in "${rules[@]}"; do
+		rule="${entry%%:*}"
+		fn="${entry##*:}"
+		id="opa_$fn"
+		sev="error"
+		case "$fn" in
+		warn_*) sev="warning" ;;
+		esac
+
+		before="$failures"
+		for outcome in fail pass; do
+			dir="tests/fixtures/$rule/$outcome"
+			if [ ! -d "$dir" ]; then
+				fail "$rule has no $outcome fixture"
+				continue
+			fi
+			tflint --chdir="$dir" --config="$tflint_config" --only="$id" \
+				--minimum-failure-severity=notice --format=compact >/dev/null 2>&1
+			code=$?
+			if [ "$outcome" = fail ] && [ "$code" -eq 0 ]; then
+				fail "$rule ($sev) did not fire on its failing fixture"
+			elif [ "$outcome" = pass ] && [ "$code" -ne 0 ]; then
+				tflint --chdir="$dir" --config="$tflint_config" --only="$id" \
+					--minimum-failure-severity=notice --format=compact
+				fail "$rule ($sev) fired on its passing fixture"
+			fi
+		done
+		[ "$failures" -eq "$before" ] && ok "$rule ($sev)"
+	done
+}
+
+case "${1:-all}" in
+fmt) run_fmt ;;
+validate) run_validate ;;
+lint) run_lint ;;
+fixtures) run_fixtures ;;
+all)
+	run_fmt
+	run_validate
+	run_lint
+	run_fixtures
+	;;
+*)
+	echo "usage: access/scripts/check [all|fmt|validate|lint|fixtures]" >&2
+	exit 2
+	;;
+esac
+
+say
+if [ "$failures" -eq 0 ]; then
+	say "check passed"
+	exit 0
+fi
+say "check failed, $failures problem(s)"
+exit 1

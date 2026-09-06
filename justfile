@@ -133,6 +133,14 @@ down-all:
 logs:
     docker compose -f compose/docker-compose.yml --env-file compose/.env --profile runner logs -f --tail=50
 
+# The access repo's checks: fmt, validate, tflint and the rule fixtures
+access-check *args:
+    access/scripts/check {{args}}
+
+# Install the tflint plugins the access checks need. Once per clone
+access-init:
+    cd access && tflint --init
+
 # Remove build output
 clean:
     rm -rf public resources .hugo_build.lock

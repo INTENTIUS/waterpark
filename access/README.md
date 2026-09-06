@@ -20,7 +20,11 @@ access/
   modules/
     persona/     the four archetypes a principal file instantiates
   backends/      the two backend files, one of which is copied into an env
-  scripts/       backend, and from lesson 3 the check stack
+  scripts/       backend, and check, which is the whole check stack
+  .tflint.d/
+    policies/    the rule pack, as Rego
+  tests/
+    fixtures/    a failing and a passing case per rule
 ```
 
 `waterpark-mgmt` and `waterpark-security` are accounts rather than
@@ -62,6 +66,62 @@ live only because Floci runs no Identity Center. See
 The file naming rule reads the same for a module call. A leaf file named
 `iam_role.site_publisher.tf` holds the module call that produces
 `aws_iam_role.site_publisher`, so the path still predicts the address.
+
+## The checks
+
+```sh
+brew install terraform-linters/tap/tflint
+just access-init      # once per clone, installs the tflint OPA plugin
+just access-check     # fmt, validate, tflint, and the rule fixtures
+```
+
+`access/scripts/check` is everything a PR job runs, in the order it runs it,
+and `just access-check` is a thin wrapper over it. It takes `fmt`, `validate`,
+`lint` or `fixtures` to run one stage.
+
+Three layers. `terraform fmt -check` catches shape, `terraform validate`
+catches types and the persona set, and `tflint` catches the rules. Nothing in
+the stack needs a credential, which is the credential-free half of
+prescription 6.
+
+### The rule pack
+
+The custom rules are Rego, run by
+[tflint-ruleset-opa](https://github.com/terraform-linters/tflint-ruleset-opa),
+and they live in `.tflint.d/policies`. The OPA ruleset hands a policy the
+declaration range of every block, file name included, so the two layout rules
+are Rego like the rest rather than a side script.
+
+| Rule | Severity | Fails |
+|---|---|---|
+| `one-type-per-file` | error | a file holding two `resource` blocks |
+| `path-matches-name` | error | a file whose name does not repeat the address inside it |
+| `no-wildcard-action` | error | an `Allow` statement whose `Action` carries a `*` |
+| `no-inline-policy` | error | `aws_iam_role_policy` and its user and group siblings |
+| `no-iam-user-or-group` | error | any IAM user, group, access key or attachment to one |
+| `tag-owner-required` | error | a role, policy, bucket, registry or permission set with no `owner` tag |
+| `boundary-required` | warning | a role with no `permissions_boundary` |
+| `no-open-ingress` | warning | an ingress rule naming `0.0.0.0/0` or `::/0` |
+| `sg-reference-not-cidr` | warning | an ingress rule naming a raw CIDR instead of a source group |
+
+Severity is the function-name prefix in the Rego, `deny_` for an error and
+`warn_` for a warning, so a new rule lands as a warning and is promoted in a
+later lesson once the estate conforms (decision 9). `boundary-required` is
+the worked example. It is a warning here and lesson 5 promotes it, because
+the boundary it asks for does not exist until then. `no-open-ingress` and
+`sg-reference-not-cidr` stay warnings because the estate declares no security
+groups yet, so there is nothing live for them to ratchet against.
+
+Every rule has a failing and a passing fixture under `tests/fixtures`, and
+`check fixtures` runs each pair with `--only` set to that one rule, so a
+fixture proves its own rule and nothing else.
+
+### In the editor
+
+`tflint --langserver` is the language server that carries these rules, and it
+is a separate process from `terraform-ls`, which serves `validate` and
+completion. An editor that runs both gets the same diagnostics this script
+prints, on the same rule ids, before the commit.
 
 ## State and the two backends
 
