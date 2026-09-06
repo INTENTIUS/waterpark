@@ -14,11 +14,11 @@
 
 # Principals, routed to the teams their leaf files name.
 /access/envs/prod/iam_role.desk_operator.tf @INTENTIUS/platform
-/access/envs/prod/iam_role.runner_builder.tf @INTENTIUS/platform
 /access/envs/prod/iam_role.site_publisher.tf @INTENTIUS/platform
 /access/envs/prod/iam_role.waterpark_apply.tf @INTENTIUS/platform
 /access/identity/ssoadmin_permission_set.course_author.tf @INTENTIUS/course-authors
 /access/identity/ssoadmin_permission_set.platform.tf @INTENTIUS/platform
+/access/satellites/waterpark-runner/iam_role.runner_builder.tf @INTENTIUS/waterpark-runner
 
 # The guardrail path, by rule. These decide what every other file is
 # allowed to say, so they are not a team's to reroute.

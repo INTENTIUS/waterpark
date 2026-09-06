@@ -51,8 +51,8 @@ variable "grants" {
   default = []
 
   validation {
-    condition     = alltrue([for g in var.grants : contains(["read", "list", "write"], g.access)])
-    error_message = "Every grant's access is one of read, list, write. The module expands the level to actions."
+    condition     = alltrue([for g in var.grants : contains(["read", "list", "write", "push"], g.access)])
+    error_message = "Every grant's access is one of read, list, write, push. The module expands the level to actions."
   }
 
   validation {

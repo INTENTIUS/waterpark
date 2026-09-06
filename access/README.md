@@ -18,6 +18,8 @@ access/
     dev/         waterpark-dev, the same shapes with no traffic, empty for now
   identity/      the human principals, live only, validated on every check
   github/        branch protection and the required check, live only
+  satellites/
+    waterpark-runner/   the satellite, its registry and the role that pushes
   baseline/      the estate boundary, and the constants later lessons read
   modules/
     persona/     the four archetypes a principal file instantiates
@@ -63,12 +65,15 @@ changed (prescription 2). The persona set is `reader`, `platform`, `service`
 and `deployer`, and it is closed (decision 41). An unknown persona name fails
 `terraform validate` rather than applying something surprising.
 
-`site-publisher`, `runner-builder` and `desk-operator` are workloads and live
-in `envs/prod`, each as one `iam_role.<name>.tf` holding one module call.
-`platform` and `course-author` are humans and live in `identity/`, which is
-live only because Floci runs no Identity Center. See
-[modules/persona](modules/persona/README.md) and
-[identity](identity/README.md).
+`site-publisher`, `desk-operator` and `waterpark-apply` are workloads and
+live in `envs/prod`, each as one `iam_role.<name>.tf` holding one module
+call. `runner-builder` is a workload too and lives in
+`satellites/waterpark-runner`, because the satellite declares the registry
+and the role that pushes to it. `platform` and `course-author` are humans and
+live in `identity/`, which is live only because Floci runs no Identity
+Center. See [modules/persona](modules/persona/README.md),
+[identity](identity/README.md) and
+[satellites/waterpark-runner](satellites/waterpark-runner/README.md).
 
 The file naming rule reads the same for a module call. A leaf file named
 `iam_role.site_publisher.tf` holds the module call that produces
@@ -573,3 +578,134 @@ account back. If the change in the account was the right one, the PR is not
 merged and a human edits the file that declares the resource. That
 asymmetry is deliberate and it is written out in
 [scripts](scripts/README.md).
+
+## Lesson 8, delegation and the double refusal
+
+A satellite creates its own roles and cannot make them more powerful than the
+estate allows, and the way you know is that stripping the boundary gets
+refused twice by two things that have never heard of each other.
+
+```
+access/
+  satellites/
+    waterpark-runner/
+      README.md
+      .tflint.hcl                        the central rule pack, pinned
+      data.tf                            the boundary, read live by name
+      ecr_repository.waterpark_runner.tf the registry
+      iam_role.runner_builder.tf         the whole leaf file
+      provider.tf  variables.tf  locals.tf  outputs.tf  versions.tf
+      backend.local.tf
+  .tflint.d/README.md                    warn-minor and error-major, as tags
+  scripts/
+    satellite-source            swap the module source, local or pinned
+    mint-satellite-credential   the deploy credential, on Floci
+    double-refusal              strip the boundary, get refused twice
+```
+
+`runner-builder` moved here from `envs/prod`. estate.md says the satellite
+declares the registry and the role that pushes to it, and lessons 1 to 5 are
+tagged checkpoints of the tree as it was, so nothing earlier breaks.
+
+### The module, and why it is persona rather than a wrapper
+
+Decision 10 named a `workload_role` module. It is `modules/persona`, because
+a wrapper forwarding a dozen variables is a dozen variables declared twice
+and the wrapper enforces no rule that the boundary and the rule pack do not
+already enforce. The workload half of the persona set is the workload role
+module, and `deployer` is not delegable, so a satellite passes `service`.
+
+### How the satellite gets central identifiers
+
+By name, read live. `data.tf` looks the boundary up by its deterministic
+name, so the satellite gets the boundary that exists rather than the one a
+file claims exists, and a satellite planning before central applied fails
+loudly instead of creating an unbounded role. `terraform_remote_state` is
+refused, because it would hand every satellite read access to central state,
+which is bookkeeping and never the system of record.
+
+### The module source, local and pinned
+
+The pinned form is decision 50.
+
+```
+git::https://github.com/INTENTIUS/waterpark.git//access/modules/persona?ref=checkpoint/i8
+```
+
+The committed form is the local path, because a checkout has to be green on
+its own and the tag is cut after the commit lands. Terraform takes no
+variable in a module source, so swapping is a file rewrite.
+
+```sh
+access/scripts/satellite-source show
+access/scripts/satellite-source git checkpoint/i8
+access/scripts/satellite-source local
+```
+
+The lesson uses `local`.
+
+### The deploy credential
+
+```sh
+access/scripts/mint-satellite-credential
+access/scripts/mint-satellite-credential --delete
+```
+
+It mints an IAM user `waterpark-runner-deploy` on Floci allowed
+`iam:CreateRole` and `iam:PutRolePermissionsBoundary` only under
+`StringEquals iam:PermissionsBoundary` equal to the central ARN
+(decision 20), denied `iam:DeleteRolePermissionsBoundary` outright, and
+allowed the ordinary role, policy and registry calls an apply needs.
+
+A user, not a role, because a satellite in the world federates through its
+own issuer and there is no OIDC subject on a laptop to bind to. Floci honors
+trust policies, so a role trusting an issuer is a role nothing here can
+become. The page says so. The user is minted and deleted by the script and is
+never declared, so decision 5 and the `no-iam-user-or-group` rule still hold.
+
+The credential does not itself carry the estate boundary, and that is
+deliberate. The estate boundary denies all IAM write, so a credential inside
+it could not create the role the satellite exists to create. Its cap is the
+condition, which is narrower and aimed at exactly one thing, the shape of the
+roles it may make.
+
+### The double refusal
+
+```sh
+terraform -chdir=access/envs/prod apply -auto-approve
+terraform -chdir=access/satellites/waterpark-runner init
+terraform -chdir=access/satellites/waterpark-runner apply -auto-approve
+access/scripts/double-refusal
+```
+
+It copies the satellite root to a sibling directory, renames the role and the
+registry with a `-proof` suffix so it can create and destroy its own
+resources without touching the applied satellite, and then does four things.
+
+First the control. It applies the copy as the deploy credential with the
+boundary in place, and the role is created and reads back carrying the
+central ARN. Without this step the refusals below would prove only that a
+credential was broken.
+
+Then refusal one. It deletes the `permissions_boundary` line and runs
+`tflint`, which fails `boundary-required` with the fix in the message. This
+fires in the editor, before the commit.
+
+Then refusal two. With the linter switched off, which is the satellite
+defeating its own guardrails, it runs `terraform apply` as the deploy
+credential and IAM answers `AccessDenied` on `iam:CreateRole`. No role is
+created.
+
+Then it restores, destroys the copy and deletes the credential.
+
+Both refusals happen against Floci on the patched image. The condition key
+works there, which the upstream image could not do, and the read-back works
+too, which is why the control can prove the boundary landed.
+
+### The satellite in the check stack
+
+`access/scripts/check` picks up any directory under `satellites/` that holds
+a `versions.tf`, and lints, validates and plans it alongside central. The
+satellite plans after `envs/prod`, because it reads the boundary live and
+cannot plan before central has applied it. A satellite running weaker checks
+than central would make the delegation contract a suggestion.

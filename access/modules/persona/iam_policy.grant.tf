@@ -6,7 +6,7 @@ resource "aws_iam_policy" "grant" {
 
   policy = jsonencode({
     Version = "2012-10-17"
-    Statement = [{
+    Statement = concat([{
       Effect   = "Allow"
       Action   = local.actions[each.value.access]
       Resource = [for pattern in local.resource_arns[each.value.access] : format(pattern, each.value.resource)]
@@ -17,7 +17,20 @@ resource "aws_iam_policy" "grant" {
       Condition = each.value.expires == null ? null : {
         DateLessThan = { "aws:CurrentTime" = each.value.expires }
       }
-    }]
+      }],
+
+      # The one or two actions a service refuses to scope to a resource, when
+      # the level needs them. Empty for every level that does not, so the
+      # policy is byte for byte the one statement it always was.
+      [for action_set in [lookup(local.account_wide_actions, each.value.access, [])] : {
+        Effect   = "Allow"
+        Action   = action_set
+        Resource = "*"
+        Condition = each.value.expires == null ? null : {
+          DateLessThan = { "aws:CurrentTime" = each.value.expires }
+        }
+      } if length(action_set) > 0]
+    )
   })
 
   tags = merge(local.tags, {
