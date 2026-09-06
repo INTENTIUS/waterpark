@@ -10,6 +10,12 @@ variable "floci_endpoint" {
   default     = "http://localhost:4566"
 }
 
+variable "actions_oidc_host" {
+  description = "The GitHub Actions OIDC issuer host. It is the provider's URL and the prefix of the aud and sub condition keys, so it is one string here rather than three spellings across the estate."
+  type        = string
+  default     = "token.actions.githubusercontent.com"
+}
+
 variable "region" {
   description = "The region the estate lives in."
   type        = string

@@ -1,0 +1,206 @@
+#!/usr/bin/env bash
+# Prescription 7's check. The apply role cannot detach its own boundary.
+#
+#   access/scripts/prove-no-detach
+#
+# water park must not be able to escalate water park (decision 12). The apply
+# role carries the estate boundary, the boundary denies boundary detachment
+# outright and denies the guardrail path by name, and the guardrail path names
+# the apply role. So the one move that would undo every other deny is denied,
+# and this script makes IAM say so out loud rather than asserting it.
+#
+# What actually happens here, said plainly, because the shape matters more
+# than the result.
+#
+# Floci honors a role's trust policy on AssumeRole, and waterpark-apply trusts
+# the GitHub Actions OIDC provider and nothing else, so nothing on a laptop
+# can become it. There is no web identity token to present. So the proof mints
+# a stand-in: an IAM user carrying the same estate boundary and an identity
+# policy that allows everything, then asks that credential to detach a
+# boundary. An identity allowed everything and bounded by the estate boundary
+# is exactly the apply role's shape, and it is the shape the deny has to hold
+# against.
+#
+# The stand-in is created and destroyed by this script and never declared.
+# Decision 5 says there are no IAM users in the estate and the rule pack fails
+# one in HCL; a credential minted for a proof and deleted at the end of it is
+# not an estate identity.
+set -uo pipefail
+
+access_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$access_root" || exit 1
+
+endpoint="${FLOCI_ENDPOINT:-http://localhost:4566}"
+account="${FLOCI_ACCOUNT:-000000000000}"
+boundary_name="${BOUNDARY_NAME:-waterpark-estate-boundary}"
+boundary_arn="arn:aws:iam::${account}:policy/${boundary_name}"
+
+user="wp-prove-no-detach"
+admin_policy="wp-prove-no-detach-admin"
+admin_arn="arn:aws:iam::${account}:policy/${admin_policy}"
+target_role="waterpark-apply"
+
+failures=0
+say() { printf '%s\n' "$*"; }
+ok() { printf 'ok    %s\n' "$*"; }
+fail() {
+	printf 'FAIL  %s\n' "$*"
+	failures=$((failures + 1))
+}
+
+root() {
+	AWS_ACCESS_KEY_ID=test AWS_SECRET_ACCESS_KEY=test \
+		AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION:-us-east-1}" \
+		aws --endpoint-url "$endpoint" "$@"
+}
+
+cleanup() {
+	key_id="${key_id:-}"
+	[ -n "$key_id" ] && root iam delete-access-key --user-name "$user" --access-key-id "$key_id" >/dev/null 2>&1
+	root iam detach-user-policy --user-name "$user" --policy-arn "$admin_arn" >/dev/null 2>&1
+	root iam delete-user --user-name "$user" >/dev/null 2>&1
+	root iam delete-policy --policy-arn "$admin_arn" >/dev/null 2>&1
+}
+trap cleanup EXIT
+
+if [ "$(curl -s -o /dev/null -m 3 -w '%{http_code}' "$endpoint/" 2>/dev/null)" = "000" ]; then
+	say "skip  Floci is not answering on $endpoint, so nothing was proven and nothing is claimed."
+	say "      docker run -d --name wp-access-floci -p 4566:4566 \\"
+	say "        -e FLOCI_SERVICES_IAM_ENFORCEMENT_ENABLED=true \\"
+	say "        ghcr.io/lex00/floci:iam-boundary"
+	exit 0
+fi
+
+say "== the estate as applied"
+if ! root iam get-policy --policy-arn "$boundary_arn" >/dev/null 2>&1; then
+	say "skip  $boundary_name is not in the account, so there is no boundary to fail to detach."
+	say "      terraform -chdir=access/envs/prod apply -auto-approve"
+	exit 0
+fi
+ok "$boundary_name is applied"
+
+if ! root iam get-role --role-name "$target_role" >/dev/null 2>&1; then
+	say "skip  $target_role is not in the account, so there is no apply role to test."
+	say "      terraform -chdir=access/envs/prod apply -auto-approve"
+	exit 0
+fi
+live_boundary="$(root iam get-role --role-name "$target_role" |
+	jq -r '.Role.PermissionsBoundary.PermissionsBoundaryArn // "none"')"
+if [ "$live_boundary" = "$boundary_arn" ]; then
+	ok "$target_role carries $boundary_name, read back from the account"
+else
+	fail "$target_role reads back with boundary $live_boundary, not $boundary_arn"
+fi
+
+say
+say "== the trust policy, before anything is minted"
+trusted="$(root iam get-role --role-name "$target_role" |
+	jq -r '[.Role.AssumeRolePolicyDocument.Statement[].Principal.Federated // empty] | join(",")')"
+if [ -n "$trusted" ]; then
+	ok "$target_role is assumable only by $trusted"
+else
+	fail "$target_role names no federated principal, so the OIDC trust is not what applied"
+fi
+
+assume_out="$(root sts assume-role --role-arn "arn:aws:iam::${account}:role/${target_role}" \
+	--role-session-name prove-no-detach 2>&1)"
+if printf '%s' "$assume_out" | grep -q 'AccessDenied'; then
+	ok "the test credential cannot assume $target_role, because the trust names the issuer and not a key"
+else
+	fail "sts:AssumeRole on $target_role was not refused, so the trust policy is not being honored"
+fi
+
+say
+say "== the stand-in, an identity with the same boundary and an allow-everything policy"
+cleanup
+root iam create-policy --policy-name "$admin_policy" --policy-document \
+	'{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Action":"*","Resource":"*"}]}' >/dev/null 2>&1
+root iam create-user --user-name "$user" --permissions-boundary "$boundary_arn" >/dev/null 2>&1
+root iam attach-user-policy --user-name "$user" --policy-arn "$admin_arn" >/dev/null 2>&1
+
+key_json="$(root iam create-access-key --user-name "$user" 2>/dev/null)"
+key_id="$(printf '%s' "$key_json" | jq -r '.AccessKey.AccessKeyId // empty')"
+key_secret="$(printf '%s' "$key_json" | jq -r '.AccessKey.SecretAccessKey // empty')"
+if [ -z "$key_id" ]; then
+	fail "could not mint a key for the stand-in, so nothing was proven"
+	exit 1
+fi
+ok "minted $user, bounded by $boundary_name, allowed everything by its own policy"
+
+bounded() {
+	AWS_ACCESS_KEY_ID="$key_id" AWS_SECRET_ACCESS_KEY="$key_secret" \
+		AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION:-us-east-1}" \
+		aws --endpoint-url "$endpoint" "$@"
+}
+
+say
+# Two controls, because a deny proves nothing unless something is allowed.
+# sts:GetCallerIdentity and s3 are both on the boundary's service surface, so
+# they answer, and every deny below is the boundary and not a broken key.
+say "== the controls, so a deny below means the boundary and not a broken key"
+if bounded sts get-caller-identity >/dev/null 2>&1; then
+	ok "sts:GetCallerIdentity succeeds. The credential works."
+else
+	fail "sts:GetCallerIdentity was refused, so this credential proves nothing about the denies"
+fi
+if bounded s3api list-buckets >/dev/null 2>&1; then
+	ok "s3:ListAllMyBuckets succeeds, because s3 is on the boundary's service surface"
+else
+	fail "the boundary's service surface did not allow s3, so this credential is not the apply role's shape"
+fi
+
+say
+say "== what the boundary already refuses, before the detach is even tried"
+if bounded iam get-role --role-name "$target_role" >/dev/null 2>&1; then
+	fail "iam:GetRole on $target_role succeeded, so the guardrail path is not denied by name"
+else
+	ok "iam:GetRole on $target_role is denied. The apply role is on the guardrail path, and the boundary denies that path by name."
+fi
+
+say
+say "== the proof"
+out="$(bounded iam delete-role-permissions-boundary --role-name "$target_role" 2>&1)"
+if printf '%s' "$out" | grep -q 'AccessDenied'; then
+	ok "iam:DeleteRolePermissionsBoundary on $target_role is denied"
+	printf '      %s\n' "$(printf '%s' "$out" | tr -d '\r' | grep -o 'An error occurred.*' | head -1)"
+else
+	printf '%s\n' "$out"
+	fail "iam:DeleteRolePermissionsBoundary was not denied. The boundary is not holding."
+fi
+
+out="$(bounded iam put-role-permissions-boundary --role-name "$target_role" \
+	--permissions-boundary "arn:aws:iam::${account}:policy/${admin_policy}" 2>&1)"
+if printf '%s' "$out" | grep -q 'AccessDenied'; then
+	ok "iam:PutRolePermissionsBoundary on $target_role is denied, so it cannot be swapped either"
+else
+	printf '%s\n' "$out"
+	fail "the boundary could be replaced with a wider one, which is the same escape by another name"
+fi
+
+out="$(bounded iam create-role --role-name wp-prove-escalation \
+	--assume-role-policy-document '{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":{"Service":"codebuild.amazonaws.com"},"Action":"sts:AssumeRole"}]}' 2>&1)"
+if printf '%s' "$out" | grep -q 'AccessDenied'; then
+	ok "iam:CreateRole is denied, so it cannot mint an unbounded role to escape through"
+else
+	root iam delete-role --role-name wp-prove-escalation >/dev/null 2>&1
+	printf '%s\n' "$out"
+	fail "an identity carrying the estate boundary created a role"
+fi
+
+say
+say "== the boundary is still where it was"
+after="$(root iam get-role --role-name "$target_role" |
+	jq -r '.Role.PermissionsBoundary.PermissionsBoundaryArn // "none"')"
+if [ "$after" = "$boundary_arn" ]; then
+	ok "$target_role still carries $boundary_name"
+else
+	fail "$target_role now carries $after"
+fi
+
+say
+if [ "$failures" -eq 0 ]; then
+	say "prove-no-detach passed. The apply role cannot detach its own boundary."
+	exit 0
+fi
+say "prove-no-detach failed, $failures problem(s)"
+exit 1

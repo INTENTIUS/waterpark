@@ -106,3 +106,24 @@ variable "principal_type" {
     error_message = "principal_type is GROUP or USER."
   }
 }
+
+variable "federated_trust" {
+  description = "An OIDC trust anchor for a workload role, in place of the service principals in trusted_services. provider_arn is an aws_iam_openid_connect_provider, issuer_host is that provider's host and is what the aud and sub condition keys are named after, audience is the aud claim the issuer mints, and subjects are the exact sub claims allowed. A trust anchor is estate and the issuer is never operated (decision 13), so a subject is spelled out rather than matched."
+  type = object({
+    provider_arn = string
+    issuer_host  = string
+    audience     = string
+    subjects     = list(string)
+  })
+  default = null
+
+  validation {
+    condition     = var.federated_trust == null || alltrue([for s in try(var.federated_trust.subjects, []) : !strcontains(s, "*")])
+    error_message = "A federated trust subject carries no wildcard. Name the branch or the environment in full, because a wildcard sub claim trusts every repository the issuer serves (prescription 12)."
+  }
+
+  validation {
+    condition     = var.federated_trust == null || length(try(var.federated_trust.subjects, [])) > 0
+    error_message = "A federated trust names at least one subject. A trust with no subject condition trusts the issuer rather than a workload."
+  }
+}

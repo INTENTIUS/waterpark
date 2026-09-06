@@ -1,0 +1,176 @@
+#!/usr/bin/env bash
+# The access delta. What a reviewer is actually being asked to approve.
+#
+#   access/scripts/render-delta plan.json              text
+#   access/scripts/render-delta --json plan.json        the same thing as JSON
+#   access/scripts/render-delta --base origin/main p.json  add the changed files
+#
+# A Terraform plan says an aws_iam_policy will be created. That is a fact
+# about Terraform. The fact about access is that site-publisher gains read on
+# waterpark-artifacts, and this script is the translation (decision 35,
+# prescription 14). It reads terraform show -json output and never the human
+# plan text, and it is never model output (decision 14).
+#
+# The reading is possible because modules/persona renders one aws_iam_policy
+# per grant, keyed <access>-<resource>, inside the module named for the
+# principal. So the plan already carries the principal, the level and the
+# resource, and this script puts them in a sentence.
+set -uo pipefail
+
+as_json=false
+base=""
+plan_json=""
+
+while [ $# -gt 0 ]; do
+	case "$1" in
+	--json)
+		as_json=true
+		shift
+		;;
+	--base)
+		base="${2:-}"
+		shift 2
+		;;
+	-*)
+		echo "usage: access/scripts/render-delta [--json] [--base <ref>] <plan.json>" >&2
+		exit 2
+		;;
+	*)
+		plan_json="$1"
+		shift
+		;;
+	esac
+done
+
+[ -n "$plan_json" ] && [ -f "$plan_json" ] || {
+	echo "render-delta: give it plan JSON. Produce it with: terraform show -json tfplan" >&2
+	exit 2
+}
+
+# The changed files, from the code host's view of the branch rather than from
+# the plan, because a plan says nothing about which file moved.
+changed_files() {
+	[ -n "$base" ] || return 0
+	git diff --name-only "$base"...HEAD -- access .github 2>/dev/null ||
+		git diff --name-only "$base" -- access .github 2>/dev/null ||
+		true
+}
+
+files_json="$(changed_files | jq -R . | jq -s .)"
+
+delta="$(jq --argjson files "$files_json" '
+  def act(c): (c.change.actions // []);
+  def verb(c):
+    if act(c) == ["create"] then "add"
+    elif act(c) == ["delete"] then "remove"
+    elif (act(c) | index("delete")) and (act(c) | index("create")) then "replace"
+    elif act(c) == ["update"] then "change"
+    else "none" end;
+
+  [ (.resource_changes // [])[] | select(verb(.) != "none") ] as $changed
+
+  | {
+      grants: [
+        $changed[]
+        | select(.type == "aws_iam_policy" and .name == "grant")
+        | (.address | capture("^module\\.(?<label>[^.]+)\\.")) as $m
+        | (.index // "") as $key
+        | ((.change.after.name // .change.before.name // "") | sub("-" + $key + "$"; "")) as $spelled
+        | {
+            # How the estate spells the principal, taken off the rendered
+            # policy name, because a reviewer knows site-publisher and not the
+            # module label site_publisher.
+            principal: (if $spelled != "" then $spelled else $m.label end),
+            key: (.index // ""),
+            access: ((.index // "") | split("-")[0]),
+            resource: ((.index // "") | split("-")[1:] | join("-")),
+            verb: verb(.),
+            expires: (.change.after.tags.expires // null),
+            reason: (.change.after.tags.reason // null),
+            address: .address
+          }
+      ] | sort_by(.principal, .key),
+
+      principals: [
+        $changed[]
+        | select(.type == "aws_iam_role" or .type == "aws_ssoadmin_permission_set")
+        | { name: (.change.after.name // .change.before.name // .address),
+            verb: verb(.), address: .address }
+      ] | sort_by(.name),
+
+      boundary: [
+        $changed[]
+        | select(.type == "aws_iam_policy" and .name == "boundary")
+        | { verb: verb(.), address: .address }
+      ],
+
+      trust: [
+        $changed[]
+        | select(.type == "aws_iam_role" and verb(.) == "change")
+        | { name: (.change.after.name // .address), address: .address }
+      ],
+
+      other: [
+        $changed[]
+        | select((.type == "aws_iam_policy" and (.name == "grant" or .name == "boundary")) | not)
+        | select(.type != "aws_iam_role" and .type != "aws_ssoadmin_permission_set")
+        | { address: .address, type: .type, verb: verb(.) }
+      ] | sort_by(.address),
+
+      files: ($files | map(select(. != "")))
+    }
+' "$plan_json")" || {
+	echo "render-delta: could not read $plan_json as plan JSON" >&2
+	exit 1
+}
+
+if [ "$as_json" = true ]; then
+	printf '%s\n' "$delta"
+	exit 0
+fi
+
+printf '%s' "$delta" | jq -r '
+  def sym(v): if v == "add" then "+" elif v == "remove" then "-" elif v == "replace" then "!" else "~" end;
+
+  "Access delta",
+  "",
+  ( if (.grants | length) == 0 then "  No grant changes. Nothing gains or loses access."
+    else
+      ( .grants
+        | group_by(.principal)
+        | map(
+            "  " + .[0].principal,
+            ( .[] | "    " + sym(.verb) + " " + .access + " on " + .resource
+                     + (if .expires and .expires != "never" then "   expires " + .expires else "" end) ),
+            ""
+          )
+        | flatten | join("\n")
+      )
+    end ),
+  "",
+  ( if (.principals | length) == 0 then empty
+    else ("  Principals",
+          (.principals | map("    " + sym(.verb) + " " + .name) | join("\n")),
+          "")
+    end ),
+  ( if (.boundary | length) == 0 then empty
+    else ("  The estate boundary itself changes in this plan. That widens or narrows",
+          "  every role at once, so it is a platform review whatever else is here.",
+          "")
+    end ),
+  ( if (.trust | length) == 0 then empty
+    else ("  Trust policies changed",
+          (.trust | map("    ~ " + .name + "   who may become this role has moved") | join("\n")),
+          "")
+    end ),
+  ( if (.other | length) == 0 then empty
+    else ("  Other resources",
+          (.other | map("    " + sym(.verb) + " " + .address) | join("\n")),
+          "")
+    end ),
+  ( if (.files | length) == 0 then empty
+    else ("  Files changed",
+          (.files | map("    " + .) | join("\n")),
+          "")
+    end )
+'

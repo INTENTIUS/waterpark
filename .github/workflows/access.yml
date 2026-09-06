@@ -1,0 +1,492 @@
+# One path to prod.
+#
+# Two jobs, and the whole lesson is the difference between them.
+#
+#   pr      runs on pull_request. No secrets, contents: read, and its AWS is
+#           a Floci service container in this same job. An untrusted author,
+#           including a fork, gets the full check stack and reaches no cloud.
+#   apply   runs on push to main only. It is the only write, it is gated by
+#           the prod environment, and it refuses a plan whose digest is not
+#           the digest the PR job recorded.
+#
+# The fork-PR property, stated so it can be checked. The pr job names no
+# secret and asks for no id-token, so there is no credential a fork PR can
+# reach. The apply job never runs on pull_request, because it carries
+# `if: github.event_name == 'push'`. `access/scripts/check workflow` greps
+# this file for both facts and fails the build when either stops being true,
+# which is prescription 6's test.
+#
+# GITHUB_TOKEN is not a secret in that sense and the pr job uses it as
+# `github.token`. On a pull_request from a fork GitHub issues it read-only
+# whatever the workflow asks for, and the job's own permissions block caps it
+# at contents: read besides. The one place the pr job wants more, posting the
+# delta as a comment, is attempted only when the head branch is in this
+# repository and is skipped without failing when it is not.
+name: access
+
+on:
+  pull_request:
+    paths:
+      - "access/**"
+      - ".github/workflows/access.yml"
+      - ".github/CODEOWNERS"
+  push:
+    branches: [main]
+    paths:
+      - "access/**"
+      - ".github/workflows/access.yml"
+      - ".github/CODEOWNERS"
+  workflow_dispatch:
+
+# Read only at the top. A job that needs more says so for itself.
+permissions:
+  contents: read
+
+concurrency:
+  group: access-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  TERRAFORM_VERSION: 1.15.8
+  TFLINT_VERSION: v0.64.0
+  FLOCI_ENDPOINT: http://localhost:4566
+
+jobs:
+  # The credential-free half of prescription 6. Everything here runs for an
+  # author nobody trusts.
+  pr:
+    if: github.event_name != 'push'
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    # The account, in the job. Floci runs the AWS APIs in process, so the
+    # Terraform is real, the IAM is real and the account is not (decision 51).
+    # This is why the whole PR-to-apply path needs no AWS account.
+    services:
+      floci:
+        image: ghcr.io/lex00/floci:iam-boundary
+        ports:
+          - 4566:4566
+        env:
+          FLOCI_SERVICES_IAM_ENFORCEMENT_ENABLED: "true"
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The base branch too, so render-delta can name the changed files
+          # and proofs can compare against the policy this PR replaces.
+          fetch-depth: 0
+
+      - name: Wait for Floci
+        run: |
+          for i in $(seq 1 60); do
+            code=$(curl -s -o /dev/null -m 2 -w '%{http_code}' "$FLOCI_ENDPOINT/" || true)
+            [ -n "$code" ] && [ "$code" != "000" ] && { echo "Floci answered with $code"; exit 0; }
+            sleep 2
+          done
+          echo "Floci did not answer on $FLOCI_ENDPOINT"
+          exit 1
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          terraform_wrapper: false
+
+      - uses: terraform-linters/setup-tflint@v4
+        with:
+          tflint_version: ${{ env.TFLINT_VERSION }}
+
+      - name: tflint --init
+        run: tflint --init
+        working-directory: access
+
+      # The account, filled from the base branch, before anything plans.
+      #
+      # A student's Floci already holds the applied estate, so a plan there is
+      # the diff their branch proposes and nothing else. This job's Floci is a
+      # container that started a minute ago and holds nothing, so a plan
+      # against it is the entire estate and says nothing about this pull
+      # request. Worse, a root that reads a central identifier live rather than
+      # out of a state file, which is what a satellite does, errors outright
+      # when the thing it reads has never been applied.
+      #
+      # So the job builds the account it is meant to be reviewing against. It
+      # checks the base commit out into a temporary worktree, applies it there,
+      # and carries the state that apply produced into the tree under review.
+      # Every terraform command after this point sees an account that holds
+      # main, and a plan is the pull request.
+      #
+      # State travels as the file rather than through -state. The committed
+      # backend is local with path = "terraform.tfstate", so the file in a root
+      # directory is exactly what that backend reads, and copying it means the
+      # plan stage inside access/scripts/check reads the base estate too, with
+      # no flag anybody has to remember.
+      - name: Apply the base branch into this job's account
+        env:
+          AWS_ACCESS_KEY_ID: test
+          AWS_SECRET_ACCESS_KEY: test
+          AWS_DEFAULT_REGION: us-east-1
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          BASE_REF: ${{ github.base_ref || 'main' }}
+        run: |
+          set -euo pipefail
+          base="$BASE_SHA"
+          [ -n "$base" ] || base=$(git rev-parse "origin/$BASE_REF")
+          echo "the base of this pull request is $base"
+
+          work="${RUNNER_TEMP:-/tmp}/access-base"
+          rm -rf "$work"
+          git worktree add --detach "$work" "$base"
+
+          # envs/prod first, then any satellite, in the order the satellite
+          # needs: it reads the central boundary live and cannot apply before
+          # central has created it. A satellite joins this list by existing,
+          # which is how access/scripts/check finds them too.
+          roots=(envs/prod)
+          for d in "$work"/access/satellites/*/; do
+            [ -f "${d}versions.tf" ] && roots+=("satellites/$(basename "$d")")
+          done
+
+          for root in "${roots[@]}"; do
+            [ -d "$work/access/$root" ] || continue
+            echo "== applying the base $root"
+            terraform -chdir="$work/access/$root" init -input=false -no-color
+            terraform -chdir="$work/access/$root" apply -auto-approve -input=false -no-color
+            if [ -d "access/$root" ]; then
+              cp "$work/access/$root/terraform.tfstate" "access/$root/terraform.tfstate"
+              echo "carried the base state for $root into the tree under review"
+            else
+              echo "$root is gone in this pull request, so its state stays behind"
+            fi
+          done
+
+          git worktree remove --force "$work"
+
+      # --plan-mode ci is the one difference between here and a laptop. There a
+      # plan that is not empty is a diff nobody applied and the stage fails.
+      # Here the account was just filled from the base branch, so a plan that
+      # is not empty is the change this pull request proposes and the stage
+      # records it. What binds that change to an approval is the digest below.
+      - name: The check stack
+        run: access/scripts/check --plan-mode ci
+
+      # The digest is over envs/prod, because envs/prod is what the apply job
+      # applies. The state copied in above is what makes this plan the diff
+      # rather than the whole estate.
+      - name: Save the plan
+        id: plan
+        env:
+          AWS_ACCESS_KEY_ID: test
+          AWS_SECRET_ACCESS_KEY: test
+          AWS_DEFAULT_REGION: us-east-1
+        run: |
+          terraform -chdir=access/envs/prod init -input=false -no-color
+          terraform -chdir=access/envs/prod plan -out=tfplan -input=false -no-color
+          terraform -chdir=access/envs/prod show -json tfplan > plan.json
+          digest=$(access/scripts/plan-digest plan.json)
+          echo "$digest" > plan.digest
+          echo "digest=$digest" >> "$GITHUB_OUTPUT"
+
+      # A satellite is a root of its own (decision 49) and gets planned like
+      # one. There is none until lesson 8 and this loop finds them by existing.
+      # Nothing applies one here and its plan is not in the digest, because the
+      # apply job applies central only. It is planned so that a pull request
+      # which breaks the delegation contract fails in CI rather than in
+      # somebody's lesson.
+      - name: Plan the satellite roots
+        env:
+          AWS_ACCESS_KEY_ID: test
+          AWS_SECRET_ACCESS_KEY: test
+          AWS_DEFAULT_REGION: us-east-1
+        run: |
+          set -euo pipefail
+          for d in access/satellites/*/; do
+            [ -f "${d}versions.tf" ] || continue
+            root="${d%/}"
+            echo "== $root"
+            terraform -chdir="$root" init -input=false -no-color
+            terraform -chdir="$root" plan -input=false -no-color
+          done
+
+      - name: The access delta
+        id: delta
+        run: |
+          access/scripts/render-delta --base "origin/${{ github.base_ref || 'main' }}" plan.json > delta.txt
+          access/scripts/render-delta --json plan.json > delta.json
+          cat delta.txt
+
+      - name: The proofs
+        id: proofs
+        run: |
+          access/scripts/proofs plan.json | tee proofs.txt
+
+      - name: Guardrail severity
+        id: severity
+        run: |
+          base="origin/${{ github.base_ref || 'main' }}"
+          changed=$(git diff --name-only "$base"...HEAD || true)
+          guardrail=$(printf '%s\n' "$changed" | grep -E '^(access/\.tflint\.d/|access/baseline/|access/scripts/|access/codeowners\.map|access/github/|\.github/CODEOWNERS|\.github/workflows/access\.yml)' || true)
+          if [ -n "$guardrail" ]; then
+            echo "high=true" >> "$GITHUB_OUTPUT"
+            {
+              echo "### Severity: high, this PR changes a guardrail"
+              echo
+              echo "These files decide what every other file is allowed to say."
+              echo
+              printf '%s\n' "$guardrail" | sed 's/^/    /'
+            } >> severity.md
+          else
+            echo "high=false" >> "$GITHUB_OUTPUT"
+            echo "### Severity: ordinary, no guardrail file changed" > severity.md
+          fi
+          cat severity.md
+
+      - name: The job summary
+        run: |
+          {
+            cat severity.md
+            echo
+            echo "### Access delta"
+            echo
+            echo '```'
+            cat delta.txt
+            echo '```'
+            echo
+            echo "### Proof verdict"
+            echo
+            echo '```'
+            cat proofs.txt
+            echo '```'
+            echo
+            echo "### Plan digest"
+            echo
+            echo "    ${{ steps.plan.outputs.digest }}"
+            echo
+            echo "The apply job recomputes this over its own plan and refuses"
+            echo "the apply when the two do not match (decisions 24 and 35)."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # The label, when the token can set one. A fork PR's token cannot, so
+      # this is an attempt rather than a requirement, and the summary line
+      # above is the part that always happens.
+      - name: Label a guardrail change
+        if: steps.severity.outputs.high == 'true' && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh pr edit "${{ github.event.pull_request.number }}" --add-label guardrail-change ||
+            echo "could not add the label, the summary carries the severity"
+
+      # The comment, same posture. Posting one needs pull-requests: write,
+      # which a fork PR does not get, so the delta always lands in the job
+      # summary and the comment is the convenience on top.
+      - name: Comment the delta
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          {
+            cat delta.txt
+            echo
+            echo "Plan digest: ${{ steps.plan.outputs.digest }}"
+          } > comment.md
+          gh pr comment "${{ github.event.pull_request.number }}" --body-file comment.md ||
+            echo "no pull-requests write, the delta is in the job summary"
+
+      # The digest travels with the plan it describes, keyed by the commit
+      # that produced it. The apply job finds it by that key.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: access-plan-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            plan.json
+            plan.digest
+            delta.txt
+            delta.json
+          retention-days: 30
+          if-no-files-found: error
+
+  # The only write. Push to main, nothing else.
+  apply:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    # The gate. A maintainer adds required reviewers to this environment in
+    # the repository settings and the job waits for them. Declared here so the
+    # environment exists to be configured rather than being discovered later.
+    environment: prod
+
+    permissions:
+      contents: read
+      # To find the run that produced the approved plan and download its
+      # artifact. Read, not write.
+      actions: read
+
+    services:
+      floci:
+        image: ghcr.io/lex00/floci:iam-boundary
+        ports:
+          - 4566:4566
+        env:
+          FLOCI_SERVICES_IAM_ENFORCEMENT_ENABLED: "true"
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Wait for Floci
+        run: |
+          for i in $(seq 1 60); do
+            code=$(curl -s -o /dev/null -m 2 -w '%{http_code}' "$FLOCI_ENDPOINT/" || true)
+            [ -n "$code" ] && [ "$code" != "000" ] && { echo "Floci answered with $code"; exit 0; }
+            sleep 2
+          done
+          echo "Floci did not answer on $FLOCI_ENDPOINT"
+          exit 1
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          terraform_wrapper: false
+
+      # Which PR did this commit come from, and which commit did its PR job
+      # plan. That head sha is the artifact key.
+      - name: Find the approved plan
+        id: approved
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          pr=$(gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/pulls" \
+            --jq '.[0] | "\(.head.sha) \(.base.sha)"' 2>/dev/null || true)
+          head_sha="${pr%% *}"
+          base_sha="${pr##* }"
+
+          # The base this apply rebuilds its account from. The merged PR's own
+          # base sha is the commit the pr job planned against, so taking it
+          # here is what makes the two digests comparable. The first parent is
+          # the fallback, and on a merge commit it is the same commit.
+          [ -n "$base_sha" ] || base_sha=$(git rev-parse "${{ github.sha }}^1")
+          echo "base_sha=$base_sha" >> "$GITHUB_OUTPUT"
+          echo "this apply rebuilds its account from $base_sha"
+
+          if [ -z "$head_sha" ]; then
+            echo "This commit is not the merge of a pull request, so no plan was ever approved."
+            echo "found=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "the merged PR's head was $head_sha"
+          echo "head_sha=$head_sha" >> "$GITHUB_OUTPUT"
+
+          run_id=$(gh run list --workflow access.yml --commit "$head_sha" \
+            --json databaseId,conclusion \
+            --jq 'map(select(.conclusion == "success")) | .[0].databaseId // empty' 2>/dev/null || true)
+          if [ -z "$run_id" ]; then
+            echo "No successful pr run was found for $head_sha."
+            echo "found=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "its pr job ran as $run_id"
+          echo "run_id=$run_id" >> "$GITHUB_OUTPUT"
+          echo "found=true" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/download-artifact@v4
+        if: steps.approved.outputs.found == 'true'
+        continue-on-error: true
+        id: fetch
+        with:
+          name: access-plan-${{ steps.approved.outputs.head_sha }}
+          path: approved
+          # The artifact was uploaded by a different run, the PR run on the
+          # branch's head commit. run-id is what reaches across.
+          github-token: ${{ github.token }}
+          run-id: ${{ steps.approved.outputs.run_id }}
+          repository: ${{ github.repository }}
+
+      # The same account the pr job planned against, built the same way. The
+      # pr job applied the pull request's base and planned its head; this job
+      # applies that same base sha and plans the merge commit. Two identical
+      # inputs, so the two digests match by construction, and a mismatch means
+      # something actually moved.
+      - name: Apply the base of the merged PR into this job's account
+        env:
+          AWS_ACCESS_KEY_ID: test
+          AWS_SECRET_ACCESS_KEY: test
+          AWS_DEFAULT_REGION: us-east-1
+          BASE_SHA: ${{ steps.approved.outputs.base_sha }}
+        run: |
+          set -euo pipefail
+          base="$BASE_SHA"
+          [ -n "$base" ] || base=$(git rev-parse "${{ github.sha }}^1")
+          echo "applying $base"
+
+          work="${RUNNER_TEMP:-/tmp}/access-base"
+          rm -rf "$work"
+          git worktree add --detach "$work" "$base"
+
+          roots=(envs/prod)
+          for d in "$work"/access/satellites/*/; do
+            [ -f "${d}versions.tf" ] && roots+=("satellites/$(basename "$d")")
+          done
+
+          for root in "${roots[@]}"; do
+            [ -d "$work/access/$root" ] || continue
+            echo "== applying the base $root"
+            terraform -chdir="$work/access/$root" init -input=false -no-color
+            terraform -chdir="$work/access/$root" apply -auto-approve -input=false -no-color
+            [ -d "access/$root" ] &&
+              cp "$work/access/$root/terraform.tfstate" "access/$root/terraform.tfstate"
+          done
+
+          git worktree remove --force "$work"
+
+      - name: Re-plan against this job's own account
+        env:
+          AWS_ACCESS_KEY_ID: test
+          AWS_SECRET_ACCESS_KEY: test
+          AWS_DEFAULT_REGION: us-east-1
+        run: |
+          terraform -chdir=access/envs/prod init -input=false -no-color
+          terraform -chdir=access/envs/prod plan -out=tfplan -input=false -no-color
+          terraform -chdir=access/envs/prod show -json tfplan > plan.json
+          access/scripts/plan-digest plan.json > plan.digest
+          cat plan.digest
+
+      - name: Compare the digest with what was approved
+        run: |
+          now=$(cat plan.digest)
+          if [ ! -f approved/plan.digest ]; then
+            echo "::error::No approved plan was found for this commit, so there is nothing this apply is allowed to be."
+            echo "Recomputed digest: $now"
+            exit 1
+          fi
+          was=$(cat approved/plan.digest)
+          echo "approved  $was"
+          echo "recomputed $now"
+          if [ "$was" != "$now" ]; then
+            echo "::error::The plan moved between approval and apply. Refusing (decisions 24 and 35)."
+            diff <(access/scripts/plan-digest --normalise approved/plan.json) \
+                 <(access/scripts/plan-digest --normalise plan.json) || true
+            exit 1
+          fi
+          echo "The plan being applied is the plan that was approved."
+
+      - name: Apply
+        env:
+          AWS_ACCESS_KEY_ID: test
+          AWS_SECRET_ACCESS_KEY: test
+          AWS_DEFAULT_REGION: us-east-1
+        run: |
+          terraform -chdir=access/envs/prod apply -input=false -no-color tfplan
+
+      - name: Prove it converged
+        env:
+          AWS_ACCESS_KEY_ID: test
+          AWS_SECRET_ACCESS_KEY: test
+          AWS_DEFAULT_REGION: us-east-1
+        run: |
+          terraform -chdir=access/envs/prod plan -detailed-exitcode -input=false -no-color

@@ -36,4 +36,44 @@ locals {
     reader   = "arn:aws:iam::aws:policy/ReadOnlyAccess"
     platform = "arn:aws:iam::aws:policy/ReadOnlyAccess"
   }
+
+  # A trust with no anchor set, so the federated document below is always
+  # evaluable and the choice between the two is a choice between two finished
+  # documents rather than between two half-built ones.
+  trust = var.federated_trust == null ? {
+    provider_arn = ""
+    issuer_host  = ""
+    audience     = ""
+    subjects     = []
+  } : var.federated_trust
+
+  service_trust_json = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect    = "Allow"
+      Principal = { Service = var.trusted_services }
+      Action    = "sts:AssumeRole"
+    }]
+  })
+
+  federated_trust_json = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect    = "Allow"
+      Principal = { Federated = local.trust.provider_arn }
+      Action    = "sts:AssumeRoleWithWebIdentity"
+      # The condition keys are named after the issuer host, which is why the
+      # host is a field here rather than sliced out of the provider ARN. The
+      # ARN is not known until the provider is created, and a trust policy
+      # that reads "known after apply" is a trust policy nobody reviewed.
+      Condition = {
+        StringEquals = {
+          "${local.trust.issuer_host}:aud" = local.trust.audience
+          "${local.trust.issuer_host}:sub" = local.trust.subjects
+        }
+      }
+    }]
+  })
+
+  assume_role_policy = var.federated_trust == null ? local.service_trust_json : local.federated_trust_json
 }
