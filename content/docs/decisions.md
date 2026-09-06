@@ -422,3 +422,88 @@ it. Reversing one requires editing this file in the same PR.
     ([threat-model](threat-model.md),
     [IAM, lesson 6](../courses/iam/06-one-path-to-prod.md),
     [IAM, lesson 7](../courses/iam/07-drift.md))
+52. **The plan digest travels as a workflow artifact keyed by the PR head
+    sha.** The pr job uploads `plan.json` and `plan.digest` as
+    `access-plan-<head sha>`, the apply job resolves the merged PR from the
+    commit, finds the successful pr run on that head sha and downloads by
+    run id, then recomputes the digest on its own plan and refuses on
+    mismatch. A committed digest file was rejected because a digest is
+    against a particular account, and a student whose Floci already holds
+    the estate computes a different one from an empty CI container. One
+    script, `access/scripts/plan-digest`, does the normalization for both
+    jobs. The cost is that a rebase merge changes the head sha, so the apply
+    job must resolve the PR through the merged commit rather than the sha it
+    runs on, and a PR merged without a green pr run has no artifact and the
+    apply refuses, which is the intended failure.
+    ([access](https://github.com/INTENTIUS/waterpark/blob/main/access/README.md),
+    [IAM, lesson 6](../courses/iam/06-one-path-to-prod.md))
+53. **The shared module for satellites is `access/modules/persona`, not a
+    `workload_role` wrapper.** Decision 10 named the wrapper. A wrapper
+    forwarding a dozen variables declares them twice and enforces nothing
+    the boundary and the rule pack do not already enforce. The persona
+    module gained `federated_trust` with an explicit issuer host so trust
+    policies are known at plan time, and a `push` grant level for registries
+    with `ecr:GetAuthorizationToken` as its own statement because the API
+    refuses to scope it. The satellite consumes the boundary through a `data
+    "aws_iam_policy"` lookup by name, not `terraform_remote_state` and not a
+    copied ARN.
+    ([access/modules/persona](https://github.com/INTENTIUS/waterpark/blob/main/access/modules/persona/README.md),
+    [design/delegation](design/delegation.md),
+    [IAM, lesson 8](../courses/iam/08-delegation-and-the-double-refusal.md))
+54. **The OIDC provider for GitHub Actions lives in `envs/prod`, not
+    `identity/`.** Decision 39 put trust anchors under `identity/`, but
+    `identity/` targets the management account and is live only, while an
+    OIDC provider is account scoped and this one belongs to `waterpark-prod`
+    beside the role that trusts it. Lesson I9 settles whether `identity/`
+    keeps any trust anchors at all.
+    ([design/workload-identity](design/workload-identity.md),
+    [IAM, lesson 6](../courses/iam/06-one-path-to-prod.md),
+    [IAM, lesson 9](../courses/iam/09-federation-trust.md))
+55. **`runner-builder` moved from `envs/prod` to the satellite root
+    `access/satellites/waterpark-runner/`, per [the estate](estate.md)'s
+    scenario 5.** The satellite declares its own ECR registry, because the
+    patched Floci runs ecr and `aws_ecr_repository` applies and plans clean
+    with an endpoint override. This lifts the registry deferral in decision
+    48. The module source is committed as the local path, with
+    `access/scripts/satellite-source local|git <tag>` switching to the
+    pinned git form, because the tag a satellite pins is cut after the
+    commit that introduces it. Earlier checkpoints are unaffected, since
+    they are tags of the tree as it was.
+    ([estate](estate.md), [design/delegation](design/delegation.md),
+    [IAM, lesson 8](../courses/iam/08-delegation-and-the-double-refusal.md))
+56. **Two rule changes.** `path-matches-name` drops any known provider
+    prefix (`aws_`, `github_`), and `boundary-required` also fires on a
+    module call in an `iam_role.*.tf` file, because tflint reads the calling
+    directory only and a satellite leaf file with the boundary stripped
+    would otherwise pass lint. The double refusal depends on the second.
+    Both carry failing and passing fixtures.
+    ([design/guardrail-rollout](design/guardrail-rollout.md),
+    [IAM, lesson 8](../courses/iam/08-delegation-and-the-double-refusal.md))
+57. **The rule pack is delivered to a satellite by a shallow clone at a tag,
+    not a tflint plugin source.** tflint has no git source for a Rego pack,
+    so the satellite's `.tflint.hcl` sets `TFLINT_OPA_POLICY_DIR` and the
+    documented clone at depth 1 on the tag is the pin. Warn-minor and
+    error-major is a tagging convention written in
+    `access/.tflint.d/README.md`. Ratchet baselines for what already
+    violates a new rule are not built, and the README says so.
+    ([design/guardrail-rollout](design/guardrail-rollout.md),
+    [IAM, lesson 8](../courses/iam/08-delegation-and-the-double-refusal.md))
+58. **The apply role's boundary is a known contradiction that only bites on
+    a real account.** The estate boundary denies all IAM write and the
+    guardrail path by name, which includes `role/waterpark-apply` and the
+    state bucket, so a `waterpark-apply` carrying it could not apply the
+    estate. On the taught path the job uses Floci test credentials and the
+    role carries no grants, and `access/scripts/prove-no-detach` uses a
+    stand-in user because Floci honors the role's trust policy. A real
+    account needs an apply-specific boundary, which decision 36's
+    one-boundary rule has not taken. Also record here as facts, not
+    decisions. Floci does enforce boundary denies in authorization (phase 0
+    tested only the condition key), Floci honors trust policies on
+    `sts:AssumeRole`, the drift job in CI is always clean because it applies
+    into an empty container and says so, and the satellite deploy credential
+    `waterpark-runner-deploy` is a user with the boundary condition as its
+    cap and no boundary of its own, standing in for the satellite's OIDC
+    role since Floci has no subject to bind.
+    ([threat-model](threat-model.md),
+    [IAM, lesson 6](../courses/iam/06-one-path-to-prod.md),
+    [IAM, lesson 8](../courses/iam/08-delegation-and-the-double-refusal.md))
