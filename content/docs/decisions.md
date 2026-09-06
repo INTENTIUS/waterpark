@@ -476,8 +476,11 @@ it. Reversing one requires editing this file in the same PR.
     module call in an `iam_role.*.tf` file, because tflint reads the calling
     directory only and a satellite leaf file with the boundary stripped
     would otherwise pass lint. The double refusal depends on the second.
-    Both carry failing and passing fixtures.
+    Both carry failing and passing fixtures. Both landed at
+    `checkpoint/i6` with the check stack rather than at lesson 8, so lesson
+    6 is where the first refusal became real and lesson 8 relies on it.
     ([design/guardrail-rollout](design/guardrail-rollout.md),
+    [IAM, lesson 6](../courses/iam/06-one-path-to-prod.md),
     [IAM, lesson 8](../courses/iam/08-delegation-and-the-double-refusal.md))
 57. **The rule pack is delivered to a satellite by a shallow clone at a tag,
     not a tflint plugin source.** tflint has no git source for a Rego pack,
