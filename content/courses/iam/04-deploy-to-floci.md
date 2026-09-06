@@ -60,10 +60,11 @@ Lessons 1 to 3 declared an estate and checked it without ever talking to a cloud
      -e FLOCI_SERVICES_IAM_ENFORCEMENT_ENABLED=true \
      ghcr.io/lex00/floci:iam-boundary
 
-   curl -s -o /dev/null -w '%{http_code}\n' http://localhost:4566/
+   curl -s --retry 15 --retry-all-errors --retry-delay 1 \
+     -o /dev/null -w '%{http_code}\n' http://localhost:4566/
    ```
 
-   The curl prints `200`. The image is a patched fork build rather than the upstream release, and lesson 5 is where that matters. [compose/README.md](https://github.com/INTENTIUS/waterpark/blob/main/compose/README.md) says which two bugs it fixes, and `just up` pulls the same image.
+   The curl prints `200`. The retry flags are there because the container binds the port before it answers on it, so the same curl without them prints `000` the first time. The image is a patched fork build rather than the upstream release, and lesson 5 is where that matters. [compose/README.md](https://github.com/INTENTIUS/waterpark/blob/main/compose/README.md) says which two bugs it fixes, and `just up` pulls the same image.
 
 3. Initialize with the local backend, and read what it tells you.
 
@@ -71,7 +72,7 @@ Lessons 1 to 3 declared an estate and checked it without ever talking to a cloud
    terraform -chdir=access/envs/prod init
    ```
 
-   The first line back is `Successfully configured the backend "local"`. That is the cost this lesson names. Terraform is about to write `access/envs/prod/terraform.tfstate`, a JSON file that lists every resource it manages, and Accessible Ops XI says the live system is the truth. Water park does not pretend the file is not there. It is gitignored, it is bookkeeping and never the system of record, and on the live path `access/scripts/backend s3 envs/prod` puts it in the `waterpark-terraform-state` bucket in `waterpark-security`, encrypted and locked. Every read in the rest of this lesson goes to the cloud instead of to that file.
+   It prints `Successfully configured the backend "local"`, two lines in. That is the cost this lesson names. Terraform is about to write `access/envs/prod/terraform.tfstate`, a JSON file that lists every resource it manages, and Accessible Ops XI says the live system is the truth. Water park does not pretend the file is not there. It is gitignored, it is bookkeeping and never the system of record, and on the live path `access/scripts/backend s3 envs/prod` puts it in the `waterpark-terraform-state` bucket in `waterpark-security`, encrypted and locked. Every read in the rest of this lesson goes to the cloud instead of to that file.
 
 4. Apply.
 
@@ -130,7 +131,11 @@ Lessons 1 to 3 declared an estate and checked it without ever talking to a cloud
    }
    ```
 
-   Then wire it in. Add `plan) run_plan ;;` to the `case` at the bottom, add `run_plan` as the last line of the `all` branch, and put `plan` in the usage string and the comment header beside `fmt`, `lint` and `fixtures`.
+   Then wire it in, in four places. Add `plan) run_plan ;;` to the `case` at the bottom, under `fixtures) run_fixtures ;;`. Add `run_plan` as the last line of the `all` branch. Change the usage string to `usage: access/scripts/check [all|fmt|validate|lint|fixtures|plan]`. And in the comment header at the top of the file, add `, plan` to the end of the first line and this line under the `fixtures` one, spaced to line up with it.
+
+   ```sh
+   #   access/scripts/check plan       just the credential-free plan against Floci
+   ```
 
    The skip is the point of the shape. Floci not being up is a reason to say so and carry on, not a reason to fail a PR.
 

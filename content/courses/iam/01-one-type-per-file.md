@@ -8,7 +8,7 @@ summary: "The repo is Terraform with one resource per file."
 skill: "skills/i1-one-type-per-file"
 # card. empty renders as TODO
 goal: "Build the first environment of the access repo from an empty tree. Write one Terraform resource block per file under `access/envs/prod`, name every file after the resource address inside it, wire one provider block that reaches either Floci or a real account, and check in the local backend so a fresh clone runs `terraform init` with no AWS account. Then break the convention on purpose and watch Terraform accept it, which is the gap lesson 3 closes."
-done_when: "`terraform fmt -check -recursive access`, `terraform init` and `terraform validate` are all green in `access/envs/prod`, and `git diff checkpoint/i1 -- access/envs access/backends access/scripts` prints nothing. The other half of prescription 1, the rules that fail a two-resource file and a misnamed one in the editor, is built in lesson 3."
+done_when: "`terraform fmt -check -recursive access`, `terraform init` and `terraform validate` are all green in `access/envs/prod`, and, after `git add -N access`, `git diff checkpoint/i1 -- access/envs access/backends access/scripts` prints nothing. The other half of prescription 1, the rules that fail a two-resource file and a misnamed one in the editor, is built in lesson 3."
 restart_from: "checkpoint/i0, the repo before access/ existed"
 properties: ["I"]
 closes: ["P1", "P2"]
@@ -46,6 +46,7 @@ activity:
    ```sh
    mkdir -p access/envs/prod access/envs/dev access/backends access/scripts
    cp ../waterpark/access/envs/prod/versions.tf ../waterpark/access/envs/prod/provider.tf ../waterpark/access/envs/prod/variables.tf ../waterpark/access/envs/prod/locals.tf access/envs/prod/
+   cp ../waterpark/access/envs/dev/README.md access/envs/dev/
    cp ../waterpark/access/backends/backend.local.tf ../waterpark/access/backends/backend.s3.tf access/backends/
    cp ../waterpark/access/scripts/backend access/scripts/backend
    cp ../waterpark/access/.gitignore access/.gitignore
@@ -173,6 +174,11 @@ activity:
    terraform -chdir=access/envs/prod init
    terraform -chdir=access/envs/prod validate
    ```
+
+   The script's own last line offers `init -reconfigure`. That flag matters
+   when a backend that was already initialised is being swapped, which is the
+   live path in lesson 6. This directory has never been initialised, so plain
+   `init` is the one to run.
 
    `fmt -check` is silent and exits 0 when every file is formatted. `init` writes `.terraform/` and a lock file, both of which `access/.gitignore` keeps out of the repo. `validate` says the configuration is valid. All three ran with no credential and no account.
 

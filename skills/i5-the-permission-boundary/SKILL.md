@@ -88,10 +88,13 @@ docker run -d --name wp-i5-floci -p 4566:4566 \
   -e FLOCI_SERVICES_IAM_ENFORCEMENT_ENABLED=true \
   ghcr.io/lex00/floci:iam-boundary
 
-curl -s -o /dev/null -w '%{http_code}\n' http://localhost:4566/
+curl -s --retry 15 --retry-all-errors --retry-delay 1 \
+  -o /dev/null -w '%{http_code}\n' http://localhost:4566/
 ```
 
-The curl prints `200`. Re-run `bash skills/start/check.sh` and require
+The curl prints `200`. The retry flags are there because the container binds
+the port before it answers on it, so the same curl without them prints `000`
+the first time. Re-run `bash skills/start/check.sh` and require
 `floci.reachable` true before going on.
 
 This image matters more in this lesson than in any other. Upstream Floci
@@ -195,7 +198,9 @@ is_boundary(r) if {
 }
 ```
 
-Then teach `deny_no_wildcard_action` to ask it. The rule needs the tags in
+Put it straight under the one-line `owner_tagged` clause near the top, so the
+two tag helpers sit together above the rules that use them. Then teach
+`deny_no_wildcard_action` to ask it. The rule needs the tags in
 scope, so the schema gains one entry and the body gains one line.
 
 ```rego
@@ -243,7 +248,8 @@ Write `access/envs/prod/baseline.tf`, which calls the module once with
 `owner = local.owner` and `sandbox = false`. The body is in step 5 of the
 lesson page.
 
-Add the variable to `access/modules/persona/variables.tf`.
+Add the variable to `access/modules/persona/variables.tf`, between `grants`
+and `trusted_services`.
 
 ```hcl
 variable "permissions_boundary" {
@@ -283,13 +289,19 @@ that was wanted.
 ### 5e. Promote the rule
 
 **confirm**, then rename one function in
-`access/.tflint.d/policies/security.rego`.
+`access/.tflint.d/policies/security.rego` and rewrite the comment above it,
+which is still describing a warning.
 
 ```rego
+# An error since lesson 5. It landed as a warning in lesson 3, because the
+# boundary it asks for did not exist yet, and it is promoted here now that
+# every role carries one. That is the warn cycle decision 9 asks for, and the
+# promotion is the one-word edit from warn_ to deny_.
 deny_boundary_required contains issue if {
 ```
 
-The prefix is the severity, so `warn_` to `deny_` is the whole promotion.
+The prefix is the severity, so `warn_` to `deny_` is the whole promotion, and
+the comment is the only other thing that has to move with it.
 Then tell the fixture runner the new name, in `access/scripts/check`.
 
 ```sh
@@ -371,13 +383,17 @@ stage first.
 
 ```sh
 git add -A access
-git diff --cached checkpoint/i5 -- access
+git diff --cached --stat checkpoint/i5 -- access ':!*README.md'
 ```
 
-The only file it should name is `access/README.md`, which is prose. If it
-names anything under `baseline`, read the difference with the student rather
-than pasting over it. A boundary they can defend line by line is worth more
-than a boundary that matches the reference.
+Nothing printed means every file the student wrote is the reference file. The
+`README.md` files are excluded because the reference repo carries prose for
+`access/`, for `access/baseline` and for the persona module that describes
+lessons the student has not reached, and none of them is something this
+lesson writes. If the diff names anything under `baseline`, read the
+difference with the student rather than pasting over it. A boundary they can
+defend line by line is worth more than a boundary that matches the
+reference.
 
 ## 6. Done when
 
@@ -421,7 +437,7 @@ somehow lacks one). Leave every other field untouched. Write it in the
 original checkout rather than in the `../waterpark-i5` worktree.
 
 ```json
-{"...": "...", "completed": ["start", "i4", "i5"]}
+{"...": "...", "completed": ["start", "i1", "i2", "i3", "i4", "i5"]}
 ```
 
 ## 9. Hand off

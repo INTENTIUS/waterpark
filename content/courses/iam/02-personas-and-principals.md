@@ -102,7 +102,7 @@ activity:
    cp access/envs/prod/iam_role.site_publisher.tf access/envs/prod/iam_role.runner_builder.tf
    ```
 
-   Then change five things in the copy. The module label to `runner_builder`, the `name` to `runner-builder`, the `description` to what it does, and the grants to write and list on `waterpark-artifacts`. The persona stays `service`. Nothing else needs touching.
+   Then five edits in the copy. The module label to `runner_builder`, the `name` to `runner-builder`, the `description` to what it does, and the two grants to write and list on `waterpark-artifacts`, which means the third grant the copy carries goes away. The persona, the owner and the teams stay as they are.
 
    ```hcl
    module "runner_builder" {
@@ -173,7 +173,7 @@ activity:
    }
 
    output "grants" {
-     description = "Every grant this environment declares, by principal."
+     description = "Every grant this environment declares, by principal. scripts/proofs reads the expiry from here."
      value = {
        site-publisher = module.site_publisher.grants
        runner-builder = module.runner_builder.grants
@@ -251,7 +251,7 @@ activity:
     terraform -chdir=access/envs/prod plan -no-color | grep -A3 -e DateLessThan -e '"expires" ='
     ```
 
-    Two `DateLessThan` conditions on `aws:CurrentTime`, and two `expires` tags carrying the same date. The condition is what the cloud enforces, on every call, whether or not any job is running. The tag is what a read of the estate can see without parsing a policy document. Lesson 7 is where that tag becomes drift.
+    Two `DateLessThan` conditions on `aws:CurrentTime`, then seven `expires` tags, of which the two on `desk-operator` carry that same date and the other five read `never`. The condition is what the cloud enforces, on every call, whether or not any job is running. The tag is what a read of the estate can see without parsing a policy document, and `never` is the honest value for a grant that has no expiry rather than a missing tag. Lesson 7 is where the dated one becomes drift.
 
 11. Prove the first refusal. Change one string in a leaf file.
 

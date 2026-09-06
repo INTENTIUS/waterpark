@@ -173,7 +173,8 @@ cp access/envs/prod/iam_role.site_publisher.tf access/envs/prod/iam_role.runner_
 ```
 
 Then five edits in the copy, the module label, the `name`, the
-`description` and the two grants. The persona stays `service`.
+`description` and the two grants, which means the third grant the copy
+carries goes away. The persona, the owner and the teams stay as they are.
 
 ```hcl
 module "runner_builder" {
@@ -247,7 +248,7 @@ output "roles" {
 }
 
 output "grants" {
-  description = "Every grant this environment declares, by principal."
+  description = "Every grant this environment declares, by principal. scripts/proofs reads the expiry from here."
   value = {
     site-publisher = module.site_publisher.grants
     runner-builder = module.runner_builder.grants
@@ -338,10 +339,12 @@ Then read the expiry out of the plan.
 terraform -chdir=access/envs/prod plan -no-color | grep -A3 -e DateLessThan -e '"expires" ='
 ```
 
-Two `DateLessThan` conditions on `aws:CurrentTime` and two `expires` tags
-carrying the same date. The condition is what the cloud enforces on every
-call. The tag is what a read of the estate can see without parsing a
-policy document.
+Two `DateLessThan` conditions on `aws:CurrentTime`, then seven `expires`
+tags, of which the two on `desk-operator` carry that same date and the other
+five read `never`. The condition is what the cloud enforces on every call.
+The tag is what a read of the estate can see without parsing a policy
+document, and `never` is the honest value for a grant with no expiry rather
+than a missing tag.
 
 ### 3g. The first refusal, at validate
 
