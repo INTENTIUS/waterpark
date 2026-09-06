@@ -3,7 +3,7 @@ name: waterpark-f3-egress-allowlist
 description: Walk a student through Fountain lesson 3, The egress allowlist. Use when they want lesson 3, or when they ask why a limited-networking environment will not provision. Declares a default-deny Environment, watches Fountain refuse to provision it on a self-hosted runner, reads the stage events that name the missing capability and the provider, and contrasts with an unrestricted environment that starts. Needs no inference key.
 ---
 
-# water park, Fountain lesson 3: The egress allowlist
+# water park, Fountain lesson 3, The egress allowlist
 
 You are walking a student through Fountain lesson 3, The egress allowlist
 (https://intentius.io/waterpark/courses/fountain/03-egress-allowlist/). The
@@ -149,8 +149,9 @@ fountain run lesson3-locked-agent -p 'Fetch https://example.com and tell me the 
 fountain: provisioning failed — the sandbox never started
 ```
 
-The CLI exits non-zero. Keep the conversation id from the first line,
-3e needs it. This is the expected result on the class stack, so say so
+The CLI exits non-zero. Keep the full conversation id from the first
+line, 3e needs it and the shortened id `fountain conv list` prints will
+not work. This is the expected result on the class stack, so say so
 before running it, otherwise a failure looks like the student's mistake.
 The agent never ran because the sandbox never existed.
 
@@ -159,13 +160,14 @@ status `failed`. The failure is recorded, not discarded.
 
 ### 3e. Read the events, the payoff
 
-A read command. Substitute the student's own conversation id and the
-check's `fountain.cli_url` for the host.
+A read command. This is the page's command verbatim. Substitute the
+student's own full conversation id from 3d, and the check's
+`fountain.cli_url` for the host if the stack is not on port 4000.
 
 ```sh
 FOUNTAIN_KEY=$(awk -v p="[${FOUNTAIN_PROFILE:-default}]" '$0==p{f=1;next} /^\[/{f=0} f && $1=="api_key"{gsub(/"/,"",$3); print $3; exit}' ~/.fountain/credentials)
 curl -s -H "Authorization: Bearer $FOUNTAIN_KEY" \
-  "$CLI_URL/api/conversations/<id>/events" \
+  "http://localhost:4000/api/conversations/<id>/events" \
   | jq -r '.data[] | "\(.stage) \(.state) \(.data)"'
 ```
 
@@ -207,13 +209,21 @@ fountain apply -f f3-manifest.yaml
 fountain run lesson3-locked-agent -p 'Fetch https://api.github.com and tell me the HTTP status.'
 ```
 
-Expect `~` on both apply lines and the same three-line refusal from the
-run. Keep this short. The point is one sentence. A named host does not
+Expect `~` on both apply lines and a refusal identical to 3d, down to
+the exit code. Keep this short. The point is one sentence. A named host does not
 help, because there is nothing on this backend that could hold the name.
 
 ### 3g. The contrast
 
 **confirm** for the apply and the run. The student writes `f3-open.yaml`.
+
+This run provisions a real sandbox and the account holds at most two of
+those at once. Lesson 1 leaves its conversation alive, so a student who
+came straight from it has one slot gone already. If the run answers with
+`http 429: You have 2 of 2 concurrent sandboxes in use`, run
+`fountain conv list`, pick an older conversation, and terminate it by its
+full id the way 3h does. The two refused runs above hold no slot, their
+sandboxes never started.
 
 ```yaml
 apiVersion: fountain.dev/v1
@@ -243,16 +253,23 @@ fountain run lesson3-open-agent -p 'Fetch https://example.com and tell me the HT
 ▸ provision: started
 ▸ provision: done
 ▸ turn: started
+▸ turn failed
+fountain: turn failed
 ```
 
 `provision: done` on the same runner, with the same agent shape. One
-field changed and the sandbox starts.
+field changed and the sandbox starts. The contrast is complete by line
+three and the rest is the model call.
 
-What happens next depends on the student's account and it is not part of
-the lesson. With an inference key the turn answers. Without one the turn
-fails afterwards with `Authentication required`, which is the model call
-failing and not the sandbox. Say which one they are looking at so a
-student with no key does not read it as a second refusal.
+Say this before running it, because the last two lines look like another
+refusal and are not. On a keyless account the turn cannot reach a model,
+so it fails and the command exits non-zero, exactly as 3d and 3f did, but
+one stage later. The CLI prints only `turn failed`. The reason lives in
+the events, so run the 3e curl against this conversation and read the
+`turn failed` line, which carries
+`"message" => "Authentication required"`. That is a missing key and has
+nothing to do with networking. With a key set the turn answers instead
+and the command exits zero.
 
 ### 3h. Tidy up
 
@@ -262,6 +279,11 @@ stops holding one of the account's two sandbox slots.
 ```sh
 fountain conv terminate <id>
 ```
+
+Use the full conversation id from the first line of the 3g output.
+`fountain conv list` shortens the id column to eight characters, and
+`terminate` refuses that shortened form. The error it gives back,
+`http 400: detail: Bad Request`, does not say the id was the wrong shape.
 
 If the student wants the objects gone too, `fountain env list --json`
 and `fountain agent list --json` give the ids and

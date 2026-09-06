@@ -99,13 +99,15 @@ Every step here runs before a model is ever called, so none of it needs an infer
 
    The CLI exits non-zero. The agent never ran, because the sandbox never existed.
 
-5. Confirm the conversation kept the failure rather than vanishing. `fountain conv list` shows it with status `failed`, which is a record you can go back to.
+5. Confirm the conversation kept the failure rather than vanishing. `fountain conv list` shows it with status `failed`, which is a record you can go back to. Earlier lessons leave their conversations in this list too, so look for the one whose id starts with the id from step 4.
 
    ```
    status  id        agent_id  runtime  started
    ------  --------  --------  -------  --------------------
    failed  cd5a7080  b23e9d79  claude   2026-09-06T19:03:33Z
    ```
+
+   The id column is shortened to eight characters for the table. Commands that take a conversation id want the full one from step 4.
 
 6. Ask the platform why. The stage events carry the reason, and this is the payoff of the lesson. Substitute your own conversation id from step 4, and the check's `fountain.cli_url` for the host if your stack is not on port 4000.
 
@@ -139,9 +141,15 @@ Every step here runs before a model is ever called, so none of it needs an infer
    fountain run lesson3-locked-agent -p 'Fetch https://api.github.com and tell me the HTTP status.'
    ```
 
-   Same three lines, same refusal. A named host does not help, because there is nothing on this backend that could hold the name.
+   The refusal is identical, down to the exit code. A named host does not help, because there is nothing on this backend that could hold the name.
 
-8. Now the contrast. Write `f3-open.yaml` with an unrestricted Environment and its own Agent, apply it, and run the same prompt.
+8. Now the contrast. Write `f3-open.yaml` with an unrestricted Environment and its own Agent, apply it, and run the same prompt. This one provisions a real sandbox, and an account may hold only two of those at once. If an earlier lesson left a conversation alive you will get this instead of a run.
+
+   ```
+   fountain: http 429: You have 2 of 2 concurrent sandboxes in use. Terminate a conversation before starting another.
+   ```
+
+   Clear a slot with `fountain conv terminate` and the full id of an older conversation, then come back. The two refused runs above hold no slot, because their sandboxes never started.
 
    ```yaml
    apiVersion: fountain.dev/v1
@@ -171,11 +179,15 @@ Every step here runs before a model is ever called, so none of it needs an infer
    ▸ provision: started
    ▸ provision: done
    ▸ turn: started
+   ▸ turn failed
+   fountain: turn failed
    ```
 
-   `provision: done` on the same runner, with the same agent shape. The only field that changed is the networking type, and the sandbox starts. With an inference key the turn then answers, and without one it fails afterwards with `Authentication required`, which is the model call failing and not the sandbox.
+   `provision: done` on the same runner, with the same agent shape. The only field that changed is the networking type, and the sandbox starts. That is the whole contrast, and it is already complete by line three.
 
-9. Terminate the conversation the contrast left running, so it stops holding a sandbox slot. A user is capped at two at once.
+   The last two lines are the model call, not the sandbox. With no inference key set the turn cannot reach a model, so it fails and the command exits non-zero the way steps 4 and 7 did. The difference is where. Fetch this conversation's events the same way you did in step 6 and the `turn failed` line carries `"message" => "Authentication required"` as its reason, which is a missing key and nothing to do with networking. With a key set the turn answers instead and the command exits zero.
+
+9. Terminate the conversation the contrast left running, so it stops holding a sandbox slot. Use the full conversation id from the first line of the step 8 output, not the eight-character id the table in step 5 prints, which `terminate` rejects with `http 400: detail: Bad Request`.
 
    ```sh
    fountain conv terminate ece7e0df-f062-489f-8f4a-73776e2a20dc
