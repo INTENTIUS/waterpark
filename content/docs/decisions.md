@@ -313,3 +313,70 @@ it. Reversing one requires editing this file in the same PR.
     is only as current as its last read and it says nothing about a
     resource nobody has permission to read. Lessons I11 and I8.
     ([design/delegation](design/delegation.md), [design/agentic](design/agentic.md), [IAM, lesson 11](../courses/iam/11-offboard-and-access-review.md))
+43. **The local backend is the default, and the S3 backend swaps in for
+    the live path.** `access/envs/prod/backend.local.tf` is checked in so
+    a fresh clone inits with zero AWS. `access/backends/backend.s3.tf`
+    (state in waterpark-security, encrypted, with `use_lockfile`) is
+    copied in by `access/scripts/backend s3 envs/prod`. Terraform allows
+    one backend block per root, and `-backend-config` cannot change the
+    backend type, so a file swap is the only clean mechanism. The `floci`
+    provider variable defaults to true for the same reason, the taught
+    path is the default posture, and the live path passes `-var
+    floci=false`. The provider lock file is gitignored because students
+    run this on three platforms. The cost is that the live path is two
+    commands further from the clone than the local one.
+    ([access](https://github.com/INTENTIUS/waterpark/blob/main/access/README.md), [IAM, lesson 4](../courses/iam/04-deploy-to-floci.md))
+44. **Human principals are live only, under `access/identity/`.** Floci
+    runs no Identity Center, so permission sets and assignments cannot
+    apply on the solo path. The persona module refuses a human persona in
+    any root that has not set `identity_center = true`, and that refusal
+    fires at plan time because Terraform defers cross-variable
+    validation, while a wrong persona name fails at validate. `identity/`
+    is validated and linted on every check and never applied on a laptop.
+    File names strip the provider prefix from the real type, so
+    `ssoadmin_permission_set.<name>.tf`, not the `sso_permission_set` the
+    desk doc sketched, now fixed there too.
+    ([access/identity](https://github.com/INTENTIUS/waterpark/blob/main/access/identity/README.md), [aws-desk](aws-desk.md), [IAM, lesson 2](../courses/iam/02-personas-and-principals.md))
+45. **Grant policies are rendered by the persona module, not written as
+    leaf files.** A principal file is one module call plus a list of
+    grants (prescription 2). Lesson I1 still builds the raw role, policy
+    and attachment as three files so the student sees what the module
+    replaces in I2, which is why a policy leaf file exists at
+    checkpoint/i1 and not after, and the desk doc's sketch of a permanent
+    one is fixed to match. The module exports a `grants` output carrying
+    expiry so a later proofs script has something to read.
+    ([access/modules/persona](https://github.com/INTENTIUS/waterpark/blob/main/access/modules/persona/README.md), [aws-desk](aws-desk.md), [IAM, lesson 1](../courses/iam/01-one-type-per-file.md), [IAM, lesson 2](../courses/iam/02-personas-and-principals.md))
+46. **Leaf files name the boundary once, as `permissions_boundary =
+    module.baseline.boundary_arn`.** Issue 43 wanted leaf files silent
+    about the boundary. With baseline as a module in the same root, that
+    one reference is the dependency edge that orders the policy before
+    the roles. The alternatives were a second apply with baseline as its
+    own root, or a data-source lookup that fails on first apply. The
+    module still applies the boundary, so no grant restates it. The
+    boundary policy itself is tagged `guardrail = "boundary"`, and
+    `no-wildcard-action` exempts it, because a boundary is a ceiling that
+    needs `s3:*`-shaped allows, not a grant.
+    ([access/baseline](https://github.com/INTENTIUS/waterpark/blob/main/access/baseline/README.md), [design/delegation](design/delegation.md), [IAM, lesson 5](../courses/iam/05-the-permission-boundary.md))
+47. **The rule pack is tflint with the OPA ruleset, Rego under
+    `access/.tflint.d/policies/`, and severity is the function-name
+    prefix.** `deny_` is an error and `warn_` a warning, so promoting a
+    rule (decision 9's warning-first rollout) is a one-word edit plus a
+    line in `access/scripts/check`. All nine rules are Rego, including
+    the two layout rules, because the ruleset exposes each resource's
+    file name. `no-open-ingress` and `sg-reference-not-cidr` ship as
+    warnings with fixtures although the estate declares no security
+    groups yet. tflint installs from the tap
+    `terraform-linters/tap/tflint`, not homebrew core. The editor half of
+    prescription 4 is documented rather than demonstrated, since `tflint
+    --langserver` is a process apart from `terraform-ls`.
+    ([access](https://github.com/INTENTIUS/waterpark/blob/main/access/README.md), [design/guardrail-rollout](design/guardrail-rollout.md), [IAM, lesson 3](../courses/iam/03-guardrails-in-the-editor.md))
+48. **What phase 1 for I1 to I5 deliberately left out.** ECR and
+    security groups are not declared in `envs/prod`, because the Floci
+    provider overrides only iam, sts and s3 and the fork's ECR support is
+    untested, so the runner registry and the default-deny groups wait for
+    a lesson that can show them. `scripts/proofs`, `render-delta`,
+    CODEOWNERS generation and the apply workflow belong to I6 and later.
+    Access Analyzer validate-policy is untried. Checkpoint tags
+    `checkpoint/i0` to `checkpoint/i5` mark the repo after each lesson,
+    so lesson N starts from i(N-1).
+    ([plan](https://github.com/INTENTIUS/waterpark/blob/main/project/plan.md), [issues](https://github.com/INTENTIUS/waterpark/blob/main/project/archive/issues.md))
