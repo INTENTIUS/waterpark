@@ -35,12 +35,13 @@ not built by this workflow.
 | 2026-09-05 | IAM lessons 1 to 5 written against `checkpoint/i0` to `checkpoint/i5` and taken end to end by an agent playing the student from a fresh clone with only the pages, the skills and the tags. Lessons 3, 4 and 5 passed their done-when as written, 1 and 2 failed on a checkpoint compare that could not be silent. Nineteen stumbles filed and fixed, the changed steps re-run clean. |
 | 2026-09-05 | IAM lessons 6 to 8 written against `checkpoint/i5` to `checkpoint/i8` and taken end to end by an agent playing the student from a fresh clone. All three done-whens passed as written and every promised compare was silent. Sixteen stumbles filed, fifteen fixed in text, one left as a script finding. The access workflow's PR job and apply job each ran for real on PR 71 and its merge, the apply job matching the approved plan digest and applying. |
 | 2026-09-06 | Fountain lesson 3, the egress allowlist, written and taken end to end by an agent playing the student from a fresh clone. The done-when passed as written. The class stack's runner holds no egress policy, so Fountain refuses a `limited` environment rather than running it open, and the lesson teaches that refusal. It is the one lesson that needs no inference key, since the refusal comes before the model is called. |
+| 2026-09-06 | Fountain lesson 2, the sandbox lifecycle, written and taken end to end by an agent playing the student from a fresh clone. All three done-when clauses passed as written and every command ran unmodified. The class stack now sets Fountain's idle bound to two minutes, so the student watched the sandbox park two minutes and fifty-five seconds after its last turn, wake by reattach onto the same sandbox id with a file still on its disk, and lose the directory on terminate while the transcript stayed. Thirteen stumbles filed, all wording, all fixed. Like lesson 3 it needs no inference key. |
 
 ## Written, not yet verified
 
-- 16 of the 26 lesson bodies are skeletons with TODO markers. Written
-  and student-run: Fountain lessons 1 and 3, and IAM lessons 1 to 8.
-  `just todos` counts 118 today.
+- 15 of the 26 lesson bodies are skeletons with TODO markers. Written
+  and student-run: Fountain lessons 1 to 3, and IAM lessons 1 to 8.
+  `just todos` counts 111 today.
 - The access repo exists under `access/` for what IAM lessons 1 to 8
   need (layout, personas, the check stack, the Floci deploy, the
   boundary, the PR and apply jobs, drift and reconcile, the satellite and

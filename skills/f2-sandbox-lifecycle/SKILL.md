@@ -157,10 +157,15 @@ conversation d99d8cb5-b178-4dbf-8f02-a9164fc8040e
   sprite:    runner-2ed85f37e61f4a5c91b691dbdab734d6-8430f8fa (ready)
   runtime:   claude
   inserted:  2026-09-06T21:29:32Z
+
+turns (1):
+  #1 failed exit=  Write the line  remember me  to a file named note.txt in your home directory, th…
 ```
 
 `sandbox` is the sandbox's id in Fountain and `sprite` is its name at the
-provider. Then the API, which says where it is. This is the page's
+provider. The `turns` block lists every prompt so far, and `exit=` stays
+blank on a turn that failed before the runtime reported a code, which is
+every turn on a keyless account. Then the API, which says where it is. This is the page's
 command verbatim, with the student's id and the check's `fountain.cli_url`
 substituted.
 
@@ -188,15 +193,15 @@ curl -s -H "Authorization: Bearer $FOUNTAIN_KEY" \
 and sets `$env:FOUNTAIN_KEY` from the match. The curl call itself is
 identical on every OS.)
 
-Write down `sandbox_id` and `path`. 3g compares against both.
+Write down `sandbox_id` and `path`. Every `<path>` below is that value, and 3g compares against both.
 
 ### 3e. Look at the disk
 
 A read command. `just runner-sh` runs a shell command inside the runner
-container. Use the student's own `path` from 3d.
+container.
 
 ```sh
-just runner-sh ls -la /sandboxes/<sprite name>
+just runner-sh ls -la <path>
 ```
 
 ```
@@ -209,7 +214,8 @@ drwxr-xr-x 3 runner runner 4096 Sep  6 21:29 .local
 drwxr-xr-x 4 runner runner 4096 Sep  6 21:29 .npm-global
 ```
 
-Say what is there. `.claude` holds the session transcript the runtime
+`ls` prints a `total` line first, which the listings here drop. Say what
+is there. `.claude` holds the session transcript the runtime
 resumes from, `.env` holds the conversation's own token back to Fountain,
 `.local` holds the runtime binary. This directory is the agent's memory.
 
@@ -218,7 +224,7 @@ agent wrote it in 3c, skip the write. Otherwise **confirm**, then write
 it by hand.
 
 ```sh
-just runner-sh 'echo "remember me" > /sandboxes/<sprite name>/note.txt'
+just runner-sh 'echo "remember me" > <path>/note.txt'
 ```
 
 ### 3f. Wait for the park
@@ -253,14 +259,15 @@ curl -s -H "Authorization: Bearer $FOUNTAIN_KEY" \
 2026-09-06T21:32:33.000000Z sandbox done {"message":"Sandbox suspended after 2 minutes idle. Send another prompt to continue — the agent picks up right where it left off.","reason":"idle","event":"suspended"}
 ```
 
-Walk the student through the last line. Fountain names the bound that
+Walk the student through the last line. The stage is `sandbox`, the state
+is `done`, and what happened is in the data. Fountain names the bound that
 fired, the action it took, and what the next prompt will do, in copy that
 is different on a provider that cannot park. Point out that
 `fountain conv list` still says `idle`, since the conversation did not
 change, the sandbox under it did. Then the disk again, a read command.
 
 ```sh
-just runner-sh ls -la /sandboxes/<sprite name>
+just runner-sh ls -la <path>
 ```
 
 Expect the same listing plus a zero-byte `.fountain-suspended` and the
@@ -283,12 +290,14 @@ fountain conv prompt <id> -p 'Reply with the contents of note.txt in your home d
 fountain: turn failed
 ```
 
-`reattach` where 3c said `provision`. Nothing was built. Run the 3d curl
-again and compare. Same `sandbox_id`, same `path`, `sandbox.status` back
+`reattach` where 3c said `provision`. Nothing was built. In the events the
+`reattach done` line carries `"outcome":"no_running_turn"`, which says no
+turn was in flight when the sandbox parked and is the normal case. Run the
+3d curl again and compare. Same `sandbox_id`, same `path`, `sandbox.status` back
 to `ready`. Then the disk, a read command.
 
 ```sh
-just runner-sh cat /sandboxes/<sprite name>/note.txt
+just runner-sh cat <path>/note.txt
 ```
 
 ```
@@ -330,8 +339,7 @@ The transcript is Fountain's and survives, the disk was the sandbox's and
 does not.
 
 If other students' sandboxes share the runner the listing will not be
-empty. The student's own directory, by the `sprite` name, is the one that
-should be missing.
+empty. The student's own `path` is the one that should be missing.
 
 The Environment and Agent may stay. Nothing later in the course collides
 with these names.
@@ -367,10 +375,18 @@ the lesson card says.
 appending `"f2"` to its `completed` array, keeping everything already in
 it. Do not rewrite the array from scratch, a student who did lesson 1
 should still see `"f1"` in there afterwards. Create the array only if
-the file somehow lacks one. Leave every other field untouched.
+the file lacks one. Leave every other field untouched.
 
 ```json
 {"...": "...", "completed": ["start", "f1", "f2"]}
+```
+
+If the file does not exist, which is the case on a checkout where no
+skill has run yet, create it with the check's `fountain.email` and this
+one lesson.
+
+```json
+{"email": "student@waterpark.local", "completed": ["f2"]}
 ```
 
 ## 6. Hand off

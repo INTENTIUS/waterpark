@@ -35,7 +35,7 @@ activity:
 
 ## Do
 
-Nothing in this lesson needs a model reply. The sandbox provisions, parks and wakes on either side of the model call, and every check is a field on the API or a file on the runner. With an inference key set the turns answer as well and the agent does the writing and the reading itself. Without one they fail at the model, exactly as lesson 3's contrast did, and you do the writing by hand.
+Nothing in this lesson needs a model reply. The sandbox provisions, parks and wakes on either side of the model call, and every check is a field on the API or a file on the runner. With an inference key set the turns answer as well and the agent does the writing and the reading itself. Without one they fail at the model, exactly as lesson 3's contrast did, the commands that run a turn exit non-zero, and you do the writing by hand. `bash skills/start/check.sh doctor` keeps flagging the missing key, and for this lesson that line can be ignored.
 
 1. Confirm your stack carries the bound.
 
@@ -112,9 +112,12 @@ Nothing in this lesson needs a model reply. The sandbox provisions, parks and wa
      sprite:    runner-2ed85f37e61f4a5c91b691dbdab734d6-8430f8fa (ready)
      runtime:   claude
      inserted:  2026-09-06T21:29:32Z
+
+   turns (1):
+     #1 failed exit=  Write the line  remember me  to a file named note.txt in your home directory, th…
    ```
 
-   `sandbox` is the sandbox's id in Fountain and `sprite` is its name at the provider, a word kept from Fountain's first backend. The API says where it is. Substitute the check's `fountain.cli_url` for the host if your stack is not on port 4000.
+   `sandbox` is the sandbox's id in Fountain and `sprite` is its name at the provider, a word kept from Fountain's first backend. The `turns` block lists every prompt so far, and `exit=` stays blank on a turn that failed before the runtime reported a code. The API says where the sandbox is. Substitute your own host if your stack is not on port 4000, the Start-here check prints it as `fountain.cli_url` when you run `bash skills/start/check.sh`.
 
    ```sh
    FOUNTAIN_KEY=$(awk -v p="[${FOUNTAIN_PROFILE:-default}]" '$0==p{f=1;next} /^\[/{f=0} f && $1=="api_key"{gsub(/"/,"",$3); print $3; exit}' ~/.fountain/credentials)
@@ -135,7 +138,7 @@ Nothing in this lesson needs a model reply. The sandbox provisions, parks and wa
    }
    ```
 
-   `path` is a directory in the runner container. Keep this output, you compare `sandbox_id` against it after the wake.
+   `path` is a directory in the runner container. Keep this output, you compare `sandbox_id` against it after the wake. The directory listings below drop the `total` line `ls` prints first.
 
 5. Look at the disk. `just runner-sh` runs a shell command inside the runner container. Use your own path from step 4.
 
@@ -161,7 +164,7 @@ Nothing in this lesson needs a model reply. The sandbox provisions, parks and wa
 
    With a key set the agent wrote `note.txt` itself in step 3, so list first and skip the write if the file is there.
 
-6. Wait. Do nothing to the conversation for three minutes. Fountain checks the idle bound once a minute, so a two-minute bound parks the sandbox two to three minutes after the last turn. Poll the `sprite` line until it reads `(suspended)`.
+6. Wait. Do nothing to the conversation for three minutes. Fountain checks the idle bound once a minute, so a two-minute bound parks the sandbox two to three minutes after the last turn. Poll the `sprite` line every twenty seconds or so until it reads `(suspended)`.
 
    ```sh
    fountain conv show d99d8cb5-b178-4dbf-8f02-a9164fc8040e | grep sprite
@@ -187,7 +190,7 @@ Nothing in this lesson needs a model reply. The sandbox provisions, parks and wa
    2026-09-06T21:32:33.000000Z sandbox done {"message":"Sandbox suspended after 2 minutes idle. Send another prompt to continue — the agent picks up right where it left off.","reason":"idle","event":"suspended"}
    ```
 
-   Read the last line. Fountain names the bound that fired, the action it took, and what the next prompt will do. It would say something else on a provider that cannot park. `fountain conv list` still shows the conversation as `idle`, because the conversation did not change, the sandbox under it did. Now the disk.
+   Read the last line. The stage is `sandbox`, the state is `done`, and what happened is in the data. Fountain names the bound that fired, the action it took, and what the next prompt will do. It would say something else on a provider that cannot park. `fountain conv list` still shows the conversation as `idle`, because the conversation did not change, the sandbox under it did. Now the disk.
 
    ```sh
    just runner-sh ls -la /sandboxes/runner-2ed85f37e61f4a5c91b691dbdab734d6-8430f8fa
@@ -221,7 +224,13 @@ Nothing in this lesson needs a model reply. The sandbox provisions, parks and wa
    fountain: turn failed
    ```
 
-   `reattach`, where step 3 said `provision`. Nothing was built. Run the step 4 query again and compare.
+   `reattach`, where step 3 said `provision`. Nothing was built. In the events the `reattach done` line carries `"outcome":"no_running_turn"`, which says no turn was in flight when the sandbox parked and is the normal case. Run the step 4 query again and compare.
+
+   ```sh
+   curl -s -H "Authorization: Bearer $FOUNTAIN_KEY" \
+     "http://localhost:4000/api/conversations/d99d8cb5-b178-4dbf-8f02-a9164fc8040e" \
+     | jq '.data | {status, sandbox_id, sandbox: {status: .sandbox.status, provider: .sandbox.provider, path: .sandbox.runner.path}}'
+   ```
 
    ```json
    {
@@ -262,7 +271,6 @@ Nothing in this lesson needs a model reply. The sandbox provisions, parks and wa
 
    ```
    terminated d99d8cb5-b178-4dbf-8f02-a9164fc8040e
-   total 8
    drwxr-xr-x 2 runner runner 4096 Sep  6 21:35 .
    drwxr-xr-x 1 root   root   4096 Sep  6 18:52 ..
    ```
