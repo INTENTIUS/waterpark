@@ -30,6 +30,17 @@ that path. Verify the canonical location before a lesson links it.
 
 **Manifest secrets are a map.** `docs/primitives.md` shows `secrets` as a list of `{key, value}`. The server silently drops that form (`secret_count: 0`). The real contract, confirmed against a live v0.12 stack and the CLI tests, is a map (`secrets: {KEY: value}`). The lesson and skill use the map. Worth an upstream doc fix when the repo is reachable.
 
+**Three things seen on the compose stack, 2026-09-05.** The Claude
+runtime refuses fully qualified model ids (`claude-sonnet-4-6`,
+`claude-opus-4-7`, dated ids) at turn time with `Invalid value for config
+option model` and runs on the account default, while the aliases `sonnet`,
+`opus` and `haiku` pass, so the lessons pin aliases. `GET /api/conversations`
+returns `environment_id` null for a conversation whose agent carries the
+environment and whose provision log names it. A user is capped at two
+concurrent sandboxes (`http 429`), and an idle conversation holds its slot
+until `fountain conv terminate`. All three are upstream questions once the
+repo is reachable.
+
 **Two earlier claims corrected.** The demo-era runbook called the
 self-hosted runner "the answer to shared infra"; ADR 0022 says the
 opposite about containment (decision 29). And `design/agentic.md` once
