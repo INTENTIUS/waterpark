@@ -1,0 +1,230 @@
+#!/usr/bin/env bash
+# The drift watch. What the repo declares against what the account holds.
+#
+#   access/scripts/drift            the report as text
+#   access/scripts/drift --json     the same report as JSON
+#   access/scripts/drift --root envs/prod   just one root
+#
+# Exit 0 means every root matches. Exit 2 means at least one moved. Exit 1
+# means the watch itself broke, which is a different thing from drift and is
+# reported as such.
+#
+# The mechanism is terraform plan -detailed-exitcode over every root that
+# applies, and the plan JSON read down to resources and attributes for the
+# report. The live system is the truth (Accessible Ops XI), so this compares
+# declared against live rather than declared against state, and it never
+# treats a clean plan as evidence that nothing happened in between.
+#
+# Two things are drift that a plan alone would not call drift. A grant whose
+# expires has passed is drift, because the cloud has stopped honoring it and
+# the repo still says it exists (prescription 3). And a root that fails to
+# plan at all is drift, because the estate cannot be compared to anything.
+set -uo pipefail
+
+access_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$access_root" || exit 1
+
+as_json=false
+only_root=""
+while [ $# -gt 0 ]; do
+	case "$1" in
+	--json)
+		as_json=true
+		shift
+		;;
+	--root)
+		only_root="${2:-}"
+		shift 2
+		;;
+	*)
+		echo "usage: access/scripts/drift [--json] [--root <dir>]" >&2
+		exit 1
+		;;
+	esac
+done
+
+# Every root that applies. identity/ and github/ are live only and are not on
+# this list, because there is nothing on a laptop for them to have drifted
+# from. A satellite root joins the list by existing.
+roots=""
+add_root() { [ -d "$1" ] && roots="$roots $1"; }
+if [ -n "$only_root" ]; then
+	add_root "$only_root"
+else
+	add_root envs/prod
+	for d in satellites/*/; do
+		[ -f "${d}versions.tf" ] && add_root "${d%/}"
+	done
+fi
+
+[ -n "$roots" ] || {
+	echo "drift: no root to watch" >&2
+	exit 1
+}
+
+floci_endpoint="${FLOCI_ENDPOINT:-http://localhost:4566}"
+if [ "$(curl -s -o /dev/null -m 3 -w '%{http_code}' "$floci_endpoint/" 2>/dev/null)" = "000" ]; then
+	echo "drift: nothing is answering on $floci_endpoint, so there is no live estate to compare against." >&2
+	echo "       docker run -d --name wp-access-floci -p 4566:4566 \\" >&2
+	echo "         -e FLOCI_SERVICES_IAM_ENFORCEMENT_ENABLED=true \\" >&2
+	echo "         ghcr.io/lex00/floci:iam-boundary" >&2
+	exit 1
+fi
+
+work="$(mktemp -d -t wp-drift)"
+trap 'rm -rf "$work"' EXIT
+
+export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID:-test}"
+export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY:-test}"
+export AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION:-us-east-1}"
+
+# Severity routing. A security group or a trust policy that moved is somebody
+# waking up (decision 28 and prescription 12). Everything else is a PR.
+#
+# The reasoning is blast radius rather than resource type for its own sake. A
+# widened security group is reachable from the internet the moment it lands. A
+# changed assume_role_policy changes who may become a principal, which is the
+# one edit that cannot be undone by revoking a grant.
+severity_of() {
+	case "$1" in
+	aws_security_group | aws_vpc_security_group_ingress_rule | aws_vpc_security_group_egress_rule)
+		echo page
+		;;
+	*)
+		echo "$2"
+		;;
+	esac
+}
+
+any_drift=0
+broke=0
+findings="$work/findings.json"
+echo "[]" >"$findings"
+
+append() {
+	jq --argjson f "$1" '. + [$f]' "$findings" >"$findings.new" && mv "$findings.new" "$findings"
+}
+
+for root in $roots; do
+	plan_bin="$work/$(echo "$root" | tr / _).tfplan"
+	plan_json="$work/$(echo "$root" | tr / _).json"
+
+	if ! terraform -chdir="$root" init -input=false -no-color >"$work/init.log" 2>&1; then
+		broke=1
+		append "$(jq -nc --arg r "$root" '{root: $r, kind: "error", severity: "page",
+      address: null, detail: "terraform init failed, so this root cannot be compared to anything"}')"
+		continue
+	fi
+
+	terraform -chdir="$root" plan -detailed-exitcode -refresh=true -input=false -no-color \
+		-out="$plan_bin" >"$work/plan.log" 2>&1
+	code=$?
+
+	case "$code" in
+	0)
+		continue
+		;;
+	2) ;;
+	*)
+		broke=1
+		append "$(jq -nc --arg r "$root" --arg d "$(tail -5 "$work/plan.log" | tr '\n' ' ')" \
+			'{root: $r, kind: "error", severity: "page", address: null, detail: $d}')"
+		continue
+		;;
+	esac
+
+	any_drift=1
+	terraform -chdir="$root" show -json "$plan_bin" >"$plan_json" 2>/dev/null || {
+		broke=1
+		continue
+	}
+
+	# One finding per changed resource, down to the attributes that moved.
+	rows="$(jq -c --arg r "$root" '
+    (.resource_changes // [])[]
+    | select((.change.actions // []) != ["no-op"])
+    | . as $c
+    | ($c.change.before // {}) as $b
+    | ($c.change.after // {}) as $a
+    | {
+        root: $r,
+        kind: "drift",
+        address: $c.address,
+        type: $c.type,
+        actions: $c.change.actions,
+        attributes: [
+          ( ($b | keys? // []) + ($a | keys? // []) | unique )[]
+          | . as $k
+          | select(($b[$k] // null) != ($a[$k] // null))
+          | { attribute: $k, declared: ($a[$k] // null), live: ($b[$k] // null) }
+        ]
+      }
+  ' "$plan_json")"
+
+	while IFS= read -r row; do
+		[ -n "$row" ] || continue
+		rtype="$(printf '%s' "$row" | jq -r .type)"
+		base="pr"
+		if printf '%s' "$row" | jq -e '.attributes[] | select(.attribute == "assume_role_policy")' >/dev/null 2>&1; then
+			base="page"
+		fi
+		sev="$(severity_of "$rtype" "$base")"
+		append "$(printf '%s' "$row" | jq -c --arg s "$sev" '. + {severity: $s}')"
+	done <<EOF
+$rows
+EOF
+
+	# Expired grants. The persona module exports every grant with its expiry,
+	# and a grant whose DateLessThan has passed grants nothing while the repo
+	# still says it does (decision 45, prescription 3).
+	now="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+	expired="$(terraform -chdir="$root" output -json grants 2>/dev/null |
+		jq -c --arg now "$now" --arg r "$root" '
+      if . == null then empty else
+      to_entries[]
+      | .key as $p
+      | (.value // {}) | to_entries[]
+      | select(.value.expires != null and .value.expires < $now)
+      | { root: $r, kind: "expired-grant", severity: "pr",
+          address: ("grant " + $p + " " + .key),
+          type: "grant", actions: ["expired"],
+          attributes: [{ attribute: "expires", declared: .value.expires, live: "past" }] }
+      end' 2>/dev/null)"
+
+	while IFS= read -r row; do
+		[ -n "$row" ] || continue
+		any_drift=1
+		append "$row"
+	done <<EOF
+$expired
+EOF
+done
+
+if [ "$as_json" = true ]; then
+	jq -n --slurpfile f "$findings" --arg at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+		'{ detected_at: $at, findings: $f[0] }'
+else
+	count="$(jq 'length' "$findings")"
+	pages="$(jq '[.[] | select(.severity == "page")] | length' "$findings")"
+	echo "drift report, $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+	echo
+	if [ "$count" -eq 0 ]; then
+		echo "  every watched root matches the account"
+	else
+		jq -r '
+      .[]
+      | "  [" + .severity + "] " + .root + "  " + (.address // "the root itself"),
+        (if (.actions // []) | length > 0 then "      " + ((.actions // []) | join(", ")) else empty end),
+        ((.attributes // [])[] | "      " + .attribute
+           + "\n        declared " + ((.declared // "absent") | tostring)
+           + "\n        live     " + ((.live // "absent") | tostring)),
+        (if .detail then "      " + .detail else empty end),
+        ""
+    ' "$findings"
+		echo "  $count finding(s), $pages of them paging"
+	fi
+fi
+
+[ "$broke" -eq 1 ] && exit 1
+[ "$any_drift" -eq 1 ] && exit 2
+exit 0

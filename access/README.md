@@ -452,3 +452,124 @@ required status check, one required review, code-owner review required, no
 force push and no exemption for administrators. It is live only, the same way
 `identity/` is, because there is no emulator for a code host. See
 [github](github/README.md).
+
+## Lesson 7, drift
+
+The estate is what the account holds, not what the repo says, and the gap
+between the two has a name.
+
+```
+.github/
+  workflows/
+    drift.yml    weekdays at 06:00 UTC, and on demand
+access/
+  scripts/
+    drift        declared against live, over every root that applies
+    reconcile    a drift report to reconcile PRs, under Rounds rules
+    README.md    the asymmetry, and where each rule is enforced
+```
+
+`drift` runs `terraform plan -detailed-exitcode` over every root that
+applies, which is `envs/prod` and any satellite root that exists. Exit 0
+means every root matches, exit 2 means at least one moved, and exit 1 means
+the watch itself broke, which is a different thing and is reported as such.
+`identity/` and `github/` are not on the list, because there is nothing on a
+laptop for them to have drifted from.
+
+The plan JSON is read down to resources and attributes, so a finding names
+the attribute and prints what the repo declares beside what the account
+holds. Expired grants come through the same run, read from the persona
+module's `grants` output, because a grant whose `DateLessThan` has passed
+grants nothing while the repo still says it exists.
+
+Severity routes on blast radius. A security group or a changed
+`assume_role_policy` is `page`, because a widened group is reachable the
+moment it lands and a changed trust policy changes who may become a principal,
+which revoking a grant cannot undo. Everything else is `pr`.
+
+### The walkthrough
+
+Start from an applied estate.
+
+```sh
+terraform -chdir=access/envs/prod apply -auto-approve
+access/scripts/drift
+```
+
+That exits 0 and says every watched root matches. Now move the account
+underneath it, the way a person in a console would.
+
+```sh
+export AWS_ACCESS_KEY_ID=test AWS_SECRET_ACCESS_KEY=test AWS_DEFAULT_REGION=us-east-1
+
+aws --endpoint-url http://localhost:4566 iam detach-role-policy \
+  --role-name site-publisher \
+  --policy-arn arn:aws:iam::000000000000:policy/site-publisher-read-waterpark-artifacts
+
+aws --endpoint-url http://localhost:4566 iam tag-role \
+  --role-name runner-builder --tags Key=owner,Value=intruder
+```
+
+Run the watch again.
+
+```sh
+access/scripts/drift
+echo $?
+```
+
+Exit 2, and two findings. The detached policy comes back as an attachment
+that will be created, with `policy_arn` declared and `absent` live. The
+retagged role comes back as an update on `tags`, with `owner` reading
+`platform` in the repo and `intruder` in the account. Both are `pr`, because
+neither is a security group or a trust policy.
+
+Then the reconcile plan.
+
+```sh
+access/scripts/reconcile --dry-run
+```
+
+One PR per resource, so two here, each on a branch derived from the resource
+address, neither of them opened. The dry run is the default and it says so at
+the end. `--open` with an authenticated `gh` is what files them.
+
+Widen a trust policy instead and watch the routing change.
+
+```sh
+aws --endpoint-url http://localhost:4566 iam update-assume-role-policy \
+  --role-name desk-operator \
+  --policy-document '{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":{"AWS":"*"},"Action":"sts:AssumeRole"}]}'
+
+access/scripts/drift --json | jq -c '.findings[] | {severity, address}'
+access/scripts/reconcile --dry-run
+```
+
+The trust finding is `page` and `reconcile` refuses to file it as paperwork.
+It prints it for a human instead.
+
+Put the account back.
+
+```sh
+terraform -chdir=access/envs/prod apply -auto-approve
+access/scripts/drift
+```
+
+### What the scheduled job proves, and what it does not
+
+`.github/workflows/drift.yml` runs weekdays at 06:00 UTC, the same cron the
+desk teammate runs on, and on demand. It starts an empty Floci, applies the
+estate into it, and asks whether the estate matches. It always does, because
+nothing else has touched that container. So a green run means the declared
+estate converges and stays converged, and it means nothing about a real
+account, where drift comes from a human in a console. The lesson seeds the
+drift by hand for exactly that reason, and the job says so in its own
+summary.
+
+### Restoring is automatic, adopting is not
+
+A reconcile PR carries no file change. The repo already says what the
+resource should be, so merging it is what runs the apply that puts the
+account back. If the change in the account was the right one, the PR is not
+merged and a human edits the file that declares the resource. That
+asymmetry is deliberate and it is written out in
+[scripts](scripts/README.md).
