@@ -44,6 +44,11 @@ services:
       SANDBOX_PROVIDER: ${SANDBOX_PROVIDER:-runner}
       SANDBOX_RUNNERS_ENABLED: "true"
       SPRITES_TOKEN: ${SPRITES_TOKEN:-}
+      # the sandbox lifecycle bounds (ADR 0017). Fountain's own defaults are 60 minutes idle and
+      # 24 hours lifetime. the class default parks an idle sandbox after 2 minutes so lesson 2 can
+      # watch it happen. a parked sandbox keeps its disk and wakes on the next prompt
+      SANDBOX_IDLE_TIMEOUT_MINUTES: ${SANDBOX_IDLE_TIMEOUT_MINUTES:-2}
+      SANDBOX_MAX_LIFETIME_HOURS: ${SANDBOX_MAX_LIFETIME_HOURS:-24}
       BILLING_ENABLED: "false"
     healthcheck:
       # the release image has bash but no curl or wget. a TCP connect is enough for "up"

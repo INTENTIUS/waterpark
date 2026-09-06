@@ -17,7 +17,7 @@ that path. Verify the canonical location before a lesson links it.
 | Surface | Lesson | Fact |
 |---|---|---|
 | Four primitives; `fountain apply -f` over `apiVersion: fountain.dev/v1` | F1 | Environment, Vault, Agent, Conversation; secrets write-only; `env_vars` plain |
-| Sandbox lifecycle | F2 | idle suspend (default 60 min) keeps the disk; max lifetime (default 24 h) destroys it; conversation stays resumable either way |
+| Sandbox lifecycle | F2 | idle suspend (default 60 min) keeps the disk; max lifetime (default 24 h) destroys it; conversation stays resumable either way. On the runner a suspend leaves the directory with a `.fountain-suspended` marker and the wake reattaches to the same sandbox id, the bound is checked once a minute, and `fountain conv terminate` removes the directory (verified 2026-09-06 with `SANDBOX_IDLE_TIMEOUT_MINUTES=2`) |
 | `networking_type: limited` + `allowed_hosts` | F3 | default-deny egress allowlist, empty list denies all. Sprites, E2B and Daytona advertise the capability, the runner does not, and Fountain refuses a limited environment on a backend that lacks it rather than running it open (verified 2026-09-06) |
 | Vault bound per conversation at creation; vault wins on collision; `allowed_environment_ids` / `allowed_vault_ids` | F4 | Mend's credential split depends on it |
 | Team page; teammate = conversation on `fountain:team`; presence; `/api/team/stream` | F5 | one thread per agent; remove terminates and unbinds |

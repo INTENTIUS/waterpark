@@ -129,6 +129,10 @@ down:
 down-all:
     docker compose -f compose/docker-compose.yml --env-file compose/.env --profile runner down -v
 
+# Run a shell command in the runner container, where each sandbox is a directory under /sandboxes
+runner-sh +cmd:
+    @docker compose -f compose/docker-compose.yml --env-file compose/.env --profile runner exec runner sh -c '{{cmd}}'
+
 # Tail the local stack's logs
 logs:
     docker compose -f compose/docker-compose.yml --env-file compose/.env --profile runner logs -f --tail=50

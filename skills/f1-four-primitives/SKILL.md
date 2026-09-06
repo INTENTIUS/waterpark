@@ -213,5 +213,5 @@ somehow lacks one). Leave every other field in the file untouched.
 
 Say the next step is Fountain lesson 2, the sandbox lifecycle
 (https://intentius.io/waterpark/courses/fountain/02-sandbox-lifecycle/),
-which picks up the conversation this lesson just started and follows it
-through suspend, wake and the max-lifetime ceiling.
+which starts a conversation of its own and follows its sandbox through a
+park, a wake and a terminate, with the disk on view the whole way.

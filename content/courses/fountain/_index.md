@@ -15,7 +15,7 @@ summary: "The agent side. Primitives, lifecycle, egress, credentials, the team, 
 
 Eleven lessons take an Environment, an Agent and a Conversation from a single apply to a team you can talk to.
 
-Four primitives opens the CLI and shows what those objects hold. The sandbox lifecycle follows one conversation from a fresh sandbox to suspension and back, and traces what survives a restart. The egress allowlist locks a sandbox down to named hosts, and a backend that cannot hold the lock gets refused. Credentials and vaults cover the two places secrets live and which one wins when both set the same key.
+Four primitives opens the CLI and shows what those objects hold. The sandbox lifecycle follows one conversation from a fresh sandbox to suspension and back, and shows what a park keeps and what a destroy takes. The egress allowlist locks a sandbox down to named hosts, and a backend that cannot hold the lock gets refused. Credentials and vaults cover the two places secrets live and which one wins when both set the same key.
 
 The team turns a conversation into a teammate with its own thread, and schedules puts a cron on top of it so the teammate speaks without being asked. Driving an agent from an app leaves the web UI behind and calls the same API from your own code.
 
