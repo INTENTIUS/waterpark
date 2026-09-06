@@ -36,8 +36,7 @@ access/                                          the HCL root, top level in this
   envs/
     prod/
       main.tf                                    provider, backend, locals
-      iam_role.site_publisher.tf                 one resource
-      iam_policy.site_publisher_read_artifacts.tf
+      iam_role.site_publisher.tf                 one module call to modules/persona, which renders the grant policy (decision 45)
       s3_bucket.waterpark_artifacts.tf
       ecr_repository.waterpark_runner.tf
     dev/                                         the same shapes, no traffic
@@ -45,8 +44,7 @@ access/                                          the HCL root, top level in this
     iam_policy.boundary.tf
     security_group.default_deny.tf
   identity/
-    sso_permission_set.course_author.tf
-    sso_assignment.course_author_prod.tf
+    ssoadmin_permission_set.course_author.tf     one module call, permission set and assignment together (decision 44)
   modules/
     workload_role/                               boundary, marker and naming, applied for you
   scripts/
@@ -106,10 +104,10 @@ aws-state   {"fetched_at":…,"complete":false,
                                           "type":"aws_iam_role","id":"…"}]}]}
 aws-plan    {"id":"plan-7f3a","workspace":"prod","mode":"repo",
              "changes":[{"action":"update","replace":false,
-                         "address":"aws_iam_policy.site_publisher_read_artifacts"}],
+                         "address":"module.site_publisher.aws_iam_policy.grant[\"read-waterpark_artifacts\"]"}],
              "delta":"grants s3:GetObject on waterpark-artifacts to site-publisher",
              "proofs":[{"check":"CheckNoNewAccess","result":"FAIL","reason":"new access: s3:GetObject"}],
-             "files":["access/envs/prod/iam_policy.site_publisher_read_artifacts.tf"],
+             "files":["access/envs/prod/iam_role.site_publisher.tf"],
              "diff":"…unified diff of the file edit…","digest":"sha256:…"}
 aws-result  {"plan_id":"plan-7f3a","status":"pr-opened"|"applied"|"refused"|"stale",
              "detail":"https://github.com/…/pull/42"|"Apply complete"|"…"}
