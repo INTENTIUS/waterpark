@@ -18,8 +18,8 @@ that path. Verify the canonical location before a lesson links it.
 |---|---|---|
 | Four primitives; `fountain apply -f` over `apiVersion: fountain.dev/v1` | F1 | Environment, Vault, Agent, Conversation; secrets write-only; `env_vars` plain |
 | Sandbox lifecycle | F2 | idle suspend (default 60 min) keeps the disk; max lifetime (default 24 h) destroys it; conversation stays resumable either way |
-| `networking_type: limited` + `allowed_hosts`; vault wins on collision; `allowed_environment_ids` / `allowed_vault_ids` | F3 | default-deny egress allowlist; empty list denies all |
-| Vault bound per conversation at creation | F4 | Mend's credential split depends on it |
+| `networking_type: limited` + `allowed_hosts` | F3 | default-deny egress allowlist, empty list denies all. Sprites, E2B and Daytona advertise the capability, the runner does not, and Fountain refuses a limited environment on a backend that lacks it rather than running it open (verified 2026-09-06) |
+| Vault bound per conversation at creation; vault wins on collision; `allowed_environment_ids` / `allowed_vault_ids` | F4 | Mend's credential split depends on it |
 | Team page; teammate = conversation on `fountain:team`; presence; `/api/team/stream` | F5 | one thread per agent; remove terminates and unbinds |
 | Team schedules (#825): `POST /api/team/:agent_id/schedules`, `run now`, `schedule` stream event | F6 | cron 5 fields UTC; `one_off`, `enabled`; `last_run_at`, `last_error` |
 | Sign in with Fountain (OAuth code + PKCE; token is an API key); `API_CORS_ORIGINS`; `OAUTH_CLIENTS` | F7 | the pattern every external app uses |
