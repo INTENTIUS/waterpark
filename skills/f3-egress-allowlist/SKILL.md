@@ -52,9 +52,9 @@ false, say `just runner` starts it and wait.
 Do **not** require `inference_set`, and do not send the student back to
 Start here step 7 if it is false. Both halves of this lesson finish
 before a model is called. The locked environment fails at provisioning,
-and the unrestricted contrast only needs the sandbox to start. This is
-the one lesson in the course a student can complete with no key set, and
-it is worth telling them so. Never ask the student for an inference key
+and the unrestricted contrast only needs the sandbox to start. Lessons 2
+and 3 are the ones a student can complete with no key set, and it is
+worth telling them so. Never ask the student for an inference key
 and never go looking for one.
 
 Note the check's `fountain.cli_url`. Every command below that names a
