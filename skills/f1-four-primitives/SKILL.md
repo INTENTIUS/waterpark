@@ -3,7 +3,7 @@ name: waterpark-f1-four-primitives
 description: Walk a student through Fountain lesson 1, Four primitives. Use when they finished Start here and want lesson 1. Writes a three-document manifest (Environment, Agent, Vault), applies it, starts a conversation, and checks idempotence.
 ---
 
-# water park, Fountain lesson 1: Four primitives
+# water park, Fountain lesson 1, Four primitives
 
 You are walking a student through Fountain lesson 1, Four primitives
 (https://intentius.io/waterpark/courses/fountain/01-four-primitives/). The
