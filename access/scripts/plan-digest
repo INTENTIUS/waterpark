@@ -1,0 +1,70 @@
+#!/usr/bin/env bash
+# The digest a reviewer's approval binds to (decisions 24 and 35).
+#
+#   access/scripts/plan-digest plan.json          print sha256:<hex>
+#   access/scripts/plan-digest --normalise p.json print the normalised plan
+#
+# A saved plan is a binary blob whose bytes move for reasons nobody approved,
+# so the digest is taken over a normalised reading of it rather than over the
+# file. Normalised means the resource changes, sorted by address, each reduced
+# to the address, the actions and the after-value, with the timestamp, the
+# provider versions and the prior state dropped.
+#
+# What that buys. Two runs of the same plan against the same estate produce
+# the same digest, and any change to what would actually be created, changed
+# or destroyed produces a different one. The apply job compares the digest it
+# computes against the digest the PR job recorded and refuses on a mismatch,
+# which is prescription 14's half of one path to prod.
+set -uo pipefail
+
+usage() {
+	echo "usage: access/scripts/plan-digest [--normalise] <plan.json>" >&2
+	exit 2
+}
+
+normalise_only=false
+case "${1:-}" in
+--normalise)
+	normalise_only=true
+	shift
+	;;
+-*) usage ;;
+esac
+
+plan_json="${1:-}"
+[ -n "$plan_json" ] || usage
+[ -f "$plan_json" ] || {
+	echo "plan-digest: no such plan JSON: $plan_json" >&2
+	exit 1
+}
+
+normalised="$(jq -S '{
+  format_version: .format_version,
+  resource_changes: [
+    (.resource_changes // [])[]
+    | select((.change.actions // []) != ["no-op"])
+    | {
+        address: .address,
+        type: .type,
+        actions: .change.actions,
+        after: .change.after,
+        after_unknown: .change.after_unknown
+      }
+  ] | sort_by(.address)
+}' "$plan_json")" || {
+	echo "plan-digest: $plan_json is not plan JSON. Produce it with: terraform show -json tfplan" >&2
+	exit 1
+}
+
+if [ "$normalise_only" = true ]; then
+	printf '%s\n' "$normalised"
+	exit 0
+fi
+
+if command -v sha256sum >/dev/null 2>&1; then
+	hex="$(printf '%s' "$normalised" | sha256sum | cut -d' ' -f1)"
+else
+	hex="$(printf '%s' "$normalised" | shasum -a 256 | cut -d' ' -f1)"
+fi
+
+printf 'sha256:%s\n' "$hex"

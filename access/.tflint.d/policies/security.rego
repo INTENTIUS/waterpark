@@ -31,6 +31,7 @@ owner_tagged_types := {
 	"aws_s3_bucket",
 	"aws_ecr_repository",
 	"aws_ssoadmin_permission_set",
+	"aws_iam_openid_connect_provider",
 }
 
 open_cidrs := {"0.0.0.0/0", "::/0"}
@@ -134,6 +135,27 @@ deny_boundary_required contains issue if {
 			[r.name],
 		),
 		r.decl_range,
+	)
+}
+
+# The same rule over a principal file, which holds a module call rather than a
+# raw role. tflint reads the calling directory only, so without this clause a
+# leaf file could drop the boundary line and nothing would fire until IAM
+# refused the call at apply. That is the build half of the double refusal
+# (prescription 8), and a satellite is exactly where it has to hold.
+#
+# A principal file is recognised by the promise the layout already makes.
+# iam_role.<label>.tf holds the call that produces aws_iam_role.<label>.
+deny_boundary_required contains issue if {
+	some m in terraform.module_calls({"permissions_boundary": "string"}, {"expand_mode": "none"})
+	regex.match(`(^|/)iam_role\.[a-z0-9_]+\.tf$`, m.decl_range.filename)
+	not m.config.permissions_boundary
+	issue := tflint.issue(
+		sprintf(
+			"module %q declares a role and names no permissions_boundary. Add permissions_boundary = module.baseline.boundary_arn, or the central boundary ARN a satellite consumes, so the role cannot be made more powerful than the estate allows.",
+			[m.name],
+		),
+		m.decl_range,
 	)
 }
 

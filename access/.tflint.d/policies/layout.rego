@@ -13,7 +13,26 @@ base_name(path) := parts[count(parts) - 1] if {
 	parts := split(path, "/")
 }
 
-expected_file(r) := sprintf("%s.%s.tf", [trim_prefix(r.type, "aws_"), r.name])
+# A file name drops the provider prefix from the resource type, so
+# aws_iam_role lives in iam_role.<label>.tf and github_branch_protection in
+# branch_protection.<label>.tf. The prefixes are listed rather than guessed,
+# because a type whose first word happens to look like a provider would
+# otherwise get a name nobody could predict.
+provider_prefixes := ["aws_", "github_"]
+
+short_type(t) := s if {
+	some p in provider_prefixes
+	startswith(t, p)
+	s := trim_prefix(t, p)
+}
+
+short_type(t) := t if {
+	every p in provider_prefixes {
+		not startswith(t, p)
+	}
+}
+
+expected_file(r) := sprintf("%s.%s.tf", [short_type(r.type), r.name])
 
 deny_one_type_per_file contains issue if {
 	some r in layout_resources

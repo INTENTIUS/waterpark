@@ -1,0 +1,208 @@
+#!/usr/bin/env bash
+# The proof checks. Access Analyzer is asked whether the policies this plan
+# would write are well formed, whether they grant access the base branch did
+# not, and whether they reach any of the actions the estate boundary forbids.
+#
+#   access/scripts/proofs plan.json                  run every proof
+#   access/scripts/proofs --base base-plan.json plan.json   include no-new-access
+#   access/scripts/proofs --live plan.json           talk to a real account
+#
+# Three APIs, and none of them is part of any toolchain (decision 31).
+#
+#   validate-policy           is the document well formed and free of findings
+#   check-no-new-access       does it grant more than the policy it replaces
+#   check-access-not-granted  does it reach anything in forbidden_actions
+#
+# The forbidden list is read from access/baseline rather than restated here,
+# so the boundary and the proof cannot drift apart.
+#
+# Floci does not answer these. The patched build lists accessanalyzer among
+# its services, and validate-policy, check-no-new-access and
+# check-access-not-granted all return UnknownOperationException, so on the
+# solo path this script prints one named skip line and exits 0. The lesson
+# records one real-account run instead of pretending the emulator ran it.
+# That is decision 27's honesty line, standing in a script rather than in a
+# page.
+set -uo pipefail
+
+access_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+endpoint="${FLOCI_ENDPOINT:-http://localhost:4566}"
+live=false
+base_json=""
+plan_json=""
+
+while [ $# -gt 0 ]; do
+	case "$1" in
+	--live)
+		live=true
+		shift
+		;;
+	--base)
+		base_json="${2:-}"
+		shift 2
+		;;
+	-*)
+		echo "usage: access/scripts/proofs [--live] [--base <base-plan.json>] <plan.json>" >&2
+		exit 2
+		;;
+	*)
+		plan_json="$1"
+		shift
+		;;
+	esac
+done
+
+[ -n "$plan_json" ] && [ -f "$plan_json" ] || {
+	echo "usage: access/scripts/proofs [--live] [--base <base-plan.json>] <plan.json>" >&2
+	exit 2
+}
+
+analyzer() {
+	if [ "$live" = true ]; then
+		aws accessanalyzer "$@"
+	else
+		AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID:-test}" \
+			AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY:-test}" \
+			AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION:-us-east-1}" \
+			aws --endpoint-url "$endpoint" accessanalyzer "$@"
+	fi
+}
+
+failures=0
+say() { printf '%s\n' "$*"; }
+ok() { printf 'ok    %s\n' "$*"; }
+fail() {
+	printf 'FAIL  %s\n' "$*"
+	failures=$((failures + 1))
+}
+
+# Does the API answer at all. One cheap call, and its exact refusal decides
+# whether the rest runs or is skipped by name.
+probe="$(analyzer validate-policy --policy-type IDENTITY_POLICY \
+	--policy-document '{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Action":"s3:GetObject","Resource":"*"}]}' 2>&1)"
+probe_code=$?
+
+if [ "$probe_code" -ne 0 ]; then
+	reason="$(printf '%s' "$probe" | tr '\n' ' ' | sed 's/  */ /g')"
+	say "skip  Access Analyzer did not answer, so no proof ran and none is claimed."
+	if printf '%s' "$probe" | grep -q UnknownOperationException; then
+		say "      Floci lists accessanalyzer and implements none of the policy APIs."
+		say "      Verified on ghcr.io/lex00/floci:iam-boundary, 2026-09-05."
+	else
+		say "      $reason"
+	fi
+	say "      Run this against a real account for the verdict:"
+	say "        access/scripts/proofs --live tfplan.json"
+	exit 0
+fi
+
+say "== validate-policy"
+
+# One line per changed policy document, address then a tab then the document
+# as a JSON string. A file rather than an array, because the class runs on
+# macOS where bash is 3.2 and mapfile does not exist.
+docs_file="$(mktemp -t wp-proofs)"
+trap 'rm -f "$docs_file"' EXIT
+
+jq -r '
+  (.resource_changes // [])[]
+  | select(.type == "aws_iam_policy")
+  | select((.change.actions // []) != ["no-op"])
+  | select(.change.after.policy != null)
+  | .address + "\t" + (.change.after.policy | tojson)
+' "$plan_json" >"$docs_file"
+
+if [ ! -s "$docs_file" ]; then
+	say "      no policy document changes in this plan"
+fi
+
+while IFS= read -r row; do
+	[ -n "$row" ] || continue
+	addr="${row%%$'\t'*}"
+	doc="$(printf '%s' "${row#*$'\t'}" | jq -r .)"
+	out="$(analyzer validate-policy --policy-type IDENTITY_POLICY --policy-document "$doc" 2>&1)"
+	if [ $? -ne 0 ]; then
+		printf '%s\n' "$out"
+		fail "validate-policy errored on $addr"
+		continue
+	fi
+	errors="$(printf '%s' "$out" | jq -r '[.findings[]? | select(.findingType == "ERROR" or .findingType == "SECURITY_WARNING")] | length')"
+	if [ "${errors:-0}" -gt 0 ]; then
+		printf '%s' "$out" | jq -r '.findings[] | "      " + .findingType + " " + .issueCode + ": " + .findingDetails'
+		fail "validate-policy found $errors finding(s) on $addr"
+	else
+		ok "$addr"
+	fi
+done <"$docs_file"
+
+say "== check-access-not-granted, against the boundary's forbidden list"
+access_arg="$(sed -n '/forbidden_actions = \[/,/^  \]/p' "$access_root/baseline/locals.tf" |
+	grep -o '"[^"]*"' | tr -d '"' | jq -R . | jq -sc '[{actions: .}]')"
+
+if [ "$(printf '%s' "$access_arg" | jq -r '.[0].actions | length')" = "0" ]; then
+	fail "could not read forbidden_actions from access/baseline/locals.tf"
+else
+	while IFS= read -r row; do
+		[ -n "$row" ] || continue
+		addr="${row%%$'\t'*}"
+		doc="$(printf '%s' "${row#*$'\t'}" | jq -r .)"
+		out="$(analyzer check-access-not-granted --policy-type IDENTITY_POLICY \
+			--policy-document "$doc" --access "$access_arg" 2>&1)"
+		result="$(printf '%s' "$out" | jq -r '.result // "ERROR"' 2>/dev/null || echo ERROR)"
+		case "$result" in
+		PASS) ok "$addr reaches nothing the boundary forbids" ;;
+		FAIL)
+			printf '%s' "$out" | jq -r '.reasons[]? | "      " + .description'
+			fail "$addr reaches an action the estate boundary forbids"
+			;;
+		*)
+			printf '%s\n' "$out"
+			fail "check-access-not-granted errored on $addr"
+			;;
+		esac
+	done <"$docs_file"
+fi
+
+if [ -n "$base_json" ] && [ -f "$base_json" ]; then
+	say "== check-no-new-access, against the base branch"
+	while IFS= read -r row; do
+		[ -n "$row" ] || continue
+		addr="${row%%$'\t'*}"
+		doc="$(printf '%s' "${row#*$'\t'}" | jq -r .)"
+		before="$(jq -r --arg a "$addr" '
+      (.resource_changes // [])[] | select(.address == $a)
+      | .change.after.policy // empty' "$base_json")"
+		if [ -z "$before" ]; then
+			say "      $addr is new on this branch, so there is nothing to compare it to"
+			continue
+		fi
+		out="$(analyzer check-no-new-access --policy-type IDENTITY_POLICY \
+			--new-policy-document "$doc" --existing-policy-document "$before" 2>&1)"
+		result="$(printf '%s' "$out" | jq -r '.result // "ERROR"' 2>/dev/null || echo ERROR)"
+		case "$result" in
+		PASS) ok "$addr grants nothing the base branch did not" ;;
+		FAIL)
+			printf '%s' "$out" | jq -r '.reasons[]? | "      " + .description'
+			# New access is usually the point of the PR. It is reported in
+			# words for the reviewer rather than failing the job.
+			say "note  $addr grants new access. That is what the reviewer is approving."
+			;;
+		*)
+			printf '%s\n' "$out"
+			fail "check-no-new-access errored on $addr"
+			;;
+		esac
+	done <"$docs_file"
+else
+	say "== check-no-new-access"
+	say "      skip, no base plan given. Pass --base with the base branch's plan JSON."
+fi
+
+say
+if [ "$failures" -eq 0 ]; then
+	say "proofs passed"
+	exit 0
+fi
+say "proofs failed, $failures problem(s)"
+exit 1

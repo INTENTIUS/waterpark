@@ -1,0 +1,13 @@
+# team name in a principal file : the GitHub handle that reviews for it.
+#
+# A leaf file's teams are estate names, because the estate is not a GitHub
+# concept and a team can outlive the code host. This file is the one place
+# the two vocabularies meet, so moving to another host is an edit here rather
+# than a sweep through every principal file.
+#
+# A team named in a principal file and missing here is a hard failure in
+# access/scripts/gen-codeowners, because silently routing a team's access to
+# nobody is worse than not generating the file at all.
+
+platform: @INTENTIUS/platform
+course: @INTENTIUS/course-authors

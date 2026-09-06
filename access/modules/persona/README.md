@@ -33,6 +33,24 @@ grant never restates it and no leaf file can forget it. The ARN comes from
 `access/baseline`, which is one boundary for the whole estate (decision 36).
 It is null only in a sandbox, which carries no boundary at all.
 
+## Two trust shapes
+
+A workload role is trusted either by service principal or by a declared OIDC
+provider, and nothing in the module lets it be both. `trusted_services` is
+the default and is what a role running inside AWS uses. `federated_trust` is
+what a job running outside AWS uses, and it takes the provider ARN, the
+issuer host, the audience and the exact subjects.
+
+The subject is spelled out rather than matched, and the module refuses a `*`
+in one, because a wildcard `sub` claim trusts every repository the issuer
+serves rather than the one workload it was meant for. The issuer host is a
+field rather than a slice of the provider ARN, because the ARN is not known
+until the provider is created and a trust policy that reads "known after
+apply" is a trust policy nobody reviewed.
+
+The apply role in lesson 6 is the worked example. Federation trust in general
+is lesson 9.
+
 ## Grants
 
 A grant is a typed access level against a resource with an optional expiry

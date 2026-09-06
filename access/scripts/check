@@ -1,10 +1,16 @@
 #!/usr/bin/env bash
 # Everything a PR job would run over access/, in the order it runs it.
 #
-#   access/scripts/check            format, validate, lint, fixtures, plan
-#   access/scripts/check lint       just tflint over the real roots
-#   access/scripts/check fixtures   just the rule fixtures
-#   access/scripts/check plan       just the credential-free plan against Floci
+#   access/scripts/check              the whole stack, in the order CI runs it
+#   access/scripts/check lint         just tflint over the real roots
+#   access/scripts/check fixtures     just the rule fixtures
+#   access/scripts/check codeowners   just the generated CODEOWNERS comparison
+#   access/scripts/check workflow     just the fork-PR property over the workflow
+#   access/scripts/check plan         just the credential-free plan against Floci
+#
+# One option, and it changes what a non-empty plan means.
+#
+#   access/scripts/check --plan-mode ci
 #
 # The same command runs in the editor, from an agent and in CI, and produces
 # the same diagnostic. That is prescription 4.
@@ -17,10 +23,13 @@ export TFLINT_OPA_POLICY_DIR="$access_root/.tflint.d/policies"
 tflint_config="$access_root/.tflint.hcl"
 
 # The Terraform roots and modules the checks cover. envs/dev is a README
-# until a lesson needs it.
+# until a lesson needs it. identity and github are live only and are checked
+# here on every run, because a rule that is not checked is a rule that has
+# already drifted.
 roots=(
 	envs/prod
 	identity
+	github
 	baseline
 	modules/persona
 )
@@ -129,6 +138,85 @@ run_fixtures() {
 	done
 }
 
+# CODEOWNERS is generated, not authored (decision 21). This stage is what
+# makes that true rather than aspirational, because a hand edit to the routing
+# is otherwise the quietest possible way to change who approves access.
+run_codeowners() {
+	say "== generated CODEOWNERS"
+	if "$access_root/scripts/gen-codeowners" --check; then
+		ok ".github/CODEOWNERS matches the principal files"
+	else
+		fail ".github/CODEOWNERS was hand edited or a principal file moved"
+	fi
+}
+
+# Prescription 6's test, as a grep rather than as a promise. A fork PR must
+# not be able to reach a credentialed job, and there are exactly two ways this
+# workflow could stop being true: a job that runs on pull_request naming a
+# secret, or one asking for id-token: write to federate into a cloud.
+#
+# The reading is deliberately blunt. Any job that is not gated to push is
+# treated as reachable from a pull request, because that is what GitHub does.
+run_workflow() {
+	say "== the fork-PR property"
+	local wf="$access_root/../.github/workflows/access.yml"
+	if [ ! -f "$wf" ]; then
+		fail "no .github/workflows/access.yml to check"
+		return
+	fi
+
+	if ! sed -n '/^on:/,/^[a-z]/p' "$wf" | grep -q 'pull_request'; then
+		ok "the workflow does not run on pull_request at all"
+		return
+	fi
+
+	# Split into job blocks. A job key sits at two spaces under jobs:, and its
+	# block runs to the next one.
+	local blocks
+	blocks="$(awk '
+		/^jobs:/ { injobs = 1; next }
+		injobs && /^[^[:space:]#]/ { injobs = 0 }
+		injobs && /^  [a-zA-Z0-9_-]+:/ { name = $1; sub(/:$/, "", name); print "@@job@@" name }
+		injobs { print }
+	' "$wf")"
+
+	local job="" gated=0 bad=0 seen=0
+	local line
+	while IFS= read -r line; do
+		case "$line" in
+		"@@job@@"*)
+			job="${line#@@job@@}"
+			gated=0
+			seen=$((seen + 1))
+			continue
+			;;
+		esac
+		case "$line" in
+		*"github.event_name == 'push'"*) gated=1 ;;
+		esac
+		if [ "$gated" -eq 0 ] && [ -n "$job" ]; then
+			case "$line" in
+			*'secrets.'*)
+				fail "job $job runs on pull_request and names a secret"
+				bad=1
+				;;
+			*'id-token:'*'write'*)
+				fail "job $job runs on pull_request and asks for id-token: write"
+				bad=1
+				;;
+			esac
+		fi
+	done <<EOF
+$blocks
+EOF
+
+	if [ "$seen" -eq 0 ]; then
+		fail "could not read any job out of .github/workflows/access.yml"
+		return
+	fi
+	[ "$bad" -eq 0 ] && ok "no job reachable from pull_request names a secret or asks to federate"
+}
+
 floci_endpoint="${FLOCI_ENDPOINT:-http://localhost:4566}"
 
 # The plan a PR job runs. It reaches Floci and no cloud, so it holds no
@@ -149,26 +237,70 @@ run_plan() {
 	terraform -chdir=envs/prod plan -detailed-exitcode -input=false -no-color >/dev/null 2>&1
 	case $? in
 	0) ok "envs/prod matches the account, exit 0" ;;
-	2) fail "envs/prod has an unapplied diff. Run terraform -chdir=access/envs/prod plan" ;;
+	2)
+		if [ "$plan_mode" = ci ]; then
+			ok "envs/prod plans the change this branch proposes, exit 2"
+		else
+			fail "envs/prod has an unapplied diff. Run terraform -chdir=access/envs/prod plan"
+		fi
+		;;
 	*) fail "terraform plan against Floci errored" ;;
 	esac
 }
+
+# What a plan that is not empty means depends on the account it ran against.
+#
+#   laptop   the default. Floci already holds the applied estate, so a diff is
+#            something nobody applied and the stage fails until it is applied.
+#   ci       the account is a service container this job filled from the base
+#            branch, so a diff is exactly the change the pull request proposes.
+#            The stage records it and stays green. Binding that change to an
+#            approval is the digest step's job, not this one's.
+#
+# Set with --plan-mode ci or ACCESS_PLAN_MODE=ci.
+plan_mode="${ACCESS_PLAN_MODE:-laptop}"
+
+while [ $# -gt 0 ]; do
+	case "$1" in
+	--plan-mode)
+		plan_mode="${2:-}"
+		shift 2 || true
+		;;
+	--plan-mode=*)
+		plan_mode="${1#--plan-mode=}"
+		shift
+		;;
+	*) break ;;
+	esac
+done
+
+case "$plan_mode" in
+laptop | ci) ;;
+*)
+	echo "check: unknown --plan-mode $plan_mode. It is laptop or ci." >&2
+	exit 2
+	;;
+esac
 
 case "${1:-all}" in
 fmt) run_fmt ;;
 validate) run_validate ;;
 lint) run_lint ;;
 fixtures) run_fixtures ;;
+codeowners) run_codeowners ;;
+workflow) run_workflow ;;
 plan) run_plan ;;
 all)
 	run_fmt
 	run_validate
 	run_lint
 	run_fixtures
+	run_codeowners
+	run_workflow
 	run_plan
 	;;
 *)
-	echo "usage: access/scripts/check [all|fmt|validate|lint|fixtures|plan]" >&2
+	echo "usage: access/scripts/check [--plan-mode laptop|ci] [all|fmt|validate|lint|fixtures|codeowners|workflow|plan]" >&2
 	exit 2
 	;;
 esac

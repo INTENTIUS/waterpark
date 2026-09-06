@@ -9,14 +9,12 @@ resource "aws_iam_role" "this" {
   # thing, deliberately twice.
   permissions_boundary = var.permissions_boundary
 
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Effect    = "Allow"
-      Principal = { Service = var.trusted_services }
-      Action    = "sts:AssumeRole"
-    }]
-  })
+  # Two trust shapes, one role. A workload inside AWS is trusted by service
+  # principal. A workload outside AWS, which is the CI job in lesson 6, is
+  # trusted by a declared OIDC provider with the audience and the exact
+  # subject pinned. The trust anchor is estate, the issuer is never operated
+  # (decision 13).
+  assume_role_policy = local.assume_role_policy
 
   tags = local.tags
 }
