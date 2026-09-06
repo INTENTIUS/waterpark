@@ -63,7 +63,7 @@ are no IAM users and no IAM groups (decision 5).
 `waterpark-runner` is also a repo of its own, and it is the satellite in
 lesson 8. It declares its registry and the `runner-builder` role that
 pushes to it, inside a permission boundary the access repo owns. It never
-declares a human. This is the pattern working with one satellite; the
+declares a human. This is the pattern working with one satellite. The
 access repo works with none.
 
 ## Canonical scenarios

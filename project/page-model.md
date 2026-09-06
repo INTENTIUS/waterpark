@@ -108,3 +108,10 @@ What made lesson 1 land, in order. Every later lesson follows it.
    clean. Budget roughly one fix round.
 7. Prose bans em dashes, colons and semicolons outside code. Check
    mechanically, not by eye.
+8. A lesson that ends on a checkpoint compare must reproduce the
+   checkpoint tree exactly, or the compare must exclude what the lesson
+   deliberately does not write. Nine of the nineteen stumbles in the
+   I1 to I5 student run were a promised silent diff against a checkpoint
+   carrying README prose or comment wording no step asked for. Write the
+   step or exclude the file, and never leave a compare that cannot be
+   silent.
