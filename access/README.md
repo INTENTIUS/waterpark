@@ -16,6 +16,9 @@ access/
   envs/
     prod/        waterpark-prod, the published site and the artifacts bucket
     dev/         waterpark-dev, the same shapes with no traffic, empty for now
+  identity/      the human principals, live only, validated on every check
+  modules/
+    persona/     the four archetypes a principal file instantiates
   backends/      the two backend files, one of which is copied into an env
   scripts/       backend, and from lesson 3 the check stack
 ```
@@ -40,6 +43,25 @@ prescription 1.
 Files that hold no resource block are exempt from the naming rule, which is
 how `provider.tf`, `variables.tf`, `versions.tf`, `locals.tf` and
 `outputs.tf` keep their conventional names.
+
+## Principals and personas
+
+A principal file is a call to `modules/persona` plus a list of grants and
+nothing else, so a new principal is a copied sibling with a few strings
+changed (prescription 2). The persona set is `reader`, `platform`, `service`
+and `deployer`, and it is closed (decision 41). An unknown persona name fails
+`terraform validate` rather than applying something surprising.
+
+`site-publisher`, `runner-builder` and `desk-operator` are workloads and live
+in `envs/prod`, each as one `iam_role.<name>.tf` holding one module call.
+`platform` and `course-author` are humans and live in `identity/`, which is
+live only because Floci runs no Identity Center. See
+[modules/persona](modules/persona/README.md) and
+[identity](identity/README.md).
+
+The file naming rule reads the same for a module call. A leaf file named
+`iam_role.site_publisher.tf` holds the module call that produces
+`aws_iam_role.site_publisher`, so the path still predicts the address.
 
 ## State and the two backends
 
