@@ -1,0 +1,28 @@
+variable "floci" {
+  description = "Point the AWS provider at a local Floci emulator instead of a real account. The solo path leaves this true. The live path passes -var floci=false."
+  type        = bool
+  default     = true
+}
+
+variable "floci_endpoint" {
+  description = "Where Floci answers. Used only when floci is true."
+  type        = string
+  default     = "http://localhost:4566"
+}
+
+variable "region" {
+  description = "The region the estate lives in."
+  type        = string
+  default     = "us-east-1"
+}
+
+variable "env" {
+  description = "The environment this directory declares. One of prod or dev."
+  type        = string
+  default     = "prod"
+
+  validation {
+    condition     = contains(["prod", "dev"], var.env)
+    error_message = "env must be prod or dev. Each env is one directory under access/envs."
+  }
+}
