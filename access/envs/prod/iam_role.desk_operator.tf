@@ -7,6 +7,8 @@ module "desk_operator" {
   owner       = local.owner
   teams       = ["platform"]
 
+  permissions_boundary = module.baseline.boundary_arn
+
   grants = [
     {
       resource = "waterpark-artifacts"

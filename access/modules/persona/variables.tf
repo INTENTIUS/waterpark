@@ -66,6 +66,12 @@ variable "grants" {
   }
 }
 
+variable "permissions_boundary" {
+  description = "The estate boundary from access/baseline. Every workload role the module makes sits inside it, so the boundary is applied here rather than restated per grant. Null only in a sandbox, which carries no boundary at all (decision 36)."
+  type        = string
+  default     = null
+}
+
 variable "trusted_services" {
   description = "The AWS services allowed to assume a workload role. Federated trust anchors arrive in lesson 9."
   type        = list(string)
