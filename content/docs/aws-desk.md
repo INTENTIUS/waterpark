@@ -46,7 +46,7 @@ access/                                          the HCL root, top level in this
   identity/
     ssoadmin_permission_set.course_author.tf     one module call, permission set and assignment together (decision 44)
   modules/
-    workload_role/                               boundary, marker and naming, applied for you
+    persona/                                     boundary, marker and naming, applied for you
   scripts/
     render-delta                                 plan JSON to the access delta text
     proofs                                       validate-policy and check-no-new-access
