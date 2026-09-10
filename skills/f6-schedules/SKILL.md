@@ -60,11 +60,8 @@ variables 3a sets.
 Run `fountain conv list` before starting. An account holds two sandboxes at
 once and this lesson uses both, the teammate's and the one-off's. If an
 earlier lesson left a conversation that is not `terminated`, offer to
-terminate it by its full id first. Then ask the student to run
-`curl -s -H "Authorization: Bearer $FOUNTAIN_KEY" http://localhost:4000/api/team/schedules | jq '.data | length'`
-once the key is set in 3a, and if it is not `0`, say an earlier schedule is
-live and offer to delete it, because a stray every-minute cron costs a
-turn a minute.
+terminate it by its full id first. The schedule check waits for 3a, where
+the key is set.
 
 ## 3. The lesson
 
@@ -81,9 +78,13 @@ fountain apply -f f6-manifest.yaml
 ```
 
 `env  +  lesson6-env` and `agent  +  lesson6-agent`. Then the two
-variables in both terminals, from step 1, and the stream in the second
-terminal with `tee -a f6-stream.log`. `: connected` and a heartbeat every
-fifteen seconds.
+variables in both terminals, from step 1. With the key set, read
+`curl -s -H "Authorization: Bearer $FOUNTAIN_KEY" http://localhost:4000/api/team/schedules | jq '.data | length'`,
+and if it is not `0`, say an earlier schedule is live and offer to delete
+it, because a stray every-minute cron costs a turn a minute. Then the
+stream in the second terminal, `rm -f f6-stream.log` first so a restart
+counts from zero, then `tee -a f6-stream.log`. `: connected` and a
+heartbeat every fifteen seconds.
 
 (PowerShell reads the credentials file with
 `Select-String -Path "$env:USERPROFILE\.fountain\credentials" -Pattern api_key`
@@ -113,7 +114,9 @@ teammate's conversation id. Keep it, 3d compares against it.
 
 **confirm**, then the create from step 4. `201`, `next_run_at` the next
 whole minute, `last_run_at` `null`. Say what the poll waits for and run
-it. When it returns, read the three fields with the student.
+it. When it returns, read the three fields with the student, and point at
+the stream, where the fire's `schedule` event lands right after the turn's
+first `stage` event and before its `output`.
 `last_run_at` on the whole minute, the scheduler's clock. `last_conversation_id`
 equal to `TEAMCONV`, the teammate's own thread. `next_run_at` already the
 minute after, because the cron does not stop. Then the roster read after
@@ -145,8 +148,10 @@ with a conversation id that is not `TEAMCONV`. After thirty seconds, the
 schedule's `last_conversation_id` names that conversation, `GET
 /api/conversations/<id>` shows `channel_id` `null`, and `fountain conv
 list` shows two idle conversations under one agent id. Say that the
-one-off is not the teammate and never was, and that lesson 9's watcher is
-exactly this shape.
+one-off is not the teammate and never was, that the team stream carried
+its two `schedule` events and nothing from the run because the run's
+conversation is not on the channel, and that lesson 9's watcher is exactly
+this shape.
 
 If the `run` answered `http 429`, the account's second slot is held by an
 earlier conversation, and the fix is in section 2.
@@ -158,8 +163,9 @@ eight the stream missed or which extra call added one, from the list on
 the page. Then the schedule list, three rows.
 
 **confirm**, then the `DELETE`. `204`, then the schedule list reads `0`.
-Say that removing the teammate deleted every schedule it had, and that the
-one-off's conversation stayed because it was never bound.
+Say that removing the teammate deleted every schedule it had, one more
+`schedule` event on the stream for all three, and that the one-off's
+conversation stayed because it was never bound.
 
 **confirm**, then `fountain conv terminate $ONECONV`, and have the student
 close the stream. Leaving the environment and the agent is fine.

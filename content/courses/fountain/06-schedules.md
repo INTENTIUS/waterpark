@@ -69,9 +69,11 @@ Lesson 5 made a teammate and everything it did was because somebody sent a messa
    ```
 
    Then open the stream in a second terminal with the same two variables
-   set there, and leave it open.
+   set there, and leave it open. The log starts empty, so a restart of the
+   lesson counts from zero in step 7.
 
    ```sh
+   rm -f f6-stream.log
    curl -sN -H "Authorization: Bearer $FOUNTAIN_KEY" http://localhost:4000/api/team/stream | tee -a f6-stream.log
    ```
 
@@ -172,9 +174,10 @@ Lesson 5 made a teammate and everything it did was because somebody sent a messa
    the teammate's own conversation, so the run went into the thread as a
    typed message would. And `next_run_at` has already moved on, because
    this cron does not stop. In the second terminal the stream printed a
-   `schedule` event for the create and another for the fire, and between
-   them the turn's `stage` and `output` events under the teammate's agent
-   id. Then read the thread.
+   `schedule` event for the create, then the turn's first `stage` event,
+   then the `schedule` event for the fire as soon as the turn was queued,
+   and then the turn's `output` events and its `stage` done, all under the
+   teammate's agent id. Then read the thread.
 
    ```sh
    sleep 15
@@ -254,7 +257,10 @@ Lesson 5 made a teammate and everything it did was because somebody sent a messa
 
    The one-off's conversation has no channel, so it is not the teammate
    and never was, and `fountain conv list` shows two idle conversations
-   under the same agent id, the thread and the one-off. The weekday cron
+   under the same agent id, the thread and the one-off. The second terminal
+   shows this too, by omission. The team stream carries the two `schedule`
+   events and nothing from the run itself, because the run's conversation
+   is not on the team channel and the stream follows teammates only. The weekday cron
    on it is real and will open a fresh sandbox at six every weekday morning
    until step 7, which is what a watcher that must start clean each run
    looks like, and lesson 9 uses exactly this.
@@ -272,7 +278,9 @@ Lesson 5 made a teammate and everything it did was because somebody sent a messa
    `8`, one each for the create and the refused run in step 2, the create
    and the fire in step 4, the disable and the run in step 5, and the create
    and the run in step 6. The refused `@reboot` sent nothing, because nothing
-   was created. Then three schedules listed, `204`, and `0`. Removing the teammate deleted every
+   was created. Then three schedules listed, `204`, and `0`. Count again
+   after the remove and it is `9`, one event for the three schedules the
+   remove deleted together. Removing the teammate deleted every
    schedule it had, the disabled one and the one-off included, and the
    one-off's conversation stayed because it was never bound to anything.
    Terminate it by hand, and close the stream with Ctrl-C.
