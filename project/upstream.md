@@ -296,4 +296,9 @@ a variable named like a credential, and declines a substring of it, so a
 lesson cannot use a model turn as the proof of what a sandbox received. The
 turns ask whether the variable is set and nothing more. Attaching a vault
 outside the allowlist answers `http 422: vault is not in the agent's
-allowed_vault_ids` before anything is provisioned.
+allowed_vault_ids` before anything is provisioned. One more, reproduced twice: `fountain conv terminate` on a sandbox
+that has already parked, marker `.fountain-suspended` present, leaves the
+sandbox directory on the runner with its `.env` intact, where the same
+command on a running sandbox removes it. On the class stack a parked
+sandbox's credentials therefore outlive its conversation until somebody
+removes the directory by hand, and lesson 4 has the student do that.

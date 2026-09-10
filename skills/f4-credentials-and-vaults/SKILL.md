@@ -243,10 +243,20 @@ fountain conv terminate <agent a's second id>
 just runner-sh 'ls /sandboxes'
 ```
 
-The listing is empty. Say that every copy of every fixture went with the
-directories, which is the one revocation a runner does have. Leaving the
-environment, the vaults and the agents is fine, nothing later collides with
-these names.
+The listing is not empty. Say why, from step 10 of the page. A sandbox
+that was running when terminated loses its directory, and one that had
+already parked keeps it with its `.env` and the value inside, and the
+runner does not come back for it. Agent a's first conversation parked under
+the two-minute bound, so its directory is the one left, still carrying
+`vault-a-token-111`. **confirm**, then
+
+```sh
+just runner-sh 'rm -rf /sandboxes/runner-*; ls /sandboxes'
+```
+
+Now it is empty, and say that every copy of every fixture is gone because
+the student removed it and for no other reason. Leaving the environment, the
+vaults and the agents is fine, nothing later collides with these names.
 
 ## 4. Done when
 

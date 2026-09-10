@@ -34,7 +34,7 @@ activity:
 - Values are write-only. A vault listing returns keys and timestamps and no endpoint returns a value, not even to the owner. What Fountain audits is the write, by key and by size, and not the read, because the read happens inside the sandbox.
 - On the class stack the merged secrets enter the sandbox as environment variables, and the runner writes them to a `.env` file in the sandbox's directory. That file is where the credential lives, on the runner's disk, beside the inference token the runtime uses. Lesson 2 found the file and lesson 10 says what a runner trades away. A hosted account with the egress broker on sends the real values to the broker instead and the sandbox gets a placeholder.
 - Mend keeps the read token in the repo's vault and the write token in the browser, so the sandbox never holds the thing that can push. That split is the credential table this lesson ends on, and it comes back in lesson 8 and in IAM lesson 12.
-- Removing a vault from an agent's allowlist revokes it for every later conversation and for nothing already running. By then the value is in a process environment on a machine, and Fountain's own vault doc says so. A vault is not rotation, not revocation, not a read audit and not returnable, and each of those four is a sentence this lesson keeps.
+- Removing a vault from an agent's allowlist revokes it for every later conversation and for nothing already running. By then the value is in a process environment on a machine, and Fountain's own vault doc says so. On the class stack it is also in a file, and a sandbox that parked before it was terminated keeps that file, so step 10 removes it by hand. A vault is not rotation, not revocation, not a read audit and not returnable, and each of those four is a sentence this lesson keeps.
 - The Claude runtime declines to print a value that looks like a credential, and declines a substring of it too. So the proof that the vault won is not a model turn. It is the sandbox file on the runner, and the turns in this lesson ask the agent only whether the variable is set.
 - A manifest resolves `environment` by name and does not resolve `allowed_vault_ids`, which are ids. A name in that list is a `500` from the server rather than a `422`, recorded in [upstream](https://github.com/INTENTIUS/waterpark/blob/main/project/upstream.md), so the agents are applied in a second file once the vault ids are known.
 
@@ -289,7 +289,7 @@ Lesson 3 was a refusal before the model was called. This lesson has four model t
    | Credential | Where it lives | Who can read it | What it can do |
    |---|---|---|---|
    | `SHARED_TOKEN`, environment value | the Environment, encrypted, and every sandbox with no vault, on the runner's disk | any conversation of any agent on `lesson4-env` | whatever the token is for, as the baseline |
-   | `SHARED_TOKEN`, vault a's value | vault a, encrypted, and agent a's sandboxes, on the runner's disk | conversations that attached vault a, while they run | the same, with vault a's scope |
+   | `SHARED_TOKEN`, vault a's value | vault a, encrypted, and agent a's sandboxes, on the runner's disk | conversations that attached vault a, while they run, and anyone with the runner's disk after one parks, until its directory is removed by hand | the same, with vault a's scope |
    | `SHARED_TOKEN`, vault b's value | vault b, encrypted, and agent b's sandboxes | conversations that attached vault b | the same, with vault b's scope |
    | your inference key | your account; every sandbox on the runner, on disk | every conversation you start | spend against your model account |
    | `FOUNTAIN_TOKEN` | every sandbox | the conversation it was minted for | talk to Fountain as that conversation |
@@ -299,7 +299,7 @@ Lesson 3 was a refusal before the model was called. This lesson has four model t
    whole of Mend's safety is that the sandbox row has no write anywhere in
    its last column. Lesson 8 takes it from there.
 
-10. Terminate the two conversations still parked, so they stop holding the account's two slots. Use full ids.
+10. Terminate the two conversations still open, so they stop holding the account's two slots, and then look at the disk once more. Use full ids.
 
     ```sh
     fountain conv list
@@ -308,9 +308,22 @@ Lesson 3 was a refusal before the model was called. This lesson has four model t
     just runner-sh 'ls /sandboxes'
     ```
 
-    The listing is empty. Every copy of every fixture that lived on the
-    runner's disk went with the directories, which is the one revocation a
-    runner does have.
+    Both conversations read `terminated`, and the listing is not empty. A
+    sandbox that was running when it was terminated loses its directory,
+    which is what lesson 2 saw. A sandbox that had already parked keeps it,
+    with its `.env` and the value inside, and the runner does not come back
+    for it. The first conversation parked minutes ago under the class
+    stack's two-minute idle bound, so its directory is the one still there,
+    and `SHARED_TOKEN='vault-a-token-111'` is still in it. That is recorded
+    in [upstream](https://github.com/INTENTIUS/waterpark/blob/main/project/upstream.md),
+    and until it is fixed the one revocation a runner does have is a shell.
+
+    ```sh
+    just runner-sh 'rm -rf /sandboxes/runner-*; ls /sandboxes'
+    ```
+
+    Now the listing is empty, and every copy of every fixture is gone from
+    the disk because you removed it, not because anything else did.
 
 ## Self-paced
 
