@@ -32,3 +32,9 @@ variable "env" {
     error_message = "env must be prod or dev. Each env is one directory under access/envs."
   }
 }
+
+variable "break_glass_approver" {
+  description = "Who approved the break-glass grants in this apply. The apply job passes the reviewer of the merged pull request (decision 37). The solo path leaves the default, and the tag on the grant says unapproved."
+  type        = string
+  default     = "unapproved"
+}

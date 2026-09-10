@@ -41,12 +41,13 @@ variable "teams" {
 }
 
 variable "grants" {
-  description = "Typed access statements. access is a level rather than a list of actions, and the module expands it. expires is an RFC3339 date the cloud enforces, and an expired grant is drift. reason sits beside the expiry so a reviewer can read why."
+  description = "Typed access statements. access is a level rather than a list of actions, and the module expands it. expires is an RFC3339 date the cloud enforces, and an expired grant is drift. reason sits beside the expiry so a reviewer can read why. granted_at marks a break-glass grant, one that exists for an incident and no longer than break_glass_max_ttl_hours after it was granted (decision 37)."
   type = list(object({
-    resource = string
-    access   = string
-    expires  = optional(string)
-    reason   = optional(string)
+    resource   = string
+    access     = string
+    expires    = optional(string)
+    reason     = optional(string)
+    granted_at = optional(string)
   }))
   default = []
 
@@ -64,6 +65,33 @@ variable "grants" {
     condition     = length(distinct([for g in var.grants : "${g.access}-${g.resource}"])) == length(var.grants)
     error_message = "Two grants name the same access level on the same resource. Say it once."
   }
+
+  validation {
+    condition     = alltrue([for g in var.grants : g.granted_at == null || (g.expires != null && g.reason != null)])
+    error_message = "A break-glass grant, one with granted_at, carries an expires and a reason. The expiry is what ends the access when every job is dead, and the reason is what the audit trail reads (prescription 9)."
+  }
+
+  validation {
+    condition     = alltrue([for g in var.grants : g.granted_at == null || can(formatdate("YYYY-MM-DD", g.granted_at))])
+    error_message = "A grant's granted_at is an RFC3339 timestamp, for example 2026-09-10T20:00:00Z."
+  }
+
+  validation {
+    condition     = alltrue([for g in var.grants : g.granted_at == null || g.expires == null || !can(formatdate("YYYY-MM-DD", g.granted_at)) || timecmp(g.expires, timeadd(g.granted_at, "${var.break_glass_max_ttl_hours}h")) <= 0])
+    error_message = "A break-glass grant lasts at most break_glass_max_ttl_hours after granted_at, which is the constant in access/baseline (decision 37). Shorten the expiry, or grant again when it runs out."
+  }
+}
+
+variable "break_glass_max_ttl_hours" {
+  description = "The longest a break-glass grant may last. The constant lives in access/baseline (decision 37) and is restated here as the default, because a validation that reads a module output is not evaluated by terraform validate and the refusal has to happen in the editor. access/scripts/check compares the two and fails when they differ."
+  type        = number
+  default     = 2
+}
+
+variable "break_glass_approver" {
+  description = "Who approved the break-glass grants in this apply. The apply job passes the reviewer of the merged pull request, so the approval and the artifact name the same human (decision 37). On the solo path nobody did, and the tag says so."
+  type        = string
+  default     = "unapproved"
 }
 
 variable "permissions_boundary" {

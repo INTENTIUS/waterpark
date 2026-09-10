@@ -483,6 +483,42 @@ jobs:
         run: |
           terraform -chdir=access/envs/prod apply -input=false -no-color tfplan
 
+      # Decision 37. The approver of a break-glass grant is the reviewer who
+      # approved the merged pull request, and the apply job copies that
+      # identity onto the grant's policy after the apply, so the approval and
+      # the artifact name the same human. It is stamped after rather than
+      # planned in, because the reviewer is not known when the plan is made
+      # and the plan is what was approved. The module ignores this one tag on
+      # the next plan.
+      - name: Stamp the approver on any break-glass grant
+        env:
+          AWS_ACCESS_KEY_ID: test
+          AWS_SECRET_ACCESS_KEY: test
+          AWS_DEFAULT_REGION: us-east-1
+          GH_TOKEN: ${{ github.token }}
+          HEAD_SHA: ${{ steps.approved.outputs.head_sha }}
+        run: |
+          set -euo pipefail
+          approver=""
+          if [ -n "$HEAD_SHA" ]; then
+            pr=$(gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/pulls" --jq '.[0].number' 2>/dev/null || true)
+            [ -n "$pr" ] && approver=$(gh api "repos/${{ github.repository }}/pulls/$pr/reviews"               --jq '[.[] | select(.state == "APPROVED") | .user.login] | last // empty' 2>/dev/null || true)
+          fi
+          [ -n "$approver" ] || approver="merged-without-review"
+          arns=$(aws --endpoint-url "$FLOCI_ENDPOINT" iam list-policies --scope Local \
+            --query 'Policies[].Arn' --output text | tr '\t' '\n')
+          stamped=0
+          for arn in $arns; do
+            bg=$(aws --endpoint-url "$FLOCI_ENDPOINT" iam list-policy-tags --policy-arn "$arn" \
+              --query "Tags[?Key=='break_glass'].Value" --output text 2>/dev/null || true)
+            [ "$bg" = "true" ] || continue
+            aws --endpoint-url "$FLOCI_ENDPOINT" iam tag-policy --policy-arn "$arn" \
+              --tags "Key=approved_by,Value=$approver"
+            echo "stamped $arn with approved_by=$approver"
+            stamped=$((stamped + 1))
+          done
+          echo "$stamped break-glass grant(s) stamped"
+
       - name: Prove it converged
         env:
           AWS_ACCESS_KEY_ID: test

@@ -47,6 +47,10 @@ locals {
 
   grants = { for g in var.grants : "${g.access}-${g.resource}" => g }
 
+  # The break-glass subset. A grant with a granted_at exists for an incident,
+  # carries its own expiry, and is tagged with who approved it (decision 37).
+  break_glass = { for k, g in local.grants : k => g if g.granted_at != null }
+
   tags = {
     owner   = var.owner
     persona = var.persona

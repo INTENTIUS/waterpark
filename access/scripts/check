@@ -58,6 +58,7 @@ rules=(
 	"sg-reference-not-cidr:warn_sg_reference_not_cidr"
 	"trust-subject-pinned:deny_trust_subject_pinned"
 	"trust-audience-pinned:deny_trust_audience_pinned"
+	"break-glass-ttl:deny_break_glass_ttl"
 )
 
 failures=0
@@ -117,6 +118,19 @@ run_lint() {
 # with only that one rule enabled.
 run_fixtures() {
 	say "== rule fixtures"
+
+	# The break-glass TTL lives in access/baseline and is restated in the Rego,
+	# because Rego reads the directory it is pointed at and nothing else. The
+	# two are compared here so the constant still has one home (decision 37).
+	local baseline_ttl rego_ttl module_ttl
+	baseline_ttl="$(sed -n 's/^[[:space:]]*break_glass_max_ttl_hours[[:space:]]*=[[:space:]]*\([0-9]*\).*/\1/p' baseline/locals.tf | head -1)"
+	rego_ttl="$(sed -n 's/^break_glass_max_ttl_hours[[:space:]]*:=[[:space:]]*\([0-9]*\).*/\1/p' .tflint.d/policies/break-glass.rego | head -1)"
+	module_ttl="$(awk '/^variable "break_glass_max_ttl_hours"/ { f = 1 } f && /^[[:space:]]*default[[:space:]]*=/ { print $3; exit }' modules/persona/variables.tf)"
+	if [ -n "$baseline_ttl" ] && [ "$baseline_ttl" = "$rego_ttl" ] && [ "$baseline_ttl" = "$module_ttl" ]; then
+		ok "break_glass_max_ttl_hours is $baseline_ttl in access/baseline, in the rule pack and in modules/persona"
+	else
+		fail "break_glass_max_ttl_hours is ${baseline_ttl:-unset} in access/baseline, ${rego_ttl:-unset} in .tflint.d/policies/break-glass.rego and ${module_ttl:-unset} in modules/persona/variables.tf. They are one constant."
+	fi
 	for entry in "${rules[@]}"; do
 		rule="${entry%%:*}"
 		fn="${entry##*:}"

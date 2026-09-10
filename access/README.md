@@ -24,7 +24,7 @@ access/
   modules/
     persona/     the four archetypes a principal file instantiates
   backends/      the two backend files, one of which is copied into an env
-  scripts/       backend, check, and the lesson 6 to 9 scripts below
+  scripts/       backend, check, and the lesson 6 to 10 scripts below
   codeowners.map team name to GitHub handle, the one place the two meet
   .tflint.d/
     policies/    the rule pack, as Rego
@@ -153,6 +153,7 @@ are Rego like the rest rather than a side script.
 | `sg-reference-not-cidr` | warning | an ingress rule naming a raw CIDR instead of a source group |
 | `trust-subject-pinned` | error | a federated trust with no subject condition, a subject matched by pattern, or a subject carrying a wildcard |
 | `trust-audience-pinned` | error | a federated trust with no `StringEquals` audience, or an OIDC provider that lists no client id or is not https |
+| `break-glass-ttl` | error | a grant with a `granted_at` and no `expires` or `reason`, or an expiry more than the baseline TTL after it |
 
 Severity is the function-name prefix in the Rego, `deny_` for an error and
 `warn_` for a warning, so a new rule lands as a warning and is promoted in a
@@ -795,3 +796,74 @@ and refused on a real account. The lesson runs the forged call on purpose
 and says so. The satellite's deploy credential stays a script-minted user
 here, and its federated form waits on the second boundary decision 58 has
 not taken (decision 59).
+
+## Lesson 10, break-glass
+
+Access that exists for an incident, ends on its own, and leaves a trail.
+
+```
+access/
+  envs/prod/
+    iam_role.on_call.tf                  the on-call's stand-in on the solo path, empty at rest
+  modules/persona/
+    variables.tf                         granted_at on a grant, and the TTL refusal
+    iam_policy.grant.tf                  the break_glass, granted_at and approved_by tags
+    ssoadmin_permission_set_inline_policy.grants.tf   a human's grants, live only
+  .tflint.d/policies/
+    break-glass.rego                     break-glass-ttl
+  scripts/
+    break-glass                          grant, list, revoke, sweep
+```
+
+### Three layers
+
+Prescription 9. The grant carries its own expiry, a `DateLessThan
+aws:CurrentTime` condition the module renders, so the cloud ends the access
+with nothing alive. The sweep removes the artifact, one PR per principal
+file, on the drift cron. The drift watch reports an expired grant as a
+finding until the sweep's PR merges. Killing the sweep delays cleanup and
+never extends access (decision 8).
+
+### The grant
+
+```sh
+access/scripts/break-glass grant access/envs/prod/iam_role.on_call.tf \
+  waterpark-site write --reason "A release broke the site." --hours 2
+access/scripts/break-glass list
+access/scripts/break-glass sweep
+access/scripts/break-glass revoke <id>
+```
+
+`grant` writes one grant block into the principal file, fenced by marker
+comments carrying an id, with `granted_at` now and `expires` no later than
+the baseline TTL. The file is then a pull request like any other. `revoke`
+removes the block by id, and `sweep` revokes every block whose expiry has
+passed, planning by default and opening one PR per principal file with
+`--open`.
+
+### The TTL, refused three times
+
+The script refuses a longer grant before writing it. `break-glass-ttl`
+refuses one at lint, in the editor. The persona module refuses one at plan.
+`terraform validate` does not, because a validation that reads another
+variable is evaluated at plan rather than at validate, and the page says so.
+The constant is `break_glass_max_ttl_hours` in `baseline/`, restated as the
+rule's literal and the module's default, and `check fixtures` fails when the
+three differ.
+
+### The approver
+
+The apply job reads the merged pull request's approving review and stamps
+`approved_by` on every policy tagged `break_glass`, after the apply, so the
+approval and the artifact name the same human (decision 37). The module
+ignores that one tag on the next plan. On the solo path the tag reads
+`unapproved`, because nobody did.
+
+### What Floci cannot show
+
+The grant applies and reads back with its condition and tags, the checks
+refuse a long one, the watch reports it once expired and the sweep removes
+it. Floci evaluates no condition on an allow, so the access itself is
+denied throughout on the emulator, and the drill where the access works and
+then ends at the expiry is live only ([upstream](../project/upstream.md),
+decision 60).

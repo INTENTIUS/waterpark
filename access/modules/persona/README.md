@@ -72,3 +72,19 @@ policy document, which the cloud enforces whether or not any job runs, plus
 an `expires` tag carrying the same date so a read of the estate can see it
 without parsing the policy. An expired grant is drift, which lesson 7 picks
 up.
+
+## Break-glass
+
+A grant with a `granted_at` is a break-glass grant (decision 60). It needs
+an `expires` no more than `break_glass_max_ttl_hours` later and a `reason`,
+and the module refuses anything else at plan. The policy it renders carries
+the same `DateLessThan aws:CurrentTime` condition every expiring grant
+does, plus `break_glass`, `granted_at` and `approved_by` tags. The apply job
+writes `approved_by` after the apply, from the merged pull request's
+approving review, and the module ignores that one tag on the next plan.
+`access/scripts/break-glass` writes and revokes the block, so nobody types
+the timestamps.
+
+A human persona's grants render as the permission set's inline policy, live
+only, which is how the same grant lands on the on-call's permission set
+rather than on a role.

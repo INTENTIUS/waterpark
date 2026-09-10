@@ -14,6 +14,7 @@
 
 # Principals, routed to the teams their leaf files name.
 /access/envs/prod/iam_role.desk_operator.tf @INTENTIUS/platform
+/access/envs/prod/iam_role.on_call.tf @INTENTIUS/platform
 /access/envs/prod/iam_role.site_publisher.tf @INTENTIUS/platform
 /access/envs/prod/iam_role.waterpark_apply.tf @INTENTIUS/platform
 /access/identity/ssoadmin_permission_set.course_author.tf @INTENTIUS/course-authors
