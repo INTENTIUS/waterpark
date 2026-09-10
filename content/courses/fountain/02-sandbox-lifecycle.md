@@ -275,7 +275,7 @@ Nothing in this lesson needs a model reply. The sandbox provisions, parks and wa
    drwxr-xr-x 1 root   root   4096 Sep  6 18:52 ..
    ```
 
-   The directory is gone. `fountain conv show` still answers with every turn, and the events endpoint still carries the whole stage log ending in `terminate done`. The transcript is Fountain's, the disk was the sandbox's, and only one of them survives a destroy.
+   The directory is gone. `fountain conv show` still answers with every turn, and the events endpoint still carries the whole stage log ending in `terminate done`. The transcript is Fountain's, the disk was the sandbox's, and only one of them survives a destroy. That holds for a sandbox that is awake when it is terminated, which this one was. A sandbox terminated while parked keeps its directory on the runner, which lesson 4 shows and removes by hand.
 
 ## Self-paced
 

@@ -280,3 +280,25 @@ show is the access working before the expiry and ending at it. That drill
 is live only until the fork populates `aws:CurrentTime` and `aws:EpochTime`
 and evaluates the date operators, which is a small change in those two
 classes plus an image build. The lesson says so rather than pretending.
+
+**Three things seen writing lesson 4 on the compose stack, 2026-09-10.** A
+manifest resolves an Agent's `environment` by name and passes
+`allowed_vault_ids` through as ids, so a vault name in that list is not a
+`422` but a `500`, `Ecto.ChangeError ... does not match type {:array,
+:binary_id}` in the log, with the vaults from the same file already created
+and the agents not. The lesson applies the agents in a second file once the
+ids are known. The runner writes the merged secrets to `.env` in the
+sandbox's directory, beside `CLAUDE_CODE_OAUTH_TOKEN` or `ANTHROPIC_API_KEY`,
+`FOUNTAIN_TOKEN` and the conversation id, so on the class stack every
+credential a sandbox holds is a file on the runner's disk and the lesson
+reads the merge result from there. And the Claude runtime declines to echo
+a variable named like a credential, and declines a substring of it, so a
+lesson cannot use a model turn as the proof of what a sandbox received. The
+turns ask whether the variable is set and nothing more. Attaching a vault
+outside the allowlist answers `http 422: vault is not in the agent's
+allowed_vault_ids` before anything is provisioned. One more, reproduced twice: `fountain conv terminate` on a sandbox
+that has already parked, marker `.fountain-suspended` present, leaves the
+sandbox directory on the runner with its `.env` intact, where the same
+command on a running sandbox removes it. On the class stack a parked
+sandbox's credentials therefore outlive its conversation until somebody
+removes the directory by hand, and lesson 4 has the student do that.
