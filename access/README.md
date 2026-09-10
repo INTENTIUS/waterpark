@@ -989,3 +989,52 @@ deleted from the repo.
 The adopted files import resources that exist only where a hand made them,
 so they live on the laptop that adopted them and the lesson's compare
 excludes them. The reference tree carries the mechanism and no adoption.
+
+## Lesson 14, approve the change, not the diff
+
+The reviewer approves a plan, the apply job refuses anything else, and the
+things the plan cannot say are named.
+
+```
+access/
+  scripts/
+    plan-digest        the digest an approval binds to, over what changes
+    render-delta       the access delta, with replacements on their own
+.github/workflows/
+  access.yml           the pr job saves the plan and its digest, the apply job compares
+```
+
+### The digest
+
+`plan-digest` hashes a normalised reading of the plan, the resource changes
+sorted by address with the timestamp and the prior state dropped, and on
+an update in place only the attributes that differ from before. That last
+reduction is why two jobs that each build the same base in their own
+container compute one digest for one change, which lesson 14 proves with
+two containers and which the first in-place update the pipeline merged
+did not have (decision 63). `--normalise` prints what is hashed.
+
+### Two refusals
+
+The apply job recomputes the digest over its own plan and refuses when it
+differs from the one the pr job recorded, which is the estate having moved
+between approval and apply. Terraform refuses a saved plan whose state
+moved on its own, `Saved plan is stale`, which is the state having moved.
+They are different facts and the lesson shows both.
+
+### Replacements
+
+A replacement is a destroy and a create under one address, and on IAM it
+changes an ARN underneath whatever trusts it. `render-delta` lists them on
+their own with the attribute that forced each, the pr job writes them into
+the summary and labels the pull request `replacement`, and a reviewer who
+reads "site-publisher-v2 gains read" is also told that site-publisher is
+about to stop existing.
+
+### The gate, honestly
+
+`environment: prod` on the apply job is where a maintainer adds required
+reviewers in the repository settings. Today the environment exists and has
+none, so the merge is the approval on this repository, and the page says so.
+The digest proves the plan did not move and not who produced it, which is
+property XIV half closed.
