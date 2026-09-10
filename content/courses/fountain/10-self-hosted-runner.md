@@ -23,7 +23,7 @@ properties: ["VI"]
 activity:
   kind: hands-on
   time: "25 min"
-  needs: ["the Start-here stack running (`just up`, `just register`, `just runner`) with a runner online, in the checkout `just up` ran in", "an inference key set, this lesson makes three model turns", "jq and curl"]
+  needs: ["the Start-here stack running (`just up`, `just register`, `just runner`) with a runner online, in the checkout `just up` ran in, or a second checkout after `bash compose/bin/env.sh` there", "an inference key set, this lesson makes three model turns", "jq and curl"]
   solo: true
   live: true
 ---
@@ -70,7 +70,7 @@ Lesson 3 said the runner could not hold an egress policy and moved on. This less
    starts with, which lessons 2 and 4 saw as `runner-4316504e...`.
 
    ```sh
-   docker compose -f compose/docker-compose.yml --env-file compose/.env --profile runner ps --format '{{.Name}} {{.Image}} {{.Status}}'
+   docker compose -f compose/docker-compose.yml --env-file compose/.env --profile runner ps runner --format '{{.Name}} {{.Image}} {{.Status}}'
    just runner-sh 'id; tr "\0" " " < /proc/1/cmdline; echo; env | grep -E "^(FOUNTAIN|AWS)" | sed "s/=.*/=.../"'
    ```
 
@@ -153,9 +153,16 @@ Lesson 3 said the runner could not hold an egress policy and moved on. This less
    fountain: provisioning failed — the sandbox never started
    ```
 
-   Lesson 3's events call had the reason,
-   `{"reason":"backend_lacks_network_policy","type":"limited","provider":"runner"}`,
-   and it is the same reason today. The decision record says the provider
+   The reason is in the conversation's events, the way lesson 3 read it.
+   Put the conversation id from the first line in place of the one below.
+
+   ```sh
+   curl -s -H "Authorization: Bearer $FOUNTAIN_KEY" http://localhost:4000/api/conversations/8514ce6b-.../events \
+     | jq -r '.data[] | "\(.stage) \(.state) \(.data)"'
+   ```
+
+   `network failed {"reason":"backend_lacks_network_policy","type":"limited","provider":"runner"}`,
+   the same reason as lesson 3. The decision record says the provider
    does not advertise a network policy and a `limited` environment fails on
    it on purpose. What the unrestricted agent can reach is the host's whole
    network, which on the class stack is your laptop's.
@@ -206,7 +213,7 @@ Lesson 3 said the runner could not hold an egress policy and moved on. This less
 5. Must be online. Free a slot, stop the container, and ask Fountain for the runner and for a sandbox.
 
    ```sh
-   fountain conv list
+   fountain conv list --json | jq -r '.[] | select(.status == "idle") | .id'
    fountain conv terminate <the second conversation's full id>
    docker compose -f compose/docker-compose.yml --env-file compose/.env --profile runner stop runner
    sleep 5
@@ -233,10 +240,11 @@ Lesson 3 said the runner could not hold an egress policy and moved on. This less
    ```
 
    The new run is refused before anything is minted, with the fix in the
-   message. The parked one accepts the turn and fails it, and the events
-   call from lesson 3 shows the reason as `{:unavailable, :runner_offline}`,
-   which is the taxonomy's word for a directory on a machine that is
-   switched off. The decision record says that is transient and never
+   message. The parked one accepts the turn and fails it, and the same
+   events call as step 3, on the first conversation's id, shows the
+   `turn failed` line's reason as `{:unavailable, :runner_offline}`, which
+   is the taxonomy's word for a directory on a machine that is switched
+   off. The decision record says that is transient and never
    `not_found`, because the directory is still the agent's memory. Start
    the container and prove that.
 
@@ -267,17 +275,20 @@ Lesson 3 said the runner could not hold an egress policy and moved on. This less
    takes the left one. Decision 29 is the course saying which of the two it
    will let a containment claim rest on.
 
-7. Terminate both conversations and remove what parked.
+7. Terminate the first conversation and look at what is left.
 
    ```sh
-   fountain conv list
    fountain conv terminate <the first conversation's full id>
    just runner-sh 'ls /sandboxes; rm -rf /sandboxes/runner-*; ls /sandboxes | wc -l'
    ```
 
-   The parked directory from lesson 4's finding survives the terminate and
-   the `rm -rf` is yours, then `0`. The locked run from step 3 held nothing
-   to remove.
+   The first listing is the fact and the `0` is you. A sandbox that was
+   awake when terminated loses its directory, and if you moved through
+   steps 5 and 6 inside two minutes both were, so the listing is empty
+   before the `rm -rf` runs. A sandbox that had parked keeps its directory,
+   which lesson 4 found, and then the listing names it and the `rm -rf` is
+   the only thing that removes it. Either way the locked run from step 3
+   held nothing.
 
 ## Self-paced
 
