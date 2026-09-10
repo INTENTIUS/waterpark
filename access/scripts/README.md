@@ -24,6 +24,7 @@ jobs are thin wrappers around these rather than shell embedded in YAML.
 | `expiring` | every dated grant, soonest first, read from the account | 11 |
 | `offboard` | remove a principal and every reference, with a preview that reads the account | 11 |
 | `access-review` | the quarterly artifact, every principal and what it can reach, read from the account | 11 |
+| `adopt-check` | every import in a root, passing only the ones that change nothing but the estate's tags | 15 |
 
 None of them holds a credential of its own. The ones that talk to an account
 take the throwaway `test` key pair against Floci by default, `LIVE=true`

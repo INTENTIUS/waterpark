@@ -24,7 +24,7 @@ access/
   modules/
     persona/     the four archetypes a principal file instantiates
   backends/      the two backend files, one of which is copied into an env
-  scripts/       backend, check, and the lesson 6 to 11 scripts below
+  scripts/       backend, check, and the lesson 6 to 15 scripts below
   codeowners.map team name to GitHub handle, the one place the two meet
   .tflint.d/
     policies/    the rule pack, as Rego
@@ -149,7 +149,7 @@ are Rego like the rest rather than a side script.
 | `no-iam-user-or-group` | error | any IAM user, group, access key or attachment to one |
 | `tag-owner-required` | error | a role, policy, bucket, registry or permission set with no `owner` tag |
 | `boundary-required` | error | a role, or a principal file that makes one, with no `permissions_boundary` |
-| `no-open-ingress` | warning | an ingress rule naming `0.0.0.0/0` or `::/0` |
+| `no-open-ingress` | warning | an ingress rule, or an inline `ingress` block on a group, naming `0.0.0.0/0` or `::/0` |
 | `sg-reference-not-cidr` | warning | an ingress rule naming a raw CIDR instead of a source group |
 | `trust-subject-pinned` | error | a federated trust with no subject condition, a subject matched by pattern, or a subject carrying a wildcard |
 | `trust-audience-pinned` | error | a federated trust with no `StringEquals` audience, or an OIDC provider that lists no client id or is not https |
@@ -931,3 +931,61 @@ declared because Identity Center is read only live, folds in the rotation
 check, and closes with what it did not see. `access-review.yml` runs it
 quarterly against a Floci the job filled itself, which proves the shape and
 not a real account, and uploads the artifact for four hundred days.
+
+## Lesson 15, adopt in place
+
+A resource that existed before the repo comes under management one file at
+a time, and nothing about it changes except the estate's own tags.
+
+```
+access/
+  envs/prod/
+    provider.tf               ec2 joins the endpoint overrides for the first security group
+    <type>.<label>.tf         an import block and the reviewed resource, one file each, on a laptop and never here
+  .tflint.d/policies/
+    security.rego             no-open-ingress reads inline ingress blocks too
+  scripts/
+    adopt-check               every import in a root, tags only or fail
+```
+
+### The shape
+
+An adopted resource's file holds its `import` block and its resource block
+together. The resource block is `terraform plan -generate-config-out`
+reviewed by hand, with `region`, `tags_all`, every null and every provider
+default dropped, so the file says what the account holds and nothing the
+provider invented. One resource at a time (decision 38).
+
+### The one change
+
+The provider's `default_tags` put `managed_by`, `repo` and `env` on
+everything the estate owns, so the plan for an import is never empty here.
+`adopt-check` reads the plan JSON for every importing resource and passes
+one whose only differing attribute is `tags_all`, and fails one that would
+change anything else, naming the attribute, because an apply would then edit
+the account rather than adopt it (decision 62).
+
+```sh
+access/scripts/adopt-check
+access/scripts/adopt-check satellites/waterpark-runner
+```
+
+### Adoption exempts nothing
+
+An adopted role with no boundary and no owner tag fails `boundary-required`
+and `tag-owner-required` like a written one, and an adopted group with an
+open port gets `no-open-ingress`, which now reads the inline `ingress`
+shape generated config writes. The failing check after an adoption is day
+two's list.
+
+### Backing out
+
+A `removed` block with `lifecycle { destroy = false }` takes a resource
+out of state and leaves it in the account. It is applied once and then
+deleted from the repo.
+
+### Never in this tree
+
+The adopted files import resources that exist only where a hand made them,
+so they live on the laptop that adopted them and the lesson's compare
+excludes them. The reference tree carries the mechanism and no adoption.

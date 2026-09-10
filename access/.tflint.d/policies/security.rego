@@ -159,8 +159,29 @@ deny_boundary_required contains issue if {
 	)
 }
 
-# Warning, because the estate declares no security groups yet, so the rule has
-# no live coverage to ratchet against.
+# Warning, because the estate declares no security groups of its own, so the
+# rule has no live coverage to ratchet against. The second clause reads the
+# inline ingress blocks of an aws_security_group, which is the shape
+# terraform plan -generate-config-out writes for an adopted group (lesson
+# 15), so an adopted group with an open port gets the warning the rule was
+# written for rather than slipping past it on shape alone.
+warn_no_open_ingress contains issue if {
+	some r in terraform.resources("aws_security_group", {"ingress": {"cidr_blocks": "list(string)", "ipv6_cidr_blocks": "list(string)", "from_port": "number", "to_port": "number"}}, {"expand_mode": "none"})
+	some ing in r.config.ingress
+	some key in ["cidr_blocks", "ipv6_cidr_blocks"]
+	attr := ing.config[key]
+	not attr.unknown
+	some cidr in attr.value
+	cidr in open_cidrs
+	issue := tflint.issue(
+		sprintf(
+			"aws_security_group.%s opens %v to %s in an inline ingress block. Name the source security group, and declare the rule as its own aws_vpc_security_group_ingress_rule so it has an address a review can point at.",
+			[r.name, ing.config.from_port.value, cidr],
+		),
+		attr.range,
+	)
+}
+
 warn_no_open_ingress contains issue if {
 	some r in terraform.resources("aws_vpc_security_group_ingress_rule", {"cidr_ipv4": "string", "cidr_ipv6": "string"}, {"expand_mode": "none"})
 	some key in ["cidr_ipv4", "cidr_ipv6"]

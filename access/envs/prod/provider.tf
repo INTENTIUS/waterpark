@@ -20,6 +20,7 @@ provider "aws" {
       iam = endpoints.value
       sts = endpoints.value
       s3  = endpoints.value
+      ec2 = endpoints.value
     }
   }
 
