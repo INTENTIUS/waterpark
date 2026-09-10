@@ -305,7 +305,13 @@ removes the directory by hand, and lesson 4 has the student do that.
 
 **One thing seen writing lesson 5, 2026-09-10.** With the runner stopped,
 a teammate's presence reads `machine_offline` and `POST
-/api/team/:agent_id/messages` answers `202 queued` and delivers the turn
-when the runner reconnects. Issue 85 expected `503 runner_offline`, and the
-pinned image does not refuse. The lesson teaches the queued message and
-says the caller has to read presence to know it will wait.
+/api/team/:agent_id/messages` still answers `202 queued`. The turn then
+starts and fails in the same millisecond on the team stream with
+`{:unavailable, :runner_offline}`, the roster shows the prompt as the
+preview with `last_turn` `failed`, and nothing redelivers it when the
+runner reconnects. Issue 85 expected `503 runner_offline` on the message
+itself. The lesson teaches the `202` followed by the failed turn and says
+the caller reads presence before sending or the stream after. Also, the
+team stream sends a `: heartbeat` comment every fifteen seconds and stayed
+open for a whole eight-minute lesson, so the documented sixty-second idle
+close does not bite in practice.
