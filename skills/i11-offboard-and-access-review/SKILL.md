@@ -165,9 +165,10 @@ export AWS_ACCESS_KEY_ID=test AWS_SECRET_ACCESS_KEY=test AWS_DEFAULT_REGION=us-e
 access/scripts/whocan waterpark-artifacts
 ```
 
-Five grants. `site-publisher` read, `desk-operator` list and read with
-their `2027-01-01` expiry, and `runner-builder` write and list with
-`from waterpark-runner`. Point at the last two and say that nothing opened
+Five grants, sorted by principal. `desk-operator` list and read with their
+`2027-01-01` expiry, `runner-builder` list and write with
+`from waterpark-runner`, and `site-publisher` read. Point at the
+`runner-builder` lines and say that nothing opened
 `access/satellites/`. The script asked the account, the satellite's role is
 in the account, so it is in the answer, and the `from` line is a tag the
 satellite's provider wrote.
@@ -192,20 +193,24 @@ did not write it, and it says so instead of guessing, and that a review
 built from the HCL would have said the on-call holds nothing. Then
 
 ```sh
-access/scripts/drift | head -8
+access/scripts/drift | tail -1
 ```
 
-The attachment is drift on `on-call`. **confirm**, then clean up.
+`every watched root matches the account`. Say that the watch is blind to
+this, because the module declares one attachment resource per grant and
+each owns only its own, so a plan sees nothing when a policy it never
+declared is attached beside them, and that this is why the review reads
+the account rather than a bug in the watch. **confirm**, then clean up.
 
 ```sh
 aws --endpoint-url http://localhost:4566 iam detach-role-policy \
   --role-name on-call --policy-arn arn:aws:iam::000000000000:policy/console-read
 aws --endpoint-url http://localhost:4566 iam delete-policy \
   --policy-arn arn:aws:iam::000000000000:policy/console-read
-access/scripts/drift | tail -1
+access/scripts/whocan waterpark-artifacts | grep -c on-call
 ```
 
-`every watched root matches the account`.
+`0`.
 
 ### 5c. What expires
 
@@ -267,8 +272,8 @@ access/scripts/check codeowners
 ```
 
 `deleted`, two `edited`, `regen`, the `none.` line, then `Success!`, then
-nothing from the grep, then `ok    .github/CODEOWNERS matches the principal
-files`. Say that validate is the proof here because the root is live only,
+nothing from the grep, then the codeowners stage ending on its `ok` line and
+`check passed`. Say that validate is the proof here because the root is live only,
 and that live the plan shows the permission set and its assignments leaving.
 
 **confirm**, then restore.
@@ -284,7 +289,8 @@ access/scripts/check codeowners
 access/scripts/offboard --preview desk-operator
 ```
 
-This time the live half is a read. The role ARN, its boundary, two policies,
+The declared half prints first, four lines as for the author. Then the live
+half is a read. The role ARN, its boundary, two policies,
 and `removes  the role, 2 grant policies and their attachments, at apply`.
 Say that the `removes` line is what the PR reviewer approves and that it
 came from the account.
@@ -359,7 +365,7 @@ earlier output on trust.
 - `access/scripts/whocan waterpark-artifacts` listed five grants including
   `runner-builder` with `from waterpark-runner`, and a sixth line for the
   hand-attached policy reading `not written by the repo` until it was
-  detached.
+  detached, while `drift` stayed clean throughout.
 - `access/scripts/access-review` printed a Principals table with five rows,
   `waterpark-runner` in the From column, and an unused-access section that
   is a named skip.

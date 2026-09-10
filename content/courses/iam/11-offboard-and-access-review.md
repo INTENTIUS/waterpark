@@ -102,10 +102,6 @@ Lesson 10 gave somebody access for two hours. This lesson is about the two quest
    ```text
    who can reach waterpark-artifacts, read from the account at 2026-09-10T20:20:14Z
 
-     site-publisher  read
-         persona service, owner platform, from prod
-         expires never
-         Picks up the checkpoint bundle a lesson restarts from.
      desk-operator  list
          persona service, owner platform, from prod
          expires 2027-01-01T00:00:00Z
@@ -114,17 +110,22 @@ Lesson 10 gave somebody access for two hours. This lesson is about the two quest
          persona service, owner platform, from prod
          expires 2027-01-01T00:00:00Z
          Direct mode reads the estate. Expires so the desk's read has to be renewed deliberately.
-     runner-builder  write
-         persona service, owner runner, from waterpark-runner
-         expires never
-         Publishes the build artifacts that go with the image.
      runner-builder  list
          persona service, owner runner, from waterpark-runner
          expires never
          Reads what it already published before pushing again.
+     runner-builder  write
+         persona service, owner runner, from waterpark-runner
+         expires never
+         Publishes the build artifacts that go with the image.
+     site-publisher  read
+         persona service, owner platform, from prod
+         expires never
+         Picks up the checkpoint bundle a lesson restarts from.
    ```
 
-   Five grants, and the last two come from the satellite. Nothing in this
+   Five grants, sorted by principal, and the two `runner-builder` lines come
+   from the satellite. Nothing in this
    script opened `access/satellites/`. It asked the account for every role
    and every attached policy, and `runner-builder` is in the account because
    lesson 8 applied it there, so it is in the answer. The `from` column is a
@@ -156,26 +157,34 @@ Lesson 10 gave somebody access for two hours. This lesson is about the two quest
    persona module did not write that name, and it says so instead of guessing.
    This is the whole reason the review reads the account. A review built from
    the HCL would have said the on-call holds nothing, and it would have been
-   describing the repo rather than the estate. Lesson 7's watch sees the same
-   thing from the other side.
+   describing the repo rather than the estate. Now ask lesson 7's watch.
 
    ```sh
-   access/scripts/drift | head -8
+   access/scripts/drift | tail -1
    ```
 
-   The attachment shows as drift on `on-call`, because a plan over the root
-   that declares the role sees a policy the file does not. Detach it and
-   delete it, so the rest of the lesson reads a clean account.
+   `every watched root matches the account`. The watch is blind to this. The
+   persona module declares one `aws_iam_role_policy_attachment` per grant, and
+   each one owns exactly its own attachment, so a plan sees nothing when a
+   policy it never declared is attached beside them. A widened trust policy or
+   a detached grant is drift, and an extra attachment is not, and that is a
+   fact about what the estate declares rather than a bug in the watch. An
+   estate that wanted the watch to see this would declare the role's
+   attachments as an exclusive set, and would pay for it every time a
+   satellite or a break-glass grant added one. This estate reads the account
+   instead, here and in the review, and lesson 13's watcher reads the
+   unused-access findings the same way. Detach the policy and delete it, so
+   the rest of the lesson reads a clean account.
 
    ```sh
    aws --endpoint-url http://localhost:4566 iam detach-role-policy \
      --role-name on-call --policy-arn arn:aws:iam::000000000000:policy/console-read
    aws --endpoint-url http://localhost:4566 iam delete-policy \
      --policy-arn arn:aws:iam::000000000000:policy/console-read
-   access/scripts/drift | tail -1
+   access/scripts/whocan waterpark-artifacts | grep -c on-call
    ```
 
-   `every watched root matches the account`.
+   `0`.
 
 4. Ask what expires.
 
@@ -279,8 +288,8 @@ Lesson 10 gave somebody access for two hours. This lesson is about the two quest
 
    `deleted`, `edited` twice, `regen`, then
    `none. Nothing under access/ or in CODEOWNERS names course-author outside a comment.`
-   Then `Success!`, then nothing from the grep, then
-   `ok    .github/CODEOWNERS matches the principal files`. Validate is the
+   Then `Success!`, then nothing from the grep, then the codeowners stage
+   ending on its `ok` line and `check passed`. Validate is the
    proof here because the root is live only, and a dangling reference would
    have failed it. Live, `terraform -chdir=access/identity plan` shows the
    permission set and its assignments leaving, the apply removes them, and
@@ -309,7 +318,9 @@ Lesson 10 gave somebody access for two hours. This lesson is about the two quest
      removes  the role, 2 grant policies and their attachments, at apply
    ```
 
-   This time the live half is a read. The role, its boundary, the two grant
+   The declared half prints first, as it did for the author, the leaf file,
+   two output lines and the CODEOWNERS line. This time the live half is a
+   read. The role, its boundary, the two grant
    policies, and what the apply takes away. That last line is what a PR
    reviewer approves, and it came from the account rather than from the file
    the PR deletes.
@@ -333,8 +344,8 @@ Lesson 10 gave somebody access for two hours. This lesson is about the two quest
    access/scripts/access-review | grep -c '^| `'
    ```
 
-   `Resources: 0 added, 0 changed, 5 destroyed.`, then
-   `An error occurred (NoSuchEntity) when calling the GetRole operation: The role with name desk-operator cannot be found.`,
+   `Resources: 0 added, 0 changed, 5 destroyed.`, then an error carrying
+   `NoSuchEntity` and `The role with name desk-operator cannot be found`,
    then `every watched root matches the account` and `0`, then `10`, which
    is four principal rows and six grant rows where step 5 counted five and
    eight. One PR, one apply, and the account, the watch and the review all
@@ -388,7 +399,7 @@ Lesson 10 gave somebody access for two hours. This lesson is about the two quest
 
 The whole lesson runs on Floci, and two things are declared rather than read.
 
-What Floci shows. Every read the scripts make, `list-roles`, `get-role`, `list-attached-role-policies`, `list-policy-tags`, `get-policy-version`, `list-entities-for-policy`, answers on the emulator with the tags and documents the module wrote, so `whocan`, `expiring` and the review are real here. A policy attached by hand appears in all three and in the drift watch. A workload's offboard applies and reads back as `NoSuchEntity`.
+What Floci shows. Every read the scripts make, `list-roles`, `get-role`, `list-attached-role-policies`, `list-policy-tags`, `get-policy-version`, `list-entities-for-policy`, answers on the emulator with the tags and documents the module wrote, so `whocan`, `expiring` and the review are real here. A policy attached by hand appears in all three, and not in the drift watch, for the reason step 3 gives. A workload's offboard applies and reads back as `NoSuchEntity`.
 
 What Floci cannot show. Identity Center, so the course author's offboard is proven by validate and grep and the permission set is never planned, and the review lists humans as declared rather than as read. Access Analyzer's unused-access analyzer, so the review's unused-access section is a skip with a reason. Both are named on the artifact and on the page rather than left for a reviewer to discover (decision 27).
 
