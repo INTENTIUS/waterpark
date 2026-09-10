@@ -1,0 +1,151 @@
+#!/usr/bin/env bash
+# Offboard a principal. Every reference in one change, and the account read
+# for what the change removes.
+#
+#   access/scripts/offboard --preview <principal>   show the removal, change nothing
+#   access/scripts/offboard <principal>             make the change
+#
+# The declared side is the leaf file, the lines in the root's outputs that
+# name it, the variable a human principal's assignment reads, and the line
+# CODEOWNERS derived from it. The live side is the role, its boundary and
+# its attached policies, read from the account (decision 42), so the preview
+# says what the apply will take away rather than what a file claims exists.
+#
+# The change is a pull request like any other. terraform plan is the proof
+# that nothing else references the principal, because a dangling reference
+# fails the plan, and the grep at the end is the proof that nothing names
+# it in code. One PR, one apply, zero references (estate.md scenario 4).
+set -uo pipefail
+
+access_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+repo_root="$(cd "$access_root/.." && pwd)"
+# shellcheck source=lib-live.sh
+. "$access_root/scripts/lib-live.sh"
+cd "$access_root" || exit 1
+
+preview=false
+principal=""
+while [ $# -gt 0 ]; do
+	case "$1" in
+	--preview)
+		preview=true
+		shift
+		;;
+	-*)
+		echo "usage: access/scripts/offboard [--preview] <principal>" >&2
+		exit 2
+		;;
+	*)
+		principal="$1"
+		shift
+		;;
+	esac
+done
+[ -n "$principal" ] || {
+	echo "usage: access/scripts/offboard [--preview] <principal>" >&2
+	exit 2
+}
+label="$(printf '%s' "$principal" | tr '-' '_')"
+
+say() { printf '%s\n' "$*"; }
+
+# The leaf file, by the layout's own promise.
+leaf="$(find envs identity satellites \( -name "iam_role.$label.tf" -o -name "ssoadmin_permission_set.$label.tf" \) 2>/dev/null | head -1)"
+[ -n "$leaf" ] || {
+	say "offboard: no principal file for $principal under access/. The layout promises iam_role.$label.tf or ssoadmin_permission_set.$label.tf, and neither exists." >&2
+	exit 1
+}
+root="$(dirname "$leaf")"
+kind=workload
+case "$leaf" in
+*/ssoadmin_permission_set.*) kind=human ;;
+esac
+
+say "offboard $principal"
+say
+say "== declared, under access/$root"
+say "  delete   access/$leaf"
+
+# Lines in the root that name the module. Comments are left alone, because
+# a comment that says where something went is the opposite of a reference.
+refs="$(grep -n "module\.$label\." "$root"/*.tf 2>/dev/null | grep -v ":[[:space:]]*#" | grep -v "^$leaf:" || true)"
+if [ -n "$refs" ]; then
+	printf '%s\n' "$refs" | sed 's/^/  remove   access\//'
+fi
+var_block=""
+if [ "$kind" = human ] && grep -q "^variable \"${label}_group_id\"" "$root/variables.tf" 2>/dev/null; then
+	var_block="${label}_group_id"
+	say "  remove   access/$root/variables.tf, the variable \"${var_block}\" block"
+fi
+co_line="$(grep -n "$leaf" "$repo_root/.github/CODEOWNERS" 2>/dev/null || true)"
+[ -n "$co_line" ] && say "  regen    .github/CODEOWNERS, line ${co_line%%:*} routes this file today"
+
+say
+say "== live, in the account"
+case "$root" in
+identity)
+	say "  skip     access/identity is live only. Identity Center runs in the management account and not on a laptop,"
+	say "           so the permission set and its assignments are read on the live path, not here."
+	;;
+*)
+	require_account offboard
+	if role="$(awsq iam get-role --role-name "$principal" --query 'Role' 2>/dev/null)"; then
+		say "  role     $(jq -r .Arn <<<"$role")"
+		say "           boundary $(jq -r '.PermissionsBoundary.PermissionsBoundaryArn // "none"' <<<"$role")"
+		attached="$(awsq iam list-attached-role-policies --role-name "$principal" --query 'AttachedPolicies[].PolicyName' --output text 2>/dev/null | tr '\t' '\n')"
+		n=0
+		for p in $attached; do
+			[ -n "$p" ] || continue
+			say "  policy   $p"
+			n=$((n + 1))
+		done
+		say "  removes  the role, $n grant polic$([ "$n" -eq 1 ] && echo y || echo ies) and their attachments, at apply"
+	else
+		say "  absent   no role named $principal in the account, so the apply removes nothing and the change is the file"
+	fi
+	;;
+esac
+
+if [ "$preview" = true ]; then
+	say
+	say "  This was the preview. Nothing was changed. Run without --preview to make the change,"
+	say "  then terraform -chdir=access/$root plan is the proof."
+	exit 0
+fi
+
+say
+say "== changing"
+rm "$leaf"
+say "  deleted  access/$leaf"
+if [ -n "$refs" ]; then
+	printf '%s\n' "$refs" | cut -d: -f1 | sort -u | while read -r f; do
+		grep -v "module\.$label\." "$f" >"$f.new" && mv "$f.new" "$f"
+		say "  edited   access/$f"
+	done
+fi
+if [ -n "$var_block" ]; then
+	awk -v v="variable \"$var_block\"" '
+		$0 ~ "^" v { skipping = 1 }
+		skipping && /^}/ { skipping = 0; blank = 1; next }
+		skipping { next }
+		blank && /^$/ { blank = 0; next }
+		{ blank = 0; print }
+	' "$root/variables.tf" >"$root/variables.tf.new" && mv "$root/variables.tf.new" "$root/variables.tf"
+	say "  edited   access/$root/variables.tf"
+fi
+terraform fmt "$root" >/dev/null 2>&1
+"$access_root/scripts/gen-codeowners" >/dev/null && say "  regen    .github/CODEOWNERS"
+
+say
+say "== references left in code"
+left="$(grep -rn --include='*.tf' -e "module\.$label\." -e "\"$principal\"" . "$repo_root/.github/CODEOWNERS" 2>/dev/null | grep -v ":[[:space:]]*#" || true)"
+if [ -z "$left" ]; then
+	say "  none. Nothing under access/ or in CODEOWNERS names $principal outside a comment."
+else
+	printf '%s\n' "$left" | sed 's/^/  /'
+	say "  Those have to go by hand. A plan will fail on any of them that is a reference."
+fi
+say
+say "  Now prove it. terraform -chdir=access/$root plan shows what the apply removes and fails on"
+say "  any reference this script did not know about."
+exit 0

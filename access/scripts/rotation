@@ -58,7 +58,7 @@ while [ $# -gt 0 ]; do
 done
 
 endpoint="${FLOCI_ENDPOINT:-http://localhost:4566}"
-live="${ROTATION_LIVE:-false}"
+live="${LIVE:-${ROTATION_LIVE:-false}}"
 
 iam() {
 	if [ "$live" = true ]; then

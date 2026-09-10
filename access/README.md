@@ -24,7 +24,7 @@ access/
   modules/
     persona/     the four archetypes a principal file instantiates
   backends/      the two backend files, one of which is copied into an env
-  scripts/       backend, check, and the lesson 6 to 10 scripts below
+  scripts/       backend, check, and the lesson 6 to 11 scripts below
   codeowners.map team name to GitHub handle, the one place the two meet
   .tflint.d/
     policies/    the rule pack, as Rego
@@ -867,3 +867,62 @@ it. Floci evaluates no condition on an allow, so the access itself is
 denied throughout on the emulator, and the drill where the access works and
 then ends at the expiry is live only ([upstream](../project/upstream.md),
 decision 60).
+
+## Lesson 11, offboard and the access review
+
+A principal leaves in one pull request and one apply with nothing left
+naming them, and a reviewer gets an artifact read from the account.
+
+```
+access/
+  scripts/
+    lib-live.sh      the read side every script below shares
+    whocan           who can reach a resource
+    expiring         every dated grant, soonest first
+    offboard         remove a principal and every reference
+    access-review    the quarterly artifact
+.github/workflows/
+  access-review.yml  the quarterly cron
+```
+
+### Everything reads the account
+
+`whocan`, `expiring` and `access-review` read `get-role`,
+`list-attached-role-policies`, `list-policy-tags` and `get-policy-version`
+and never a file (decision 42). A role the satellite created is in every
+answer whichever repo declared it, and so is a policy somebody attached in
+a console, which the drift watch reports beside it. The grant's access
+level and resource are read off the policy name the persona module writes,
+and the expiry, the reason and the break-glass marks off its tags.
+
+```sh
+access/scripts/whocan waterpark-artifacts
+access/scripts/expiring --within 120
+access/scripts/access-review
+LIVE=true access/scripts/access-review
+```
+
+### Offboard
+
+```sh
+access/scripts/offboard --preview course-author
+access/scripts/offboard desk-operator
+```
+
+The declared side is the principal file, the output lines that name it,
+the variable a human's assignment reads, and the CODEOWNERS line derived
+from it. The live side is the role, its boundary and its attached policies,
+so the preview says what the apply takes away. After the change the script
+greps for the name outside a comment, and `terraform plan` is the proof,
+because a dangling reference fails it. `access/identity` is live only and
+the preview says so instead of reading it.
+
+### The artifact
+
+The review is Markdown for a person and JSON for the desk. It says where
+each fact came from, lists what expires ninety days out, names the
+unused-access section as a skip until an analyzer answers, lists humans as
+declared because Identity Center is read only live, folds in the rotation
+check, and closes with what it did not see. `access-review.yml` runs it
+quarterly against a Floci the job filled itself, which proves the shape and
+not a real account, and uploads the artifact for four hundred days.

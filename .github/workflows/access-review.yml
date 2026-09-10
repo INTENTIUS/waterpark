@@ -1,0 +1,84 @@
+# The quarterly access review.
+#
+# What this job proves, said plainly. It starts an empty Floci, applies the
+# estate into it, and reads the review out of that account. So the artifact
+# is the review the declared estate produces, and it says nothing about a
+# real account, where the same script runs live as the security account's
+# reviewer and the unused-access section fills. The job is the schedule and
+# the shape. The reviewer is where the artifact goes.
+name: access-review
+
+on:
+  schedule:
+    - cron: "0 6 1 1,4,7,10 *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  TERRAFORM_VERSION: 1.15.8
+  FLOCI_ENDPOINT: http://localhost:4566
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+
+    services:
+      floci:
+        image: ghcr.io/lex00/floci:iam-boundary
+        ports:
+          - 4566:4566
+        env:
+          FLOCI_SERVICES_IAM_ENFORCEMENT_ENABLED: "true"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Wait for Floci
+        run: |
+          for i in $(seq 1 60); do
+            code=$(curl -s -o /dev/null -m 2 -w '%{http_code}' "$FLOCI_ENDPOINT/" || true)
+            [ -n "$code" ] && [ "$code" != "000" ] && { echo "Floci answered with $code"; exit 0; }
+            sleep 2
+          done
+          echo "Floci did not answer on $FLOCI_ENDPOINT"
+          exit 1
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          terraform_wrapper: false
+
+      - name: Apply the estate into this job's own account
+        env:
+          AWS_ACCESS_KEY_ID: test
+          AWS_SECRET_ACCESS_KEY: test
+          AWS_DEFAULT_REGION: us-east-1
+        run: |
+          terraform -chdir=access/envs/prod init -input=false -no-color
+          terraform -chdir=access/envs/prod apply -auto-approve -input=false -no-color
+          for d in access/satellites/*/; do
+            [ -f "$d/versions.tf" ] || continue
+            terraform -chdir="$d" init -input=false -no-color
+            terraform -chdir="$d" apply -auto-approve -input=false -no-color
+          done
+
+      - name: The review
+        env:
+          AWS_ACCESS_KEY_ID: test
+          AWS_SECRET_ACCESS_KEY: test
+          AWS_DEFAULT_REGION: us-east-1
+        run: |
+          access/scripts/access-review | tee review.md
+          access/scripts/access-review --json > review.json
+          cat review.md >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: access-review-${{ github.run_id }}
+          path: |
+            review.md
+            review.json
+          retention-days: 400
+          if-no-files-found: error
