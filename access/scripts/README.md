@@ -18,8 +18,9 @@ jobs are thin wrappers around these rather than shell embedded in YAML.
 | `satellite-source` | swap the satellite between the local and the git module source | 8 |
 | `mint-satellite-credential` | the satellite deploy credential, on Floci | 8 |
 | `double-refusal` | strip the boundary, get refused twice | 8 |
+| `rotation` | every static secret the account holds, with its age against the window | 9 |
 
-None of them holds a credential of its own. The three that talk to an account
+None of them holds a credential of its own. The four that talk to an account
 take the throwaway `test` key pair against Floci by default, and the two that
 talk to the code host use whatever `gh` is already authenticated as.
 

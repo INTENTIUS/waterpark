@@ -84,4 +84,6 @@ sentence, not an integration.
    pinned, no wildcard `sub` claim. Roles Anywhere gets one paragraph as
    the option for a fleet with an existing PKI. The rotation check for the
    few static secrets that remain runs on the watch's weekday schedule, so
-   one cron drives both (decision 39, decision 54).
+   one cron drives both (decision 39, decision 54). `access/identity/`
+   holds no trust anchor at all, because an anchor is account scoped and
+   belongs beside the role that trusts it (decision 59).

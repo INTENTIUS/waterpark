@@ -56,6 +56,8 @@ rules=(
 	"boundary-required:deny_boundary_required"
 	"no-open-ingress:warn_no_open_ingress"
 	"sg-reference-not-cidr:warn_sg_reference_not_cidr"
+	"trust-subject-pinned:deny_trust_subject_pinned"
+	"trust-audience-pinned:deny_trust_audience_pinned"
 )
 
 failures=0
@@ -178,6 +180,27 @@ run_workflow() {
 		return
 	fi
 
+	# The workflow level first. A permissions block or an env block at the top
+	# of the file is inherited by every job, so id-token: write there reaches
+	# the pr job whatever the job's own block says, and a secret in the top
+	# level env is in every job's environment. Lesson 6's check read only
+	# inside jobs and passed a workflow-level grant, which lesson 9 closed.
+	local top
+	top="$(awk '
+		/^jobs:/ { exit }
+		/^[a-zA-Z_-]+:/ { key = $1; sub(/:$/, "", key) }
+		key == "permissions" || key == "env" { print }
+	' "$wf")"
+	local topbad=0
+	if printf '%s\n' "$top" | grep -Eq 'id-token:[[:space:]]*write'; then
+		fail "the workflow-level permissions block asks for id-token: write, which every job inherits, the pr job included"
+		topbad=1
+	fi
+	if printf '%s\n' "$top" | grep -q 'secrets\.'; then
+		fail "the workflow-level env names a secret, which every job inherits, the pr job included"
+		topbad=1
+	fi
+
 	# Split into job blocks. A job key sits at two spaces under jobs:, and its
 	# block runs to the next one.
 	local blocks
@@ -222,7 +245,7 @@ EOF
 		fail "could not read any job out of .github/workflows/access.yml"
 		return
 	fi
-	[ "$bad" -eq 0 ] && ok "no job reachable from pull_request names a secret or asks to federate"
+	[ "$bad" -eq 0 ] && [ "$topbad" -eq 0 ] && ok "no job reachable from pull_request names a secret or asks to federate, and the workflow level grants neither"
 }
 
 floci_endpoint="${FLOCI_ENDPOINT:-http://localhost:4566}"

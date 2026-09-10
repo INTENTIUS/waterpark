@@ -9,6 +9,12 @@ locals {
   break_glass_max_ttl_hours = 2
   watcher_max_open_prs      = 5
 
+  # The longest a static secret may stand before the rotation check flags
+  # it. Credentials are short-lived everywhere in this estate, so this
+  # number governs the few that cannot be, and the check runs on the watch's
+  # schedule (decision 39).
+  static_secret_max_age_days = 90
+
   # Everything the boundary denies, as one list the I6 proof checks consume.
   # These are the actions no role inside the estate may hold, whatever its
   # own policy says.

@@ -1,0 +1,201 @@
+#!/usr/bin/env bash
+# The rotation check. Every long-lived credential the account holds, with its
+# age against the window, read live rather than from any file.
+#
+#   access/scripts/rotation                    the report as text
+#   access/scripts/rotation --json             the same report as JSON
+#   access/scripts/rotation --max-age-days N   override the window from baseline
+#
+# Exit 0 means nothing in the account is over the window. Exit 2 means at
+# least one credential is, or one exists that the repo never declared, which
+# in this estate is every one. Exit 1 means the check itself broke.
+#
+# What counts as a static secret here. Credentials are short-lived everywhere
+# in this estate. Workloads federate through declared OIDC providers and get
+# a token per job, humans get Identity Center sessions, and decision 5 bans
+# IAM users outright, so on a conforming account the answer is none. The
+# check reads the account anyway, because the account is the truth and a
+# console can make a user in ten seconds. Every IAM access key it finds is
+# reported with its age, whether or not the repo knows about the user it
+# belongs to, and the window is static_secret_max_age_days from
+# access/baseline, read rather than restated (decision 39).
+#
+# What it does not cover, said plainly. Break-glass signing material arrives
+# in lesson 10 and joins this list there. Secrets Manager and Parameter Store
+# hold application secrets that are not principals, and an application's
+# rotation policy is that application's. The code host's tokens are the code
+# host's.
+#
+# It runs on the watch's weekday schedule (.github/workflows/drift.yml), so
+# one cron drives the drift watch and this, and lesson 13 teaches the
+# schedule once.
+set -uo pipefail
+
+access_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$access_root" || exit 1
+
+as_json=false
+max_age=""
+while [ $# -gt 0 ]; do
+	case "$1" in
+	--json)
+		as_json=true
+		shift
+		;;
+	--max-age-days)
+		max_age="${2:-}"
+		shift 2
+		;;
+	--max-age-days=*)
+		max_age="${1#--max-age-days=}"
+		shift
+		;;
+	*)
+		echo "usage: access/scripts/rotation [--json] [--max-age-days N]" >&2
+		exit 1
+		;;
+	esac
+done
+
+endpoint="${FLOCI_ENDPOINT:-http://localhost:4566}"
+live="${ROTATION_LIVE:-false}"
+
+iam() {
+	if [ "$live" = true ]; then
+		aws iam "$@"
+	else
+		AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID:-test}" \
+			AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY:-test}" \
+			AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION:-us-east-1}" \
+			aws --endpoint-url "$endpoint" iam "$@"
+	fi
+}
+
+if [ "$live" != true ] && [ "$(curl -s -o /dev/null -m 3 -w '%{http_code}' "$endpoint/" 2>/dev/null)" = "000" ]; then
+	echo "rotation: nothing is answering on $endpoint, so there is no live account to read." >&2
+	echo "          docker run -d --name wp-access-floci -p 4566:4566 \\" >&2
+	echo "            -e FLOCI_SERVICES_IAM_ENFORCEMENT_ENABLED=true \\" >&2
+	echo "            ghcr.io/lex00/floci:iam-boundary" >&2
+	exit 1
+fi
+
+# The window. It lives in access/baseline as a constant so a student changes
+# one number in one place, and the applied estate exports it. When nothing is
+# applied yet the file is read directly, so the check still has a number. A
+# key at the window is over it, so a window of zero says no static secret
+# may stand at all, which is what this estate declares.
+if [ -z "$max_age" ]; then
+	max_age="$(terraform -chdir=envs/prod output -raw static_secret_max_age_days 2>/dev/null)"
+fi
+if ! [ "$max_age" -ge 0 ] 2>/dev/null; then
+	max_age="$(sed -n 's/^[[:space:]]*static_secret_max_age_days[[:space:]]*=[[:space:]]*\([0-9]*\).*/\1/p' \
+		"$access_root/baseline/locals.tf" | head -1)"
+fi
+if ! [ "$max_age" -ge 0 ] 2>/dev/null; then
+	echo "rotation: could not read static_secret_max_age_days from access/baseline" >&2
+	exit 1
+fi
+
+now_epoch="$(date -u +%s)"
+now="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+# RFC3339 to epoch seconds, on macOS and on Linux, with or without fractional
+# seconds and with either spelling of UTC.
+to_epoch() {
+	local ts="${1%%.*}"
+	ts="${ts%Z}"
+	ts="${ts%+00:00}"
+	if date -u -j -f '%Y-%m-%dT%H:%M:%S' "$ts" +%s 2>/dev/null; then
+		return
+	fi
+	date -u -d "$ts" +%s 2>/dev/null
+}
+
+work="$(mktemp -d -t wp-rotation)"
+trap 'rm -rf "$work"' EXIT
+findings="$work/findings.json"
+echo "[]" >"$findings"
+append() {
+	jq --argjson f "$1" '. + [$f]' "$findings" >"$findings.new" && mv "$findings.new" "$findings"
+}
+
+broke=0
+
+# The trust anchors, for the contrast. A workload behind one of these holds
+# nothing to rotate, because its credential is minted per job and expires on
+# its own.
+anchors="$(iam list-open-id-connect-providers --query 'OpenIDConnectProviderList[].Arn' --output text 2>/dev/null | tr '\t' '\n' | grep -c . || true)"
+
+# Every access key on every user, and the age of each.
+users="$(iam list-users --query 'Users[].UserName' --output text 2>"$work/err" | tr '\t' '\n')"
+if [ $? -ne 0 ] && [ -s "$work/err" ]; then
+	broke=1
+fi
+
+over=0
+keys=0
+for user in $users; do
+	[ -n "$user" ] || continue
+	rows="$(iam list-access-keys --user-name "$user" \
+		--query 'AccessKeyMetadata[].[AccessKeyId,Status,CreateDate]' --output text 2>/dev/null | tr '\t' ' ')"
+	while read -r key status created; do
+		[ -n "$key" ] || continue
+		keys=$((keys + 1))
+		created_epoch="$(to_epoch "$created")"
+		if [ -z "$created_epoch" ]; then
+			broke=1
+			append "$(jq -nc --arg u "$user" --arg k "$key" \
+				'{kind: "error", user: $u, key: $k, detail: "could not read the create date"}')"
+			continue
+		fi
+		age_days=$(((now_epoch - created_epoch) / 86400))
+		verdict="within"
+		if [ "$age_days" -ge "$max_age" ]; then
+			verdict="rotate"
+			over=$((over + 1))
+		fi
+		append "$(jq -nc --arg u "$user" --arg k "$key" --arg s "$status" --arg c "$created" \
+			--argjson a "$age_days" --argjson m "$max_age" --arg v "$verdict" \
+			'{kind: "access-key", user: $u, key: $k, status: $s, created: $c,
+        age_days: $a, max_age_days: $m, verdict: $v}')"
+	done <<EOT
+$rows
+EOT
+done
+
+if [ "$as_json" = true ]; then
+	jq -n --slurpfile f "$findings" --arg at "$now" --argjson m "$max_age" \
+		--argjson anchors "${anchors:-0}" --argjson keys "$keys" --argjson over "$over" \
+		'{ checked_at: $at, max_age_days: $m, trust_anchors: $anchors,
+       access_keys: $keys, over_window: $over, findings: $f[0] }'
+else
+	echo "rotation check, $now"
+	echo
+	echo "  window        $max_age days (access/baseline)"
+	echo "  trust anchors ${anchors:-0}, nothing to rotate behind them"
+	if [ "$keys" -eq 0 ]; then
+		echo "  access keys   none in the account"
+	else
+		echo "  access keys   $keys"
+		echo
+		jq -r '
+      .[]
+      | select(.kind == "access-key")
+      | "  [" + .verdict + "] " + .user + "  " + .key
+        + "\n      " + .status + ", created " + .created + ", " + (.age_days | tostring) + " day(s) old"
+    ' "$findings"
+		jq -r '.[] | select(.kind == "error") | "  [error] " + .user + "  " + .key + "\n      " + .detail' "$findings"
+	fi
+	echo
+	if [ "$over" -gt 0 ]; then
+		echo "  $over key(s) over the window. Rotate them, or better, remove the user and federate the workload."
+	elif [ "$keys" -gt 0 ]; then
+		echo "  every key is inside the window, and every key is a user this repo does not declare (decision 5). The drift watch owns that finding."
+	else
+		echo "  nothing to rotate. Every principal in this account is a role or a permission set."
+	fi
+fi
+
+[ "$broke" -eq 1 ] && exit 1
+[ "$over" -gt 0 ] && exit 2
+exit 0

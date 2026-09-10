@@ -91,6 +91,21 @@ jobs:
         run: |
           access/scripts/reconcile --report drift.json --dry-run | tee reconcile.txt
 
+      # The rotation check rides the same cron (decision 39). Against this
+      # job's own container the answer is always none, for the same reason
+      # the watch is always clean, and the shape is what the job proves.
+      - name: The rotation check
+        id: rotation
+        env:
+          AWS_ACCESS_KEY_ID: test
+          AWS_SECRET_ACCESS_KEY: test
+          AWS_DEFAULT_REGION: us-east-1
+        run: |
+          set +e
+          access/scripts/rotation | tee rotation.txt
+          echo "code=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
+          exit 0
+
       - name: The report
         if: always()
         run: |
@@ -108,6 +123,14 @@ jobs:
               cat reconcile.txt
               echo '```'
             fi
+            if [ -f rotation.txt ]; then
+              echo
+              echo "### Rotation"
+              echo
+              echo '```'
+              cat rotation.txt
+              echo '```'
+            fi
             echo
             echo "This ran against a Floci container this job created and applied"
             echo "into, so a clean result is expected and proves convergence rather"
@@ -121,6 +144,7 @@ jobs:
           path: |
             drift.txt
             drift.json
+            rotation.txt
           retention-days: 30
           if-no-files-found: warn
 
@@ -128,4 +152,10 @@ jobs:
         if: steps.watch.outputs.code == '2'
         run: |
           echo "::error::The estate did not converge in a container nothing else touched."
+          exit 1
+
+      - name: Fail on a static secret over the window
+        if: steps.rotation.outputs.code != '0'
+        run: |
+          echo "::error::A static secret stands over the window, or the check could not read the account."
           exit 1

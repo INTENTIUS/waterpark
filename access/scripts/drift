@@ -78,16 +78,19 @@ export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID:-test}"
 export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY:-test}"
 export AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION:-us-east-1}"
 
-# Severity routing. A security group or a trust policy that moved is somebody
-# waking up (decision 28 and prescription 12). Everything else is a PR.
+# Severity routing. A security group, a trust policy or a trust anchor that
+# moved is somebody waking up (decision 28 and prescription 12). Everything
+# else is a PR.
 #
 # The reasoning is blast radius rather than resource type for its own sake. A
 # widened security group is reachable from the internet the moment it lands. A
 # changed assume_role_policy changes who may become a principal, which is the
-# one edit that cannot be undone by revoking a grant.
+# one edit that cannot be undone by revoking a grant. A changed OIDC provider
+# changes which issuer's tokens count at all, which is the same edit one
+# level up.
 severity_of() {
 	case "$1" in
-	aws_security_group | aws_vpc_security_group_ingress_rule | aws_vpc_security_group_egress_rule)
+	aws_security_group | aws_vpc_security_group_ingress_rule | aws_vpc_security_group_egress_rule | aws_iam_openid_connect_provider)
 		echo page
 		;;
 	*)
