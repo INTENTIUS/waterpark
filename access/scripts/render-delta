@@ -117,6 +117,18 @@ delta="$(jq --argjson files "$files_json" '
         | { address: .address, type: .type, verb: verb(.) }
       ] | sort_by(.address),
 
+      # A replacement is a destroy and a create under one address, and on IAM
+      # it changes an ARN underneath whatever trusts it. It is listed on its
+      # own, with the attribute that forced it, because a reviewer who reads
+      # "site-publisher-v2 gains read" has not been told that site-publisher
+      # is about to stop existing (decision 63).
+      replacements: [
+        $changed[]
+        | select(verb(.) == "replace")
+        | { address: .address, type: .type,
+            forced_by: ((.change.replace_paths // []) | map(map(tostring) | join(".")) | join(", ")) }
+      ] | sort_by(.address),
+
       files: ($files | map(select(. != "")))
     }
 ' "$plan_json")" || {
@@ -166,6 +178,13 @@ printf '%s' "$delta" | jq -r '
   ( if (.other | length) == 0 then empty
     else ("  Other resources",
           (.other | map("    " + sym(.verb) + " " + .address) | join("\n")),
+          "")
+    end ),
+  ( if (.replacements | length) == 0 then empty
+    else ("  Replacements. These are destroyed and created again under the same",
+          "  address, and on IAM that changes an ARN underneath whatever trusts it.",
+          "  A replacement waits for a person, and the PR job says so.",
+          (.replacements | map("    ! " + .address + "   forced by " + .forced_by) | join("\n")),
           "")
     end ),
   ( if (.files | length) == 0 then empty

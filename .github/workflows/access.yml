@@ -241,6 +241,26 @@ jobs:
             echo "high=false" >> "$GITHUB_OUTPUT"
             echo "### Severity: ordinary, no guardrail file changed" > severity.md
           fi
+
+          # A replacement destroys and recreates a resource under one address,
+          # and on IAM that changes an ARN underneath whatever trusts it. The
+          # delta lists them, and this names them where a reviewer cannot miss
+          # them, because "approve the change" means the change including the
+          # part where something stops existing (decision 63).
+          replacements=$(jq -r '.replacements[]? | "    " + .address + "   forced by " + .forced_by' delta.json)
+          if [ -n "$replacements" ]; then
+            echo "replacement=true" >> "$GITHUB_OUTPUT"
+            {
+              echo
+              echo "### Replacement: this plan destroys and recreates"
+              echo
+              echo "Each of these loses its ARN. Whatever trusts or names the old one breaks at apply."
+              echo
+              printf '%s\n' "$replacements"
+            } >> severity.md
+          else
+            echo "replacement=false" >> "$GITHUB_OUTPUT"
+          fi
           cat severity.md
 
       - name: The job summary
@@ -279,6 +299,15 @@ jobs:
         run: |
           gh pr edit "${{ github.event.pull_request.number }}" --add-label guardrail-change ||
             echo "could not add the label, the summary carries the severity"
+
+      - name: Label a replacement
+        if: steps.severity.outputs.replacement == 'true' && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh pr edit "${{ github.event.pull_request.number }}" --add-label replacement ||
+            echo "could not add the label, the summary carries the replacement"
 
       # The comment, same posture. Posting one needs pull-requests: write,
       # which a fork PR does not get, so the delta always lands in the job

@@ -612,3 +612,25 @@ it. Reversing one requires editing this file in the same PR.
     cost is that an estate whose provider carries no default tags gets an
     empty plan instead, and the check passes that too.
     ([IAM, lesson 15](../courses/iam/15-adopt-in-place.md))
+63. **The approval binds to what changes, a replacement is named where a
+    reviewer cannot miss it, and the gate is declared before it is
+    configured.** The digest is over the normalised plan, and on an update
+    in place only over the attributes that differ, because the first
+    in-place update the pipeline merged was refused when a role's
+    `create_date` and `unique_id` from one container reached a digest
+    compared in another (lesson 9). Two containers that build the same
+    base and plan the same change now compute one digest, and lesson 14
+    proves it. `render-delta` lists replacements on their own with the
+    attribute that forced each, and the PR job writes a replacement
+    section into the summary and labels the pull request, because a
+    replacement on IAM changes an ARN underneath whatever trusts it and
+    "approve the change" includes the part where something stops
+    existing. The apply job's `environment: prod` exists so a maintainer
+    can add required reviewers in the repository settings, and today it
+    has none, so on this repository the merge is the approval and the
+    page says so rather than claiming a gate the settings do not hold.
+    The digest proves the plan did not move and not who produced it, and
+    property XIV stays half closed until an attested build is checked
+    before apply, which no lesson schedules. The cost is one more label
+    and one honest sentence about the environment.
+    ([IAM, lesson 14](../courses/iam/14-approve-the-change-not-the-diff.md))
