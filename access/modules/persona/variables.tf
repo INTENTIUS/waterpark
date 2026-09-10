@@ -73,7 +73,7 @@ variable "permissions_boundary" {
 }
 
 variable "trusted_services" {
-  description = "The AWS services allowed to assume a workload role. Federated trust anchors arrive in lesson 9."
+  description = "The AWS services allowed to assume a workload role, when the role is not federated. A workload that runs outside AWS names federated_trust instead (lesson 9)."
   type        = list(string)
   default     = ["codebuild.amazonaws.com"]
 }
@@ -125,5 +125,15 @@ variable "federated_trust" {
   validation {
     condition     = var.federated_trust == null || length(try(var.federated_trust.subjects, [])) > 0
     error_message = "A federated trust names at least one subject. A trust with no subject condition trusts the issuer rather than a workload."
+  }
+
+  validation {
+    condition     = var.federated_trust == null || try(var.federated_trust.audience, "") != ""
+    error_message = "A federated trust pins an audience. Without one a token the issuer minted for another consumer can be replayed here (prescription 12)."
+  }
+
+  validation {
+    condition     = var.federated_trust == null || can(regex("^[a-z0-9.-]+(/[A-Za-z0-9._~-]+)*$", try(var.federated_trust.issuer_host, "")))
+    error_message = "issuer_host is the issuer's host and path with no scheme and no wildcard, for example token.actions.githubusercontent.com, because it is the prefix of the aud and sub condition keys."
   }
 }

@@ -530,8 +530,9 @@ Lesson 7 left an estate that watches itself. This lesson hands one role to someb
    subject on a laptop to bind to. Floci honors trust policies, so a role
    trusting an issuer is a role nothing here can become. This user stands in for
    that role, it is minted and deleted by a script, and it is never declared, so
-   the rule and the decision both still hold. Lesson 9 is where the issuer side
-   of this gets built for real.
+   the rule and the decision both still hold. Lesson 9 federates a real
+   workload through the issuer side of this, and says what the satellite's
+   own federated deploy role waits on.
 
    It does not carry the estate boundary itself, and that is deliberate rather
    than an oversight. The estate boundary denies all IAM write, so a credential
@@ -663,7 +664,7 @@ The whole lesson is self-paced, and it is the second place in the course where t
 
 The first run of this proof, recorded in issue 46, failed. Upstream Floci 2.0.1 never populates the `iam:PermissionsBoundary` condition key, so a policy conditioned on it denies `CreateRole` with the boundary and without it. Every call is refused, which looks like a pass and proves nothing. The image `ghcr.io/lex00/floci:iam-boundary` is a fork build that fixes both boundary bugs, so the control in step 9 can succeed and the refusal in step 9 can be a refusal of the thing that changed. [compose/README.md](https://github.com/INTENTIUS/waterpark/blob/main/compose/README.md) names the fork and the branch and [upstream](https://github.com/INTENTIUS/waterpark/blob/main/project/upstream.md) has both runs side by side.
 
-What this lesson proves and what it does not. It proves that a credential conditioned on `iam:PermissionsBoundary` creates a bounded role and is refused a bounded role's unbounded twin, that the rule pack catches the same thing earlier, and that neither refusal depends on the other. It does not prove federation, because the deploy credential is an IAM user standing in for a role a laptop has no subject to assume. That is lesson 9. It does not prove cross-repository review either, because CODEOWNERS here is one file for one repo.
+What this lesson proves and what it does not. It proves that a credential conditioned on `iam:PermissionsBoundary` creates a bounded role and is refused a bounded role's unbounded twin, that the rule pack catches the same thing earlier, and that neither refusal depends on the other. It does not prove federation, because the deploy credential is an IAM user standing in for a role a laptop has no subject to assume. Lesson 9 federates a workload that has a subject, and names what this one waits on. It does not prove cross-repository review either, because CODEOWNERS here is one file for one repo.
 
 The registry is real ECR on the patched image rather than a bucket standing in for one. The repository applies, its tags read back, and the immediate replan exits 0, which is what let decision 48's deferral be lifted here.
 
@@ -677,7 +678,7 @@ Start on step 5, with the CODEOWNERS line from step 1 still on the screen. Same 
 
 Then spend the rest on step 9. Run `double-refusal` once, whole, and let it print. Then ask the room which of the two refusals they would keep if they could only have one. The answer people reach for is the linter, because it is the one they would feel, and the answer is the other one. Then ask what a compromised satellite runner defeats. It defeats the linter completely and the condition not at all.
 
-Two honesty lines belong here. The first is the image, again, and it is sharper in this lesson than in lesson 5. On the release build this proof passes for the wrong reason, because every `CreateRole` is denied whether or not the boundary is there, and a green run would be a lie. We found it, we fixed it, and both runs are in `project/upstream.md`. The second is the credential. This is an IAM user with a long-lived access key, in a course whose fifth decision bans IAM users. It stands in for a federated deploy role because there is no issuer on a laptop, it lives for the length of one script, and lesson 9 builds the thing it is standing in for.
+Two honesty lines belong here. The first is the image, again, and it is sharper in this lesson than in lesson 5. On the release build this proof passes for the wrong reason, because every `CreateRole` is denied whether or not the boundary is there, and a green run would be a lie. We found it, we fixed it, and both runs are in `project/upstream.md`. The second is the credential. This is an IAM user with a long-lived access key, in a course whose fifth decision bans IAM users. It stands in for a federated deploy role because there is no issuer on a laptop, it lives for the length of one script, and lesson 9 builds the issuer side for a workload that has one and says what this credential's federated form still waits on.
 
 Live, the same code runs against a real sandbox account with `-var floci=false`, and the room can watch the same `AccessDenied` come back from real IAM.
 

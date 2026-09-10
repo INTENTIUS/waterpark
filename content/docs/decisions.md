@@ -510,3 +510,28 @@ it. Reversing one requires editing this file in the same PR.
     ([threat-model](threat-model.md),
     [IAM, lesson 6](../courses/iam/06-one-path-to-prod.md),
     [IAM, lesson 8](../courses/iam/08-delegation-and-the-double-refusal.md))
+59. **A trust anchor lives beside the role that trusts it, and `identity/`
+    holds none.** An OIDC provider is account scoped, so it is declared in
+    the environment whose roles federate through it, `envs/prod` today,
+    and a Kubernetes or SPIFFE issuer would be declared the same way in
+    the account its workloads run in. `identity/` targets the management
+    account and holds the human principals only, which settles what
+    decision 54 left to lesson I9. `site-publisher` is federated through
+    the GitHub Actions anchor with the `github-pages` deployment
+    environment as its exact subject, since that job is the one thing that
+    publishes the site, and it was the last workload in `envs/prod` whose
+    trust was a placeholder. Pinning is checked twice, by `modules/persona`
+    at validate on a leaf file and by the `trust-subject-pinned` and
+    `trust-audience-pinned` rules at lint on a raw role, and a changed
+    anchor pages like a changed trust policy does. The rotation window is
+    `static_secret_max_age_days` in `access/baseline`, ninety days, and
+    `access/scripts/rotation` reads the account live for every access key
+    on the drift watch's cron. The satellite's deploy credential stays a
+    script-minted user on the solo path. Its federated form is a deployer
+    role trusted by the satellite's own issuer subject and carrying the
+    conditioned `CreateRole` policy, and that role cannot sit inside the
+    estate boundary, which is the same second boundary decision 58 has
+    not taken. The cost is that a fleet with no OIDC issuer reads one
+    paragraph on Roles Anywhere and builds the rest itself (decision 39).
+    ([design/workload-identity](design/workload-identity.md),
+    [IAM, lesson 9](../courses/iam/09-federation-trust.md))

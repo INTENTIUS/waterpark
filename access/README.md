@@ -24,7 +24,7 @@ access/
   modules/
     persona/     the four archetypes a principal file instantiates
   backends/      the two backend files, one of which is copied into an env
-  scripts/       backend, check, and the lesson 6 to 8 scripts below
+  scripts/       backend, check, and the lesson 6 to 9 scripts below
   codeowners.map team name to GitHub handle, the one place the two meet
   .tflint.d/
     policies/    the rule pack, as Rego
@@ -151,6 +151,8 @@ are Rego like the rest rather than a side script.
 | `boundary-required` | error | a role, or a principal file that makes one, with no `permissions_boundary` |
 | `no-open-ingress` | warning | an ingress rule naming `0.0.0.0/0` or `::/0` |
 | `sg-reference-not-cidr` | warning | an ingress rule naming a raw CIDR instead of a source group |
+| `trust-subject-pinned` | error | a federated trust with no subject condition, a subject matched by pattern, or a subject carrying a wildcard |
+| `trust-audience-pinned` | error | a federated trust with no `StringEquals` audience, or an OIDC provider that lists no client id or is not https |
 
 Severity is the function-name prefix in the Rego, `deny_` for an error and
 `warn_` for a warning, so a new rule lands as a warning and is promoted in a
@@ -709,3 +711,87 @@ a `versions.tf`, and lints, validates and plans it alongside central. The
 satellite plans after `envs/prod`, because it reads the boundary live and
 cannot plan before central has applied it. A satellite running weaker checks
 than central would make the delegation contract a suggestion.
+
+## Lesson 9, federation trust
+
+Who may become a principal is the one edit revoking a grant cannot undo, so
+it is the most checked thing in the repo.
+
+```
+access/
+  envs/prod/
+    iam_openid_connect_provider.actions.tf   the anchor, beside the roles that trust it
+    iam_role.site_publisher.tf               federated, subject pinned to the github-pages environment
+    iam_role.waterpark_apply.tf              federated since lesson 6, subject pinned to main
+  .tflint.d/policies/
+    trust.rego                               trust-subject-pinned and trust-audience-pinned
+  baseline/
+    locals.tf                                static_secret_max_age_days
+  scripts/
+    rotation                                 every access key in the account, against the window
+    drift                                    a changed anchor pages, like a changed trust policy
+```
+
+### Where an anchor lives
+
+An OIDC provider is account scoped, so it is declared in the environment
+whose roles federate through it, beside those roles, and `identity/` holds
+none (decision 59). A second issuer, a Kubernetes cluster or a SPIFFE trust
+domain, is one more `iam_openid_connect_provider.<issuer>.tf` in the same
+directory and the same three pins on every role that trusts it. The repo
+never operates an issuer (decision 13).
+
+### The three pins, checked twice
+
+A federated trust names an issuer, an audience and a subject. The issuer is
+the provider the statement's `Principal` points at. The audience is the
+`aud` claim pinned with `StringEquals`, so a token minted for some other
+consumer cannot be replayed here. The subject is the exact workload,
+`repo:INTENTIUS/waterpark:environment:github-pages` for the publisher and
+`repo:INTENTIUS/waterpark:ref:refs/heads/main` for the apply role, pinned
+with `StringEquals` and spelled out in full. `StringLike` is refused even
+without a star in it, because a pattern is a wildcard waiting for one.
+
+A leaf file goes through `modules/persona`, whose `federated_trust`
+variable refuses a wildcard subject, an empty audience and an issuer host
+with a scheme or a wildcard, at `terraform validate`. A raw `aws_iam_role`
+is read by the two Rego rules at lint. Same fact, two layers that have not
+heard of each other, the same shape as `boundary-required` and IAM.
+
+### Severity
+
+`scripts/drift` routes a changed `assume_role_policy` to `page` since lesson
+7, and a changed `aws_iam_openid_connect_provider` the same way since this
+one, because an anchor that gained a client id or lost its issuer is the
+same edit one level up. Neither is filed as a reconcile PR. Somebody wakes
+up, which is prescription 12's "flagged within one cycle".
+
+### Rotation
+
+Credentials are short-lived everywhere. Workloads get a token per job,
+humans get an Identity Center session, and decision 5 bans IAM users, so a
+conforming account holds nothing to rotate. `scripts/rotation` reads the
+account anyway, lists every access key with its age against
+`static_secret_max_age_days` from `baseline/`, and exits 2 when one is at
+or over the window. It rides the drift watch's cron (decision 39), so one
+schedule drives both. A window of zero says no static secret may stand at
+all.
+
+```sh
+access/scripts/rotation
+access/scripts/rotation --max-age-days 0
+```
+
+Break-glass signing material joins the list in lesson 10. Application
+secrets in Secrets Manager or Parameter Store are not principals and are
+not on it.
+
+### What Floci cannot show
+
+The provider applies and reads back, and a role trusting it applies and
+plans clean. `AssumeRoleWithWebIdentity` is a stub that mints credentials
+for any non-empty token, so a forged token is accepted on the solo path
+and refused on a real account. The lesson runs the forged call on purpose
+and says so. The satellite's deploy credential stays a script-minted user
+here, and its federated form waits on the second boundary decision 58 has
+not taken (decision 59).

@@ -39,3 +39,8 @@ output "break_glass_max_ttl_hours" {
   description = "The longest a break-glass grant may last, passed through from baseline (decision 37)."
   value       = module.baseline.break_glass_max_ttl_hours
 }
+
+output "static_secret_max_age_days" {
+  description = "The rotation window, passed through from baseline so scripts/rotation reads the constant rather than restating it (decision 39)."
+  value       = module.baseline.static_secret_max_age_days
+}

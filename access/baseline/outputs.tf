@@ -22,3 +22,8 @@ output "watcher_max_open_prs" {
   description = "How many open PRs the watcher may hold at once. Five, counted by the PR job so the cap holds when the prompt is ignored (decision 40)."
   value       = local.watcher_max_open_prs
 }
+
+output "static_secret_max_age_days" {
+  description = "The longest a static secret may stand before scripts/rotation flags it. Ninety days, on the watch's weekday schedule (decision 39)."
+  value       = local.static_secret_max_age_days
+}
