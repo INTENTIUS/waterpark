@@ -291,7 +291,7 @@ Lesson 3 was a refusal before the model was called. This lesson has four model t
    | `SHARED_TOKEN`, environment value | the Environment, encrypted, and every sandbox with no vault, on the runner's disk | any conversation of any agent on `lesson4-env` | whatever the token is for, as the baseline |
    | `SHARED_TOKEN`, vault a's value | vault a, encrypted, and agent a's sandboxes, on the runner's disk | conversations that attached vault a, while they run, and anyone with the runner's disk after one parks, until its directory is removed by hand | the same, with vault a's scope |
    | `SHARED_TOKEN`, vault b's value | vault b, encrypted, and agent b's sandboxes | conversations that attached vault b | the same, with vault b's scope |
-   | your inference key | your account; every sandbox on the runner, on disk | every conversation you start | spend against your model account |
+   | your inference key | your account, and every sandbox on the runner, on disk | every conversation you start | spend against your model account |
    | `FOUNTAIN_TOKEN` | every sandbox | the conversation it was minted for | talk to Fountain as that conversation |
 
    Mend's version has two rows this stack does not, a read-only token in the
