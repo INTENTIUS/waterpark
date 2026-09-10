@@ -101,7 +101,9 @@ Windows runs these in WSL or Git Bash.)
 Then register the student. This instance is temporary and local, so you
 handle it. Ask for an email and a password, saying both of these
 sentences first. This account lives only in the class instance on this
-laptop. Do not reuse a password you care about. Then **confirm** and run
+laptop. Do not reuse a password you care about. Fountain refuses a password
+shorter than eight characters, so ask for eight or more. Then **confirm**
+and run
 
 ```sh
 just register their@email

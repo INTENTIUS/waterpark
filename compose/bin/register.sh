@@ -8,7 +8,7 @@ cd "$(dirname "$0")/.."
 email=${1:?email}; password=${2:-${WP_PASSWORD:-}}; profile=${3:-default}
 if [ -z "$password" ]; then
   # keep it out of shell history and ps. just register you@example.com prompts here
-  printf 'password (not echoed): ' >&2; read -rs password; echo >&2
+  printf 'password (at least 8 characters, not echoed): ' >&2; read -rs password; echo >&2
   [ -n "$password" ] || { echo "empty password" >&2; exit 1; }
 fi
 port=$(grep -E '^PORT=' .env 2>/dev/null | cut -d= -f2); port=${port:-4000}
@@ -20,9 +20,22 @@ curl -fs "$base/health" >/dev/null || { echo "Fountain is not answering at $base
 
 code=$(curl -s -o /tmp/wp-register.json -w '%{http_code}' -X POST "$base/api/auth/register" \
   -H 'Content-Type: application/json' -d "{\"email\":\"$email\",\"password\":\"$password\"}")
+# Fountain answers 422 both for an address already taken and for a password
+# it refuses, so the body decides which. Only the first is safe to carry on
+# from. A refused password is printed as Fountain phrased it, because "assuming
+# the account exists" followed by a failed login says nothing a student can act
+# on.
 case "$code" in
   2*) echo "registered $email";;
-  409|422) echo "register answered $code, assuming the account exists and continuing";;
+  409) echo "register answered 409, the account exists, continuing";;
+  422)
+    if grep -q "already been taken" /tmp/wp-register.json; then
+      echo "register answered 422, the account exists, continuing"
+    else
+      echo "register refused: $(cat /tmp/wp-register.json)" >&2
+      echo "Fountain wants a password of at least 8 characters." >&2
+      exit 1
+    fi;;
   *) echo "register failed ($code): $(cat /tmp/wp-register.json)" >&2; exit 1;;
 esac
 
