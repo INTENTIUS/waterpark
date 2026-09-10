@@ -362,9 +362,14 @@ No artifact and no match both mean refuse.
 
 `access/scripts/plan-digest` is what both jobs run. It hashes a normalised
 reading of the plan, meaning the resource changes sorted by address with the
-timestamp and the prior state dropped, so the same plan against the same
+timestamp and the prior state dropped, and on an update in place only the
+attributes that differ from before, so the same plan against the same
 estate gives the same digest and any change to what would be created,
-changed or destroyed gives a different one.
+changed or destroyed gives a different one. The reduction on updates was
+learned from the first in-place change the pipeline merged, lesson 9's trust
+change, which the apply job refused because a role's `create_date` and
+`unique_id` had been copied into the after-value from a container that no
+longer existed.
 
 ### CODEOWNERS is generated
 
