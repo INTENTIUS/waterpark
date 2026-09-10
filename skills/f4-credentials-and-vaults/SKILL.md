@@ -58,6 +58,11 @@ Never ask the student for an inference key and never go looking for one.
 Note the check's `fountain.cli_url`. Every command below assumes the stack
 on port 4000.
 
+`just runner-sh` reads `compose/.env`, which `just up` generated in the
+checkout it ran in and which is not committed. If the student is in a second
+checkout, `bash compose/bin/env.sh` there writes one that `runner-sh` can
+use, and changes nothing on the running stack.
+
 Run `fountain conv list` before starting. An account holds two sandboxes at
 once and this lesson uses both. If an earlier lesson left a conversation
 that is not `terminated`, say so, and offer to terminate it by its full id
@@ -80,7 +85,8 @@ Read it from there rather than from memory.
 fountain apply -f f4-manifest.yaml
 ```
 
-Six lines, `+` on each, one per object and one per secret.
+Six lines, `+` on the three objects and `~` on the three secrets, which is
+how the CLI reports a secret it set even on a first write.
 
 ### 3b. Read a vault back
 
@@ -88,8 +94,8 @@ Six lines, `+` on each, one per object and one per secret.
 fountain vault show lesson4-vault-a
 ```
 
-`secret_count` 1, one entry under `secrets` with a `key`, an `id` and two
-timestamps, and no `value` field. Say that this is not the CLI hiding it.
+`secret_count` 1, one entry under `secrets` with a `key`, an `id`, a
+`vault_id` and two timestamps, and no `value` field. Say that this is not the CLI hiding it.
 No endpoint returns a vault value, not to the owner, and the web UI's vault
 page shows the same.
 
@@ -131,8 +137,8 @@ fountain run lesson4-agent-b --vault lesson4-vault-b \
   -p 'Run the shell command  test -n "$SHARED_TOKEN" && echo set || echo unset  and reply with only the word it prints.'
 ```
 
-Each streams `provision: started`, `provision: done`, `turn: started`, the
-word `set` and `turn done`. Keep both full conversation ids from the first
+Each streams `provision: started`, `provision: done`, `turn: started`, a
+`[Terminal]` tool call marked completed, the word `set` and `turn done`. Keep both full conversation ids from the first
 line of each. If either answers `http 429`, an earlier conversation holds a
 slot, and the fix is in section 2.
 
@@ -232,23 +238,32 @@ does not, a read-only token in the repo's vault and a write token that never
 leaves the browser, and that the sandbox row having no write in its last
 column is the whole of Mend's safety. Lesson 8 takes it from there.
 
-### 3j. Tidy up
+### 3j. Let one park, then tidy up
 
-**confirm**, then terminate the two parked conversations by their full ids.
+The first conversation's last turn was 3f, and the class stack parks a
+sandbox two minutes after its last turn. Wait for the marker before
+terminating anything, and say that `fountain conv list` reads `idle` either
+way so it cannot tell you.
 
 ```sh
-fountain conv list
+just runner-sh 'ls /sandboxes/*/.fountain-suspended'
+```
+
+When it prints one path, **confirm**, then terminate both conversations by
+their full ids.
+
+```sh
 fountain conv terminate <agent a's first id>
 fountain conv terminate <agent a's second id>
 just runner-sh 'ls /sandboxes'
 ```
 
 The listing is not empty. Say why, from step 10 of the page. A sandbox
-that was running when terminated loses its directory, and one that had
-already parked keeps it with its `.env` and the value inside, and the
-runner does not come back for it. Agent a's first conversation parked under
-the two-minute bound, so its directory is the one left, still carrying
-`vault-a-token-111`. **confirm**, then
+that was awake when terminated loses its directory, which the second one
+just did, and one that had already parked keeps it with its `.env` and the
+value inside, and the runner does not come back for it. Agent a's first
+conversation is the one left, still carrying `vault-a-token-111`.
+**confirm**, then
 
 ```sh
 just runner-sh 'rm -rf /sandboxes/runner-*; ls /sandboxes'
@@ -271,9 +286,10 @@ All three have to be true, checked the way the page states them.
 
 If 3e shows `env-token-000` in both, the runs in 3d were started without
 `--vault`, restart from 3d. If 3g does not refuse, `allowed_vault_ids` on
-agent a is `null` rather than a list, restart from 3c. If the runner
-listing is empty, the sandboxes idled out past lesson 2's two-minute bound
-before the read, restart from 3d and read the disk sooner.
+agent a is `null` rather than a list, restart from 3c. If the listing in 3j
+is empty after the terminates, the first sandbox had not parked yet and was
+awake when terminated, which is lesson 2's case and not this lesson's, so
+say so rather than restarting.
 
 ## 5. Record
 

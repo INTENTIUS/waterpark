@@ -22,7 +22,7 @@ properties: ["V", "VI", "X"]
 activity:
   kind: hands-on
   time: "25 min"
-  needs: ["the Start-here stack running (`just up`, `just register`, `just runner`) with a runner online", "an inference key set, this lesson makes four model turns", "jq"]
+  needs: ["the Start-here stack running (`just up`, `just register`, `just runner`) with a runner online, in the checkout `just up` ran in, because `just runner-sh` reads its `compose/.env`", "an inference key set, this lesson makes four model turns", "jq"]
   solo: true
   live: true
 ---
@@ -77,14 +77,15 @@ Lesson 3 was a refusal before the model was called. This lesson has four model t
 
    ```
    env  +  lesson4-env
-     secret  +  lesson4-env/SHARED_TOKEN
+     secret  ~  lesson4-env/SHARED_TOKEN
    vault  +  lesson4-vault-a
-     secret  +  lesson4-vault-a/SHARED_TOKEN
+     secret  ~  lesson4-vault-a/SHARED_TOKEN
    vault  +  lesson4-vault-b
-     secret  +  lesson4-vault-b/SHARED_TOKEN
+     secret  ~  lesson4-vault-b/SHARED_TOKEN
    ```
 
-   The three values are fixtures whose last three characters say where they
+   The objects are `+` and the secrets are `~` even on a first write, which
+   is how the CLI reports a secret it set. The three values are fixtures whose last three characters say where they
    came from, and that is the only reason they are readable at all.
 
 2. Read a vault back and notice what is missing.
@@ -94,7 +95,8 @@ Lesson 3 was a refusal before the model was called. This lesson has four model t
    ```
 
    The response carries `secret_count`, and under `secrets` one entry with a
-   `key`, an `id` and two timestamps. There is no `value` field. That is not
+   `key`, an `id`, a `vault_id` and two timestamps. There is no `value`
+   field. That is not
    a CLI choice, no endpoint returns a vault value, and the web UI's vault
    page under `/vaults` shows the same key and nothing else. What you can
    learn from Fountain about a secret is when it was written and how big it
@@ -164,10 +166,14 @@ Lesson 3 was a refusal before the model was called. This lesson has four model t
    ▸ provision: started
    ▸ provision: done
    ▸ turn: started
+
+   [Terminal]
+     ✓ completed
    set▸ turn done (exit_code=)
    ```
 
-   Both answer `set`, and both sandboxes are now parked on the runner holding
+   The two lines between `turn: started` and `set` are the runtime's tool
+   call, the shell command it ran. Both answer `set`, and both sandboxes are now parked on the runner holding
    whatever they were given. An account holds two sandboxes at once, and
    these are the two.
 
@@ -299,22 +305,28 @@ Lesson 3 was a refusal before the model was called. This lesson has four model t
    whole of Mend's safety is that the sandbox row has no write anywhere in
    its last column. Lesson 8 takes it from there.
 
-10. Terminate the two conversations still open, so they stop holding the account's two slots, and then look at the disk once more. Use full ids.
+10. Let the first conversation park, then terminate both and look at the disk once more. The class stack parks a sandbox two minutes after its last turn, which is lesson 2's bound, and the first conversation's last turn was step 6. Wait for its marker before going on, and `fountain conv list` will not tell you, because it reads `idle` either way.
 
     ```sh
-    fountain conv list
+    just runner-sh 'ls /sandboxes/*/.fountain-suspended'
+    ```
+
+    When that prints one path, terminate both conversations by their full ids
+    and list again.
+
+    ```sh
     fountain conv terminate 5990cf3b-17eb-4177-9be5-55c67d77d9d7
     fountain conv terminate 5bb56db2-ceff-4be5-9f9a-168235a51466
     just runner-sh 'ls /sandboxes'
     ```
 
     Both conversations read `terminated`, and the listing is not empty. A
-    sandbox that was running when it was terminated loses its directory,
-    which is what lesson 2 saw. A sandbox that had already parked keeps it,
-    with its `.env` and the value inside, and the runner does not come back
-    for it. The first conversation parked minutes ago under the class
-    stack's two-minute idle bound, so its directory is the one still there,
-    and `SHARED_TOKEN='vault-a-token-111'` is still in it. That is recorded
+    sandbox that was awake when it was terminated loses its directory,
+    which is what lesson 2 saw and what the second conversation's sandbox
+    just did. A sandbox that had already parked keeps it, with its `.env`
+    and the value inside, and the runner does not come back for it. The
+    first conversation's directory is the one still there, and
+    `SHARED_TOKEN='vault-a-token-111'` is still in it. That is recorded
     in [upstream](https://github.com/INTENTIUS/waterpark/blob/main/project/upstream.md),
     and until it is fixed the one revocation a runner does have is a shell.
 
