@@ -34,7 +34,7 @@ activity:
 - One agent has one team conversation. Two people who message the same teammate talk to the same thread and the same machine, and adding an agent that is already on the team answers `200` with the conversation it already has. That is what makes a teammate's work attributable, which is Accessible Ops IX. Every turn is in one thread under one agent id, and the stream says which.
 - A message is a follow-up turn in that conversation. A parked sandbox wakes on it, a conversation past resuming is replaced by a fresh one under the same binding, and a message sent while a turn is running is refused with `400 conversation_busy` rather than queued behind it.
 - The CLI has no team commands at v0.12.0, so this lesson is `curl` against the API with the Bearer key from Start here, and the web UI's `/team` page for the same facts drawn as a chat client.
-- The class stack's sandbox is a runner. When the runner is down, presence reads `machine_offline` and a message is accepted with `202` and delivered when the runner reconnects. Issue 85 expected a `503 runner_offline` there, and the stack does not do that, which [upstream](https://github.com/INTENTIUS/waterpark/blob/main/project/upstream.md) records.
+- The class stack's sandbox is a runner. When the runner is down, presence reads `machine_offline`, a message is still accepted with `202 queued`, and its turn then fails at once on the stream with `runner_offline` and is not redelivered. Issue 85 expected a `503 runner_offline` on the message itself, and the stack answers a step later and one layer down, which [upstream](https://github.com/INTENTIUS/waterpark/blob/main/project/upstream.md) records.
 - Removing a teammate terminates the live conversation, its sandbox with it, and unbinds every conversation the agent had under the channel. The rows stay in the conversation list, because the record is the conversation and not the binding.
 - Schedules are lesson 6, and they run on the teammate this lesson makes.
 
@@ -78,13 +78,14 @@ Lessons 1 to 4 started conversations one at a time and each one was a fresh mach
 2. Open the team stream in a second terminal and leave it open for the whole lesson. It needs the same two variables, so set them there too.
 
    ```sh
-   curl -sN -H "Authorization: Bearer $FOUNTAIN_KEY" http://localhost:4000/api/team/stream | tee f5-stream.log
+   curl -sN -H "Authorization: Bearer $FOUNTAIN_KEY" http://localhost:4000/api/team/stream | tee -a f5-stream.log
    ```
 
-   `: connected`, then nothing, because there is no teammate yet. The
-   stream is one connection carrying every teammate's events, and it closes
-   after sixty idle seconds so a client reconnects. If it closes while you
-   read, run it again.
+   `: connected`, then a `: heartbeat` comment every fifteen seconds and
+   nothing else, because there is no teammate yet. The stream is one
+   connection carrying every teammate's events, and the heartbeats keep it
+   open for as long as you leave it. If it does close, run it again, and
+   the `-a` keeps the log it already wrote.
 
 3. Add the agent to the team, back in the first terminal.
 
@@ -182,11 +183,12 @@ Lessons 1 to 4 started conversations one at a time and each one was a fresh mach
 6. Prove there is one thread per agent. Add the same agent again.
 
    ```sh
-   curl -s -w ' %{http_code}\n' -X POST -H "Authorization: Bearer $FOUNTAIN_KEY" -H 'Content-Type: application/json' \
-     -d "{\"agent_id\":\"$AGENT\"}" http://localhost:4000/api/team | jq -c '.data.conversation.id'
+   curl -s -o f5-add2.json -w '%{http_code}\n' -X POST -H "Authorization: Bearer $FOUNTAIN_KEY" -H 'Content-Type: application/json' \
+     -d "{\"agent_id\":\"$AGENT\"}" http://localhost:4000/api/team
+   jq -r '.data.conversation.id' f5-add2.json
    ```
 
-   The same conversation id, and `200` where step 3 was `201`. Two people
+   `200` where step 3 was `201`, and the same conversation id. Two people
    who message this teammate talk to the same thread on the same machine,
    and everything it did is under one agent id in one place. That is
    Accessible Ops IX, attributable, done by construction.
@@ -198,10 +200,11 @@ Lessons 1 to 4 started conversations one at a time and each one was a fresh mach
    curl -s -H "Authorization: Bearer $FOUNTAIN_KEY" http://localhost:4000/api/team | jq -c '.data[0].presence'
    ```
 
-   `{"label":"asleep · wakes on message","state":"asleep"}`, about two and
-   a half minutes after the reply. The stream printed a `sandbox` stage
-   event whose message says the sandbox was suspended after two minutes
-   idle. Presence is that event, read as a word. Now message it.
+   `{"label":"asleep · wakes on message","state":"asleep"}`, two minutes
+   after the reply, which is the class stack's idle bound. The stream
+   printed a `sandbox` stage event whose message says the sandbox was
+   suspended after two minutes idle. Presence is that event, read as a
+   word. Now message it.
 
    ```sh
    curl -s -X POST -H "Authorization: Bearer $FOUNTAIN_KEY" -H 'Content-Type: application/json' \
@@ -210,9 +213,10 @@ Lessons 1 to 4 started conversations one at a time and each one was a fresh mach
    curl -s -H "Authorization: Bearer $FOUNTAIN_KEY" http://localhost:4000/api/team | jq -c '.data[0].presence'
    ```
 
-   `{"label":"working","state":"working"}`, and twenty seconds later
-   `online` with `awake` as the preview. Same sandbox, same disk, same
-   thread, which is lesson 2's wake with a name on it.
+   `{"label":"working","state":"working"}`, with the preview reading `null`
+   while the turn runs, and a few seconds later `online` with `awake` as
+   the preview. Same sandbox, same disk, same thread, which is lesson 2's
+   wake with a name on it.
 
 8. Take the runner away and read what presence says. This one is optional and it is worth doing once, because it shows presence is a view over something real.
 
@@ -225,20 +229,36 @@ Lessons 1 to 4 started conversations one at a time and each one was a fresh mach
    ```
 
    `{"label":"machine offline · wakes when the runner reconnects","state":"machine_offline"}`,
-   and then `{"status":"queued",...} 202`. The message is accepted and
-   waits. The stream printed another `team` event when the runner dropped,
-   because presence changed for every teammate on it. Bring the runner
-   back and watch it catch up.
+   and then `{"status":"queued",...} 202`. The message was accepted. Now
+   read the second terminal, because the `202` is not the end of it.
+
+   ```
+   event: stage
+   data: {"data":"{}","state":"started",...,"stage":"turn",...}
+   event: stage
+   data: {"data":"{\"reason\":\"{:unavailable, :runner_offline}\"}","state":"failed",...,"stage":"turn",...}
+   ```
+
+   The turn started and failed in the same millisecond, with the reason
+   named, and nothing holds the message for later. The roster now shows
+   your prompt as the preview with `kind` `you` and `last_turn` `failed`.
+   The stream also printed a `team` event when the runner dropped, because
+   presence changed for every teammate on it. Bring the runner back.
 
    ```sh
    docker compose -f compose/docker-compose.yml --env-file compose/.env --profile runner start runner
    until curl -s -H "Authorization: Bearer $FOUNTAIN_KEY" http://localhost:4000/api/team | jq -e '.data[0].presence.state != "machine_offline"' >/dev/null; do sleep 3; done
-   curl -s -H "Authorization: Bearer $FOUNTAIN_KEY" http://localhost:4000/api/team | jq -c '.data[0] | {presence, preview}'
+   curl -s -H "Authorization: Bearer $FOUNTAIN_KEY" http://localhost:4000/api/team | jq -c '.data[0] | {presence, preview, last_turn: .last_turn.status}'
    ```
 
-   `online`, and once the queued turn has run, `back` as the preview.
-   Nothing you did touched the conversation. The runner reconnected, the
-   sandbox came back with it, and the thread picked up.
+   `online` within a second, the preview still your unanswered prompt, and
+   `last_turn` still `failed`. The runner reconnected and the sandbox came
+   back with it, and the message you sent while it was away is gone. Read
+   that against the `202`. A queued status on the response is a promise
+   about the thread, not about the machine, and the stream is where the
+   machine answers. A caller that trusts the `202` alone will wait for a
+   reply that never comes, which is the honest reason to read presence
+   first.
 
 9. Remove the teammate, and find the conversation.
 
@@ -264,13 +284,15 @@ Lessons 1 to 4 started conversations one at a time and each one was a fresh mach
    ```
 
    `4` if you did step 8, one each for the add, the runner dropping, the
-   runner reconnecting and the remove. `2` if you skipped it.
+   runner reconnecting and the remove. `2` if you skipped it. And
+   `grep -c runner_offline f5-stream.log` is `1` if you did step 8, the
+   turn that a `202` never delivered.
 
 ## Self-paced
 
 This lesson needs an inference key and makes three short model turns, one word each, in steps 5, 7 and 8. Floci plays no part.
 
-Everything the lesson shows, it shows on the class stack. The one place a hosted provider differs is step 8. A runner is the only backend that can be stopped from your laptop, so `machine_offline` is a presence state you will see here and not on Sprites or E2B, where the sandbox is somebody else's machine. The queued message in that step is worth a second look. Issue 85 expected the stack to refuse a message while the runner is down with a `503`, and the build the class stack pins accepts it and delivers it on reconnect instead, which the [upstream](https://github.com/INTENTIUS/waterpark/blob/main/project/upstream.md) notes record. A message to an offline machine that is silently accepted is a design choice with a cost, and the cost is that the caller has to read presence to know it will wait.
+Everything the lesson shows, it shows on the class stack. The one place a hosted provider differs is step 8. A runner is the only backend that can be stopped from your laptop, so `machine_offline` is a presence state you will see here and not on Sprites or E2B, where the sandbox is somebody else's machine. The queued message in that step is worth a second look. Issue 85 expected the stack to refuse a message while the runner is down with a `503`, and the build the class stack pins accepts it with a `202` and fails the turn a millisecond later on the stream with `runner_offline`, and nothing redelivers it, which the [upstream](https://github.com/INTENTIUS/waterpark/blob/main/project/upstream.md) notes record. A message to an offline machine that is accepted and then lost is a design choice with a cost, and the cost is that the caller has to read presence before sending, or the stream after.
 
 The second message in step 5 races the first. On a fast turn the first finishes before you type the second, and you get a `202` where the page shows a `400`. Both are the same rule. One thread takes one turn at a time and says so.
 
@@ -282,7 +304,7 @@ Open on step 3. One `POST`, and let the room watch a `team` event and then `prov
 
 Then step 5 with the `400`, which lands better live because the facilitator can send the second message the moment the first is queued. Then step 6, and ask the room what two people messaging the same teammate would see. The answer is the same thread, and that is the point rather than a limitation.
 
-Step 8 is the one to do live if there is time, with the runner container stopped in front of the room. The honesty line belongs here. A runner is a computer you can turn off, and Fountain will tell you it is off and hold your message until it is back. A hosted sandbox provider would show you `online` until it was not, and this lesson is where you learn to read the word rather than trust it.
+Step 8 is the one to do live if there is time, with the runner container stopped in front of the room. The honesty line belongs here. A runner is a computer you can turn off, Fountain will tell you it is off, and it will still take your message and lose it a millisecond later on the stream. A hosted sandbox provider would show you `online` until it was not, and this lesson is where you learn to read the word and the stream rather than the status code.
 
 ## Further reading
 
