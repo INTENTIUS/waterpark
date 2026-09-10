@@ -82,8 +82,8 @@ Lesson 8 handed a role to somebody else. This lesson is about the sentence in ev
 
    The apply role prints a `Federated` principal and a `StringEquals` block
    with the `aud` and the `sub` pinned, which is what lesson 6 wrote. The
-   publisher prints `{"Service": "codebuild.amazonaws.com"}` and `null`. Nothing
-   in this estate runs on CodeBuild. That trust is a placeholder the estate
+   publisher prints `{"Service": ["codebuild.amazonaws.com"]}` and `null`.
+   Nothing in this estate runs on CodeBuild. That trust is a placeholder the estate
    has carried since lesson 2, and it is the last one in `envs/prod`.
 
 2. Federate the publisher. The site really is built by a GitHub Actions job, in the `github-pages` deployment environment that `.github/workflows/hugo.yml` names, so that job is the subject and nothing else is. Replace `access/envs/prod/iam_role.site_publisher.tf` with this.
@@ -202,9 +202,9 @@ Lesson 8 handed a role to somebody else. This lesson is about the sentence in ev
    That is `modules/persona` refusing at validate, which runs before plan,
    before the PR job and before the editor saves if `terraform-ls` is on. Put
    the exact subject back and run validate again until it says `Success!`.
-   The module refuses two more shapes the same way, an empty `audience` and an
-   `issuer_host` that carries `https://`, and the fixtures in step 5 cover
-   both.
+   After step 6 the module refuses two more shapes the same way, an empty
+   `audience` and an `issuer_host` that carries `https://`, and the fixtures
+   step 6 brings in cover both.
 
 4. Write the trust rules. The module protects a leaf file, and a raw `aws_iam_role` written outside the module is read by nobody until this file exists. Write `access/.tflint.d/policies/trust.rego`.
 
@@ -520,7 +520,9 @@ Lesson 8 handed a role to somebody else. This lesson is about the sentence in ev
    `rotation` is step 9. `drift` gains `aws_iam_openid_connect_provider` in
    its `page` list, and step 8 shows why.
 
-   `modules/persona/variables.tf` is the three validations step 3 hit.
+   `modules/persona/variables.tf` adds two validations beside the wildcard
+   refusal the module already carried when step 3 hit it, one for an empty
+   `audience` and one for an `issuer_host` carrying a scheme.
    `baseline/locals.tf` and the two `outputs.tf` carry the new constant,
    `static_secret_max_age_days`, through to where `rotation` reads it.
 
@@ -528,6 +530,18 @@ Lesson 8 handed a role to somebody else. This lesson is about the sentence in ev
    job when a key stands over the window. Against the job's own container the
    answer is always none, for the same reason the watch there is always clean,
    and the job comment says so.
+
+   Then apply once more, because the new output has to land in state before
+   the plan stage can be clean.
+
+   ```sh
+   terraform -chdir=access/envs/prod apply -auto-approve
+   ```
+
+   `Resources: 0 added, 0 changed, 0 destroyed.` and the outputs now list
+   `static_secret_max_age_days = 90`. Nothing in the account moved. An output
+   is a fact about state, and `plan -detailed-exitcode` counts a new one as a
+   change until an apply records it.
 
 7. Run the whole check stack, and then run one fixture by hand to see the messages the stack summarises.
 
@@ -665,6 +679,10 @@ Lesson 8 handed a role to somebody else. This lesson is about the sentence in ev
    ```
 
    ```text
+     window        0 days (--max-age-days)
+     trust anchors 1, nothing to rotate behind them
+     access keys   1
+
      [rotate] console-made  AKIA...
          Active, created 2026-09-10T19:35:49.669816+00:00, 0 day(s) old
 

@@ -65,8 +65,10 @@ tflint --version
 jq --version
 ```
 
-Terraform 1.9 or newer, any tflint that carries the OPA plugin, and any jq.
-If tflint is missing, the install line is
+Terraform 1.9 or newer, any tflint, and any jq. The OPA plugin the rules
+run on is what `just access-init` installs in section 3, so `tflint
+--version` from the checkout root lists only the bundled ruleset and that is
+fine. If tflint is missing, the install line is
 `brew install terraform-linters/tap/tflint` on macOS, and the release binary
 from https://github.com/terraform-linters/tflint on Linux and Windows. `jq`
 is `brew install jq`, `apt install jq` or `winget install jqlang.jq`, and
@@ -142,7 +144,7 @@ aws --endpoint-url http://localhost:4566 iam get-role \
 
 The apply role prints a `Federated` principal and a `StringEquals` block with
 `aud` and `sub` pinned, which lesson 6 wrote. The publisher prints
-`{"Service": "codebuild.amazonaws.com"}` and `null`. Say that nothing in this
+`{"Service": ["codebuild.amazonaws.com"]}` and `null`. Say that nothing in this
 estate runs on CodeBuild, that the trust is a placeholder carried since lesson
 2, and that it is the last one in `envs/prod`. Keep both outputs. Step 5a
 shows the publisher with the apply role's shape.
@@ -202,9 +204,9 @@ Say that this is `modules/persona` refusing at validate, before plan, before
 the PR job, and before the editor saves if `terraform-ls` is on. Have the
 student put the exact subject back and run validate until it prints
 `Success! The configuration is valid.` Do not go on with a wildcard in the
-file. Mention that the module refuses an empty `audience` and an
-`issuer_host` carrying `https://` the same way, and that the fixtures cover
-both.
+file. Mention that after 5e the module refuses an empty `audience` and an
+`issuer_host` carrying `https://` the same way, and that the fixtures 5e
+brings in cover both.
 
 ### 5c. Write the trust rules
 
@@ -255,12 +257,24 @@ Walk the student through what each one is, from step 6 of the page. The
 audience fixtures are the same shape as the four they wrote with the other
 pin missing. `check` gains the two rules in its fixture table and a
 workflow-level scan that step 5i shows. `rotation` is step 5g. `drift` gains
-the OIDC provider in its `page` list. `modules/persona/variables.tf` is the
-three validations step 5b hit. The baseline and the two `outputs.tf` carry
+the OIDC provider in its `page` list. `modules/persona/variables.tf` adds two
+validations beside the wildcard refusal step 5b already hit, an empty
+`audience` and an `issuer_host` with a scheme. The baseline and the two
+`outputs.tf` carry
 `static_secret_max_age_days` through to where `rotation` reads it.
 `drift.yml` runs `rotation` after the watch on the same cron.
 
-Then
+**confirm**, then apply once more, because the new output has to land in
+state before the plan stage can be clean.
+
+```sh
+terraform -chdir=access/envs/prod apply -auto-approve
+```
+
+`0 added, 0 changed, 0 destroyed.` and `static_secret_max_age_days = 90`
+among the outputs. Say that nothing in the account moved, and that
+`plan -detailed-exitcode` counts a new output as a change until an apply
+records it. Then
 
 ```sh
 just access-check
@@ -361,7 +375,8 @@ access/scripts/rotation --max-age-days 0
 echo $?
 ```
 
-`[rotate]`, `1 key(s) over the window`, and exit `2`. A key at the window is
+The header now reads `window 0 days (--max-age-days)`, then `[rotate]`,
+`1 key(s) over the window`, and exit `2`. A key at the window is
 over it, so zero is the estate's own policy as a number, and the ninety in
 `access/baseline` is for the secrets lesson 10 adds.
 
@@ -460,10 +475,10 @@ earlier output on trust.
   `--max-age-days 0` with a key made by hand.
 
 If the fixture stage fails, the restart point is 5c or 5d. If validate does
-not refuse the wildcard, `modules/persona/variables.tf` did not arrive in
-5e. If the drift findings come back `pr`, `access/scripts/drift` did not
-arrive in 5e. If rotation exits 1, Floci is not answering and the restart
-point is 3.
+not refuse the wildcard, the worktree is not at `checkpoint/i8` and the
+restart point is 3. If the drift findings come back `pr`,
+`access/scripts/drift` did not arrive in 5e. If rotation exits 1, Floci is
+not answering and the restart point is 3.
 
 ## 7. Tear down
 

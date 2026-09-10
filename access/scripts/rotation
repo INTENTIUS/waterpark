@@ -84,7 +84,9 @@ fi
 # applied yet the file is read directly, so the check still has a number. A
 # key at the window is over it, so a window of zero says no static secret
 # may stand at all, which is what this estate declares.
+window_from="--max-age-days"
 if [ -z "$max_age" ]; then
+	window_from="access/baseline"
 	max_age="$(terraform -chdir=envs/prod output -raw static_secret_max_age_days 2>/dev/null)"
 fi
 if ! [ "$max_age" -ge 0 ] 2>/dev/null; then
@@ -171,7 +173,7 @@ if [ "$as_json" = true ]; then
 else
 	echo "rotation check, $now"
 	echo
-	echo "  window        $max_age days (access/baseline)"
+	echo "  window        $max_age days ($window_from)"
 	echo "  trust anchors ${anchors:-0}, nothing to rotate behind them"
 	if [ "$keys" -eq 0 ]; then
 		echo "  access keys   none in the account"
