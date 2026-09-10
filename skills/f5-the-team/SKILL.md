@@ -94,12 +94,13 @@ on every OS.)
 In the second terminal.
 
 ```sh
-curl -sN -H "Authorization: Bearer $FOUNTAIN_KEY" http://localhost:4000/api/team/stream | tee f5-stream.log
+curl -sN -H "Authorization: Bearer $FOUNTAIN_KEY" http://localhost:4000/api/team/stream | tee -a f5-stream.log
 ```
 
-`: connected` and nothing else. Say that it carries every teammate's
-events on one connection and closes after sixty idle seconds, so if it
-closes the student runs it again.
+`: connected`, then a `: heartbeat` comment every fifteen seconds. Say that
+it carries every teammate's events on one connection and the heartbeats
+keep it open, and that if it does close the student runs it again and the
+`-a` keeps the log.
 
 ### 3c. Add the teammate
 
@@ -134,19 +135,20 @@ started`, `output` events and `turn done`, each with `agent_id` and
 
 ### 3f. One thread per agent
 
-The second `POST /api/team` from step 6. `200`, not `201`, and the same
-conversation id. Say that two people messaging this teammate talk to the
+The second `POST /api/team` from step 6, which writes the body to a file
+and prints the code. `200`, not `201`, and the same conversation id. Say that two people messaging this teammate talk to the
 same thread on the same machine, and that this is IX by construction.
 
 ### 3g. Sleep and wake
 
-The poll from step 7 waits for `asleep`, about two and a half minutes
-after the reply. Say what the label reads,
+The poll from step 7 waits for `asleep`, two minutes after the reply,
+which is the class stack's idle bound. Say what the label reads,
 `asleep · wakes on message`, and point at the `sandbox` stage event on the
 stream that presence is derived from.
 
-**confirm**, then the wake message. `working` two seconds later, `online`
-with `awake` as the preview once the turn is done.
+**confirm**, then the wake message. `working` two seconds later with the
+preview `null`, then `online` with `awake` as the preview once the turn is
+done, a few seconds on.
 
 ### 3h. The runner away
 
@@ -156,12 +158,17 @@ message.
 
 `machine_offline` with the label
 `machine offline · wakes when the runner reconnects`, then the message
-accepted with `202`. Say that issue 85 expected a `503` here and the
-stack queues the message instead, and that the cost of that choice is the
-caller has to read presence to know it will wait.
+accepted with `202`. Then have the student read the stream log. The turn
+started and failed in the same millisecond with
+`{:unavailable, :runner_offline}`, and the roster shows the prompt as the
+preview with `kind` `you` and `last_turn` `failed`. Say that issue 85
+expected a `503` on the message and the stack answers one layer down and
+a step later, that nothing redelivers it, and that the caller has to read
+presence before sending or the stream after.
 
-**confirm**, then `start runner`, the poll, and the read. `online`, and
-`back` as the preview once the queued turn has run.
+**confirm**, then `start runner`, the poll, and the read. `online` within
+a second, the preview still the unanswered prompt, `last_turn` still
+`failed`. If the student waits, the sandbox parks again two minutes on.
 
 ### 3i. Remove
 
@@ -174,7 +181,8 @@ have the student close the stream and count the `team` events.
 grep -c '^event: team' f5-stream.log
 ```
 
-`4` with step 8, `2` without.
+`4` with step 8, `2` without, and `grep -c runner_offline f5-stream.log`
+is `1` with step 8.
 
 Leaving the environment and the agent is fine. Lesson 6 makes its own.
 
@@ -184,7 +192,8 @@ All four have to be true, checked against the calls rather than the
 student's memory.
 
 - `GET /api/team` returned the teammate with `presence.state` `online` and
-  `preview.text` equal to the reply.
+  `preview.text` equal to the reply, at step 5 or step 7. After step 8 the
+  preview is the lost prompt, which is that step's own point.
 - `GET /api/conversations?channel_id=fountain:team` returned exactly that
   one conversation.
 - `f5-stream.log` holds a `turn` stage event carrying the agent id and the
@@ -196,8 +205,8 @@ If the add answered `404`, `$AGENT` is empty and 3a's second variable did
 not set, restart from 3a. If presence never reaches `asleep`, the stack's
 idle bound is not two minutes, check `SANDBOX_IDLE_TIMEOUT_MINUTES` in
 `compose/.env`, and carry on from the wake without waiting. If the stream
-closed during a step, its log is missing those events and the third clause
-needs the stream re-run before 3e.
+closed during a step, its log is missing those events, and `tee -a` means
+a re-run appends rather than starts over.
 
 ## 5. Record
 
