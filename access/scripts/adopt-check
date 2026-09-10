@@ -1,0 +1,133 @@
+#!/usr/bin/env bash
+# Adopt in place, checked. Every resource an import block brings under
+# management must arrive with nothing changed but the estate's own tags.
+#
+#   access/scripts/adopt-check              over envs/prod
+#   access/scripts/adopt-check <root>       over another root
+#   access/scripts/adopt-check --json ...   the same as JSON
+#
+# The mechanism is terraform plan -json, read for every resource change the
+# plan marks as importing. An import that plans no change is the ideal. An
+# import whose only change is tags_all is the estate's provider putting its
+# default tags, managed_by, repo and env, on a resource it now owns, which
+# is the one day-one change adoption makes here and the plan names it. Any
+# other attribute in the change means the file does not say what the account
+# holds, the review out of -generate-config-out missed something, and this
+# script fails with the attribute named so the file is fixed before the
+# apply rather than the account being edited by the apply (decision 62).
+#
+# Exit 0 when every import is clean or tags only. Exit 2 when one is not.
+# Exit 1 when the plan itself failed.
+set -uo pipefail
+
+access_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$access_root" || exit 1
+
+as_json=false
+root="envs/prod"
+while [ $# -gt 0 ]; do
+	case "$1" in
+	--json)
+		as_json=true
+		shift
+		;;
+	*)
+		root="$1"
+		shift
+		;;
+	esac
+done
+[ -d "$root" ] || {
+	echo "adopt-check: no such root: access/$root" >&2
+	exit 1
+}
+
+work="$(mktemp -d -t wp-adopt)"
+trap 'rm -rf "$work"' EXIT
+
+export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID:-test}"
+export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY:-test}"
+export AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION:-us-east-1}"
+
+terraform -chdir="$root" init -input=false -no-color >"$work/init.log" 2>&1 || {
+	echo "adopt-check: terraform init failed in access/$root" >&2
+	tail -5 "$work/init.log" >&2
+	exit 1
+}
+terraform -chdir="$root" plan -input=false -no-color -out="$work/tfplan" >"$work/plan.log" 2>&1 || {
+	echo "adopt-check: terraform plan failed in access/$root" >&2
+	tail -8 "$work/plan.log" >&2
+	exit 1
+}
+terraform -chdir="$root" show -json "$work/tfplan" >"$work/plan.json" 2>/dev/null
+
+# One row per importing resource, with the attributes that differ between
+# what the account holds and what the file says, tags_all set aside.
+rows="$(jq -c '[
+  (.resource_changes // [])[]
+  | select(.change.importing != null)
+  | . as $c
+  | ($c.change.before // {}) as $b
+  | ($c.change.after // {}) as $a
+  | ([ (($b | keys? // []) + ($a | keys? // []) | unique)[]
+      | . as $k
+      | select(($b[$k] // null) != ($a[$k] // null))
+    ]) as $diff
+  | { address: $c.address, type: $c.type, id: $c.change.importing.id,
+      actions: $c.change.actions,
+      tags_only: (($diff | map(select(. != "tags_all"))) | length == 0),
+      other: ($diff | map(select(. != "tags_all"))),
+      tags_added: (if ($diff | index("tags_all")) != null then (($a.tags_all // {}) | to_entries | map(select(($b.tags_all // {})[.key] == null) | .key)) else [] end) }
+]' "$work/plan.json")"
+
+# Import blocks whose resource is already in state make no importing change
+# in the plan, so they are read off the files and reported as such, and a
+# plan that would still change one of them is read the same way as above.
+declared="$(grep -h -A1 '^import {' "$root"/*.tf 2>/dev/null | sed -n 's/^[[:space:]]*to[[:space:]]*=[[:space:]]*//p' | sort -u)"
+while IFS= read -r addr; do
+	[ -n "$addr" ] || continue
+	if jq -e --arg a "$addr" '.[] | select(.address == $a)' <<<"$rows" >/dev/null; then
+		continue
+	fi
+	change="$(jq -c --arg a "$addr" '
+    (.resource_changes // [])[] | select(.address == $a)
+    | . as $c | ($c.change.before // {}) as $b | ($c.change.after // {}) as $a2
+    | { actions: $c.change.actions,
+        other: ([ (($b | keys? // []) + ($a2 | keys? // []) | unique)[] | . as $k
+                  | select(($b[$k] // null) != ($a2[$k] // null)) ] | map(select(. != "tags_all"))) }' "$work/plan.json")"
+	if [ -z "$change" ] || [ "$(jq -r '.actions | join(",")' <<<"$change")" = "no-op" ]; then
+		rows="$(jq -c --arg a "$addr" '. + [{address: $a, type: "", id: "", actions: ["no-op"], tags_only: true, other: [], tags_added: [], in_state: true}]' <<<"$rows")"
+	else
+		rows="$(jq -c --arg a "$addr" --argjson ch "$change" '. + [{address: $a, type: "", id: "", actions: $ch.actions, tags_only: (($ch.other | length) == 0), other: $ch.other, tags_added: [], in_state: true}]' <<<"$rows")"
+	fi
+done <<EOT
+$declared
+EOT
+rows="$(jq -c 'sort_by(.address)' <<<"$rows")"
+
+count="$(jq 'length' <<<"$rows")"
+bad="$(jq '[.[] | select(.tags_only | not)] | length' <<<"$rows")"
+
+if [ "$as_json" = true ]; then
+	jq -n --argjson r "$rows" --arg root "$root" '{root: $root, imports: $r}'
+else
+	echo "adopt check, access/$root"
+	echo
+	if [ "$count" -eq 0 ]; then
+		echo "  no import block in this root, so nothing is being adopted"
+	else
+		jq -r '.[] | "  [" + (if .tags_only then "ok" else "FAIL" end) + "] " + .address + (if .id != "" then "  from " + .id else "  already in state" end)
+      + (if (.actions | index("no-op")) != null then "\n      nothing changes" else "" end)
+      + (if (.tags_added | length) > 0 then "\n      the estate adds its tags: " + (.tags_added | join(", ")) else "" end)
+      + (if (.other | length) > 0 then "\n      the file differs from the account on: " + (.other | join(", ")) + "\n      fix the file, because an apply would edit the account" else "" end)' <<<"$rows"
+	fi
+	echo
+	if [ "$bad" -eq 0 ]; then
+		echo "  $count adoption(s), and none changes anything but the estate's own tags."
+	else
+		echo "  $bad of $count adoption(s) would change the account. Adopt in place means the file says what is there."
+	fi
+fi
+
+[ "$bad" -eq 0 ] && exit 0
+exit 2

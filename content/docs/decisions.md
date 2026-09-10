@@ -591,3 +591,24 @@ it. Reversing one requires editing this file in the same PR.
     current as its last read and knows nothing about a read it was
     refused, and the artifact says so.
     ([design/agentic](design/agentic.md), [IAM, lesson 11](../courses/iam/11-offboard-and-access-review.md))
+62. **Adoption's one day-one change is the estate's own tags, and the
+    check says so.** An adopted resource is an `import` block and a
+    resource block in one file, reviewed by hand out of `terraform plan
+    -generate-config-out` with `region`, `tags_all`, nulls and provider
+    defaults dropped. On this estate the plan for that import is never
+    empty, because the provider's `default_tags` put `managed_by`, `repo`
+    and `env` on everything it owns, so `access/scripts/adopt-check`
+    reads the plan and passes an import whose only change is `tags_all`
+    and fails one that would change anything else, naming the attribute,
+    which is decision 38's "nothing changes on day one" stated exactly.
+    Adoption exempts nothing. An adopted role without a boundary or an
+    owner tag fails the same rules as a written one, and that failing
+    check is day two's list. `no-open-ingress` reads the inline `ingress`
+    blocks of an `aws_security_group`, which is the shape generated config
+    writes, so an adopted group's open port gets the warning. The adopted
+    files are a laptop's and never in the reference tree, because the
+    resources they import exist only where a hand made them, and the
+    provider gains its `ec2` endpoint for the first security group. The
+    cost is that an estate whose provider carries no default tags gets an
+    empty plan instead, and the check passes that too.
+    ([IAM, lesson 15](../courses/iam/15-adopt-in-place.md))
