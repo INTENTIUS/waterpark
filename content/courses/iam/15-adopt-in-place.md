@@ -149,8 +149,8 @@ Fourteen lessons wrote an estate from nothing. This one starts from what is alre
    cat access/envs/prod/generated.tf
    ```
 
-   `Plan: 1 to import, 0 to add, 1 to change, 0 to destroy.`, a warning
-   that config generation is experimental, and the draft.
+   `Plan: 1 to import, 0 to add, 1 to change, 0 to destroy.`, and the
+   draft, under a two-line header asking you to review it.
 
    ```hcl
    # __generated__ by Terraform from "legacy-reporter"
@@ -274,7 +274,9 @@ Fourteen lessons wrote an estate from nothing. This one starts from what is alre
    `Resources: 1 imported, 0 added, 1 changed, 0 destroyed.`, then `0`, then
    four tags, `team analytics` as it was and the estate's three beside it.
    The role's trust, name and description did not move, and the account
-   says so.
+   says so. Run the check once more and the role's row reads `already in
+   state`, because an import that has landed makes no importing change in
+   the plan and the check reads the block off the file instead.
 
 5. Adopt the other two, in one apply. Write `access/envs/prod/s3_bucket.legacy_uploads.tf`.
 
@@ -325,8 +327,9 @@ Fourteen lessons wrote an estate from nothing. This one starts from what is alre
    that by running `-generate-config-out` again first if you like. The
    bucket's draft carries `bucket_namespace`, `force_destroy`,
    `object_lock_enabled` and `region`, all defaults, and the group's
-   carries the same `tags_all` and `region` plus an egress rule the account
-   made for it. The egress stays, because the account holds it.
+   carries the same `tags_all` and `region`, a
+   `revoke_rules_on_delete = null`, and an egress rule the account made for
+   it. The egress stays, because the account holds it.
 
    ```sh
    access/scripts/adopt-check
@@ -335,9 +338,10 @@ Fourteen lessons wrote an estate from nothing. This one starts from what is alre
    echo $?
    ```
 
-   Three `[ok]` rows, the first one now reading `nothing changes on import`
-   because it is already in, `Resources: 2 imported, 0 added, 2 changed`,
-   and `0`.
+   Three `[ok]` rows, the role's reading `already in state` and `nothing
+   changes` because step 4 brought it in, the other two `from` their ids
+   with the estate's tags to add, then `Resources: 2 imported, 0 added,
+   2 changed`, and `0`.
 
 6. Run the check stack, and read the refusal as a list.
 
@@ -346,19 +350,23 @@ Fourteen lessons wrote an estate from nothing. This one starts from what is alre
    ```
 
    ```
-   iam_role.legacy_reporter.tf:10:1: Error - aws_iam_role.legacy_reporter carries no owner tag. Add tags = { owner = local.owner }, or pass owner to modules/persona. (opa_deny_tag_owner_required)
-   s3_bucket.legacy_uploads.tf:7:1: Error - aws_s3_bucket.legacy_uploads carries no owner tag. Add tags = { owner = local.owner }, or pass owner to modules/persona. (opa_deny_tag_owner_required)
-   iam_role.legacy_reporter.tf:10:1: Error - aws_iam_role.legacy_reporter carries no permissions_boundary. Every role water park emits sits inside the estate boundary from access/baseline. (opa_deny_boundary_required)
-   security_group.legacy_ssh.tf:16:19: Warning - aws_security_group.legacy_ssh opens 22 to 0.0.0.0/0 in an inline ingress block. Name the source security group, and declare the rule as its own aws_vpc_security_group_ingress_rule so it has an address a review can point at. (opa_warn_no_open_ingress)
+   envs/prod/iam_role.legacy_reporter.tf:10:1: Error - aws_iam_role.legacy_reporter carries no owner tag. Add tags = { owner = local.owner }, or pass owner to modules/persona. (opa_deny_tag_owner_required)
+   envs/prod/s3_bucket.legacy_uploads.tf:7:1: Error - aws_s3_bucket.legacy_uploads carries no owner tag. Add tags = { owner = local.owner }, or pass owner to modules/persona. (opa_deny_tag_owner_required)
+   envs/prod/iam_role.legacy_reporter.tf:10:1: Error - aws_iam_role.legacy_reporter carries no permissions_boundary. Every role water park emits sits inside the estate boundary from access/baseline. (opa_deny_boundary_required)
+   envs/prod/security_group.legacy_ssh.tf:16:19: Warning - aws_security_group.legacy_ssh opens 22 to 0.0.0.0/0 in an inline ingress block. Name the source security group, and declare the rule as its own aws_vpc_security_group_ingress_rule so it has an address a review can point at. (opa_warn_no_open_ingress)
    FAIL  tflint in access/envs/prod
+   == generated CODEOWNERS
+   gen-codeowners: envs/prod/iam_role.legacy_reporter.tf names no team. Add a teams list, or the file routes to nobody
+   FAIL  .github/CODEOWNERS was hand edited or a principal file moved
    ```
 
-   Two errors on the role, one on the bucket, a warning on the group, and
-   `check failed`. Nothing about being adopted exempts a resource from the
-   rules, and that is what one at a time is for. This list is day two. A
-   boundary on the role, an owner on both, and a source group instead of the
-   world, each its own pull request with the plan showing exactly that
-   change. The warning is new in this lesson. `no-open-ingress` read only
+   Two errors on the role, one on the bucket, a warning on the group, a
+   principal file that routes to nobody, and `check failed, 2 problem(s)`.
+   Nothing about being adopted exempts a resource from the rules, and that
+   is what one at a time is for. This list is day two. A boundary on the
+   role, an owner on both, a source group instead of the world, and a team
+   on the role so its review has an owner, each its own pull request with
+   the plan showing exactly that change. The warning is new in this lesson. `no-open-ingress` read only
    the standalone rule shape until now, and the inline shape is what
    generated config writes, so an adopted group with an open port would
    have slipped past a rule written to catch it. Step 4 brought the widened
@@ -426,10 +434,10 @@ Fourteen lessons wrote an estate from nothing. This one starts from what is alre
    ```
 
    Nothing printed means the provider line, the rule and the check are the
-   reference's. The destroy takes `legacy-reporter` and `legacy-uploads`
-   with it, because they are managed now and that is what managed means,
-   and it leaves `legacy-ssh`, because step 7 gave it back, so the last
-   line removes it by hand. If you started your own container in step 1,
+   reference's. The destroy reads `20 destroyed`, the estate's eighteen and
+   the two adopted, because `legacy-reporter` and `legacy-uploads` are
+   managed now and that is what managed means, and it leaves `legacy-ssh`,
+   because step 7 gave it back, so the last line removes it by hand. If you started your own container in step 1,
    `docker rm -f wp-i15-floci` as well.
 
 ## Self-paced

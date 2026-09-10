@@ -80,6 +80,31 @@ rows="$(jq -c '[
       tags_added: (if ($diff | index("tags_all")) != null then (($a.tags_all // {}) | to_entries | map(select(($b.tags_all // {})[.key] == null) | .key)) else [] end) }
 ]' "$work/plan.json")"
 
+# Import blocks whose resource is already in state make no importing change
+# in the plan, so they are read off the files and reported as such, and a
+# plan that would still change one of them is read the same way as above.
+declared="$(grep -h -A1 '^import {' "$root"/*.tf 2>/dev/null | sed -n 's/^[[:space:]]*to[[:space:]]*=[[:space:]]*//p' | sort -u)"
+while IFS= read -r addr; do
+	[ -n "$addr" ] || continue
+	if jq -e --arg a "$addr" '.[] | select(.address == $a)' <<<"$rows" >/dev/null; then
+		continue
+	fi
+	change="$(jq -c --arg a "$addr" '
+    (.resource_changes // [])[] | select(.address == $a)
+    | . as $c | ($c.change.before // {}) as $b | ($c.change.after // {}) as $a2
+    | { actions: $c.change.actions,
+        other: ([ (($b | keys? // []) + ($a2 | keys? // []) | unique)[] | . as $k
+                  | select(($b[$k] // null) != ($a2[$k] // null)) ] | map(select(. != "tags_all"))) }' "$work/plan.json")"
+	if [ -z "$change" ] || [ "$(jq -r '.actions | join(",")' <<<"$change")" = "no-op" ]; then
+		rows="$(jq -c --arg a "$addr" '. + [{address: $a, type: "", id: "", actions: ["no-op"], tags_only: true, other: [], tags_added: [], in_state: true}]' <<<"$rows")"
+	else
+		rows="$(jq -c --arg a "$addr" --argjson ch "$change" '. + [{address: $a, type: "", id: "", actions: $ch.actions, tags_only: (($ch.other | length) == 0), other: $ch.other, tags_added: [], in_state: true}]' <<<"$rows")"
+	fi
+done <<EOT
+$declared
+EOT
+rows="$(jq -c 'sort_by(.address)' <<<"$rows")"
+
 count="$(jq 'length' <<<"$rows")"
 bad="$(jq '[.[] | select(.tags_only | not)] | length' <<<"$rows")"
 
@@ -91,8 +116,8 @@ else
 	if [ "$count" -eq 0 ]; then
 		echo "  no import block in this root, so nothing is being adopted"
 	else
-		jq -r '.[] | "  [" + (if .tags_only then "ok" else "FAIL" end) + "] " + .address + "  from " + .id
-      + (if (.actions | index("no-op")) != null then "\n      nothing changes on import" else "" end)
+		jq -r '.[] | "  [" + (if .tags_only then "ok" else "FAIL" end) + "] " + .address + (if .id != "" then "  from " + .id else "  already in state" end)
+      + (if (.actions | index("no-op")) != null then "\n      nothing changes" else "" end)
       + (if (.tags_added | length) > 0 then "\n      the estate adds its tags: " + (.tags_added | join(", ")) else "" end)
       + (if (.other | length) > 0 then "\n      the file differs from the account on: " + (.other | join(", ")) + "\n      fix the file, because an apply would edit the account" else "" end)' <<<"$rows"
 	fi

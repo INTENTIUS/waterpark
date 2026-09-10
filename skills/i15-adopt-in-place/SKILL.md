@@ -166,8 +166,8 @@ terraform -chdir=access/envs/prod plan -generate-config-out=generated.tf
 cat access/envs/prod/generated.tf
 ```
 
-`Plan: 1 to import, 0 to add, 1 to change, 0 to destroy.`, the experimental
-warning, and the draft. Walk the draft against the role, from step 3. The
+`Plan: 1 to import, 0 to add, 1 to change, 0 to destroy.`, and the draft
+under its two-line review header. Walk the draft against the role, from step 3. The
 trust, description, name and tag are the student's. `force_detach_policies`,
 `max_session_duration` and `path` are defaults written out,
 `permissions_boundary = null` is an absence spelled as a value, and
@@ -209,7 +209,9 @@ aws --endpoint-url http://localhost:4566 iam list-role-tags --role-name legacy-r
 ```
 
 `Import complete`, `1 imported, 0 added, 1 changed`, `0`, and four tags,
-`team analytics` plus the estate's three.
+`team analytics` plus the estate's three. Run `adopt-check` once more and
+the role's row reads `already in state`, because a landed import makes no
+importing change in the plan and the check reads the block off the file.
 
 ### 5e. The other two
 
@@ -222,9 +224,9 @@ and that the egress rule stays because the account holds it.
 access/scripts/adopt-check
 ```
 
-Three `[ok]` rows, the role's reading `nothing changes on import`.
-**confirm**, then the apply and the replan. `2 imported, 0 added,
-2 changed`, then `0`.
+Three `[ok]` rows, the role's reading `already in state` and `nothing
+changes`, the other two `from` their ids. **confirm**, then the apply and
+the replan. `2 imported, 0 added, 2 changed`, then `0`.
 
 ### 5f. The refusal as a list
 
@@ -234,11 +236,14 @@ just access-check
 
 Two `Error` lines on `legacy_reporter`, no owner tag and no boundary, one
 on `legacy_uploads`, no owner tag, one `Warning` on `legacy_ssh` opening
-22 to `0.0.0.0/0` in an inline ingress block, and `check failed`. Say that
-being adopted exempts nothing, that the list is day two with one pull
-request per line, and that the warning is new in this lesson because the
-rule read only the standalone shape until now and the inline shape is what
-generated config writes.
+22 to `0.0.0.0/0` in an inline ingress block, then the CODEOWNERS stage
+failing because the adopted role names no team, and `check failed, 2
+problem(s)`. Say that being adopted exempts nothing, that the list is day
+two with one pull request per line, the team included, and that the
+warning is new in this lesson because the rule read only the standalone
+shape until now and the inline shape is what generated config writes. This
+is also the step to verify the fourth done-when clause, because 5g deletes
+the group's file.
 
 ### 5g. Back the group out
 
@@ -290,13 +295,15 @@ earlier output on trust.
   `changed` counts, and the replan exited 0 after each.
 - `list-role-tags` on `legacy-reporter` shows `managed_by`, `repo` and
   `env` beside `team`.
-- `access/scripts/check lint` fails on the adopted role's boundary and
-  owner tag and warns on the group's open port.
+- `access/scripts/check lint` failed on the adopted role's boundary and
+  owner tag and warned on the group's open port, read at 5f, before 5g
+  removed the group's file.
 - After the `removed` block was applied, `describe-security-groups`
   printed `legacy-ssh` and the replan exited 0 with the block deleted.
 
-If `adopt-check` reports `no import block`, the file in 5c holds the
-resource without its import block. If the plan wants to create a resource
+If `adopt-check` reports `no import block`, no file in the root holds
+one, so the file in 5c is missing its block. A landed import reads
+`already in state` rather than disappearing. If the plan wants to create a resource
 rather than import it, the `id` in the import block does not match the
 account, most often the group id. If the check names an attribute other
 than `description`, the review in 5c or 5e kept a default, and the draft is
