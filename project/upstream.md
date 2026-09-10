@@ -302,3 +302,10 @@ sandbox directory on the runner with its `.env` intact, where the same
 command on a running sandbox removes it. On the class stack a parked
 sandbox's credentials therefore outlive its conversation until somebody
 removes the directory by hand, and lesson 4 has the student do that.
+
+**One thing seen writing lesson 5, 2026-09-10.** With the runner stopped,
+a teammate's presence reads `machine_offline` and `POST
+/api/team/:agent_id/messages` answers `202 queued` and delivers the turn
+when the runner reconnects. Issue 85 expected `503 runner_offline`, and the
+pinned image does not refuse. The lesson teaches the queued message and
+says the caller has to read presence to know it will wait.
