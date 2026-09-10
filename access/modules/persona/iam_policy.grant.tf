@@ -36,5 +36,19 @@ resource "aws_iam_policy" "grant" {
   tags = merge(local.tags, {
     expires = coalesce(each.value.expires, "never")
     reason  = coalesce(each.value.reason, "not stated")
+    }, each.value.granted_at == null ? {} : {
+    # A break-glass grant says when it was granted and who approved it, on
+    # the artifact, so the audit trail is readable from the account alone.
+    # The apply job stamps approved_by after the apply, because the reviewer
+    # is not known when the plan is made and the plan is what was approved.
+    break_glass = "true"
+    granted_at  = each.value.granted_at
+    approved_by = var.break_glass_approver
   })
+
+  lifecycle {
+    # The apply job writes approved_by from the merged pull request's review,
+    # after the apply, so the next plan must not put it back to unapproved.
+    ignore_changes = [tags["approved_by"]]
+  }
 }

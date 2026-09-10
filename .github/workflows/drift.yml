@@ -106,6 +106,15 @@ jobs:
           echo "code=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
           exit 0
 
+      # Layer 2 of prescription 9. The sweep finds every break-glass grant
+      # whose expiry has passed and plans its removal. The cloud already ended
+      # the access (layer 1), and the watch above reports the leftover until
+      # the sweep's PR merges (layer 3). This job holds contents: read, so it
+      # plans, and a maintainer runs the sweep with --open where gh can write.
+      - name: The break-glass sweep
+        run: |
+          access/scripts/break-glass sweep | tee sweep.txt
+
       - name: The report
         if: always()
         run: |
@@ -131,6 +140,14 @@ jobs:
               cat rotation.txt
               echo '```'
             fi
+            if [ -f sweep.txt ]; then
+              echo
+              echo "### Break-glass sweep"
+              echo
+              echo '```'
+              cat sweep.txt
+              echo '```'
+            fi
             echo
             echo "This ran against a Floci container this job created and applied"
             echo "into, so a clean result is expected and proves convergence rather"
@@ -145,6 +162,7 @@ jobs:
             drift.txt
             drift.json
             rotation.txt
+            sweep.txt
           retention-days: 30
           if-no-files-found: warn
 

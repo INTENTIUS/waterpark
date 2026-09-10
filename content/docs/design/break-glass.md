@@ -52,6 +52,12 @@ delay cleanup. That is the honest guarantee statement for the docs.
 4. Still to decide. TEAM interop: TEAM for routine elevated access,
    water park break-glass for when the paved road itself is down —
    confirm the boundary.
+6. **Built, lesson I10.** The grant is a `granted_at` on the persona
+   module's grant shape, `access/scripts/break-glass` grants and sweeps
+   by marker, the TTL is refused at lint and at plan, the apply job stamps
+   the approver, and the drift watch reports the expired leftover. The
+   emulator cannot show layer 1 ending access, which is live only
+   (decision 60).
 5. **Code-host-down operation.** A CLI confirmation by a second human is
    the documented fallback (decision 37).
 

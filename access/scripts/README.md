@@ -19,6 +19,7 @@ jobs are thin wrappers around these rather than shell embedded in YAML.
 | `mint-satellite-credential` | the satellite deploy credential, on Floci | 8 |
 | `double-refusal` | strip the boundary, get refused twice | 8 |
 | `rotation` | every static secret the account holds, with its age against the window | 9 |
+| `break-glass` | grant, list, revoke and sweep a break-glass grant, by marker in the principal file | 10 |
 
 None of them holds a credential of its own. The four that talk to an account
 take the throwaway `test` key pair against Floci by default, and the two that

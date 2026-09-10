@@ -108,42 +108,9 @@ append() {
 	jq --argjson f "$1" '. + [$f]' "$findings" >"$findings.new" && mv "$findings.new" "$findings"
 }
 
-for root in $roots; do
-	plan_bin="$work/$(echo "$root" | tr / _).tfplan"
-	plan_json="$work/$(echo "$root" | tr / _).json"
-
-	if ! terraform -chdir="$root" init -input=false -no-color >"$work/init.log" 2>&1; then
-		broke=1
-		append "$(jq -nc --arg r "$root" '{root: $r, kind: "error", severity: "page",
-      address: null, detail: "terraform init failed, so this root cannot be compared to anything"}')"
-		continue
-	fi
-
-	terraform -chdir="$root" plan -detailed-exitcode -refresh=true -input=false -no-color \
-		-out="$plan_bin" >"$work/plan.log" 2>&1
-	code=$?
-
-	case "$code" in
-	0)
-		continue
-		;;
-	2) ;;
-	*)
-		broke=1
-		append "$(jq -nc --arg r "$root" --arg d "$(tail -5 "$work/plan.log" | tr '\n' ' ')" \
-			'{root: $r, kind: "error", severity: "page", address: null, detail: $d}')"
-		continue
-		;;
-	esac
-
-	any_drift=1
-	terraform -chdir="$root" show -json "$plan_bin" >"$plan_json" 2>/dev/null || {
-		broke=1
-		continue
-	}
-
-	# One finding per changed resource, down to the attributes that moved.
-	rows="$(jq -c --arg r "$root" '
+# One finding per changed resource, down to the attributes that moved.
+plan_rows() {
+	jq -c --arg r "$1" '
     (.resource_changes // [])[]
     | select((.change.actions // []) != ["no-op"])
     | . as $c
@@ -162,7 +129,45 @@ for root in $roots; do
           | { attribute: $k, declared: ($a[$k] // null), live: ($b[$k] // null) }
         ]
       }
-  ' "$plan_json")"
+  ' "$2"
+}
+
+for root in $roots; do
+	plan_bin="$work/$(echo "$root" | tr / _).tfplan"
+	plan_json="$work/$(echo "$root" | tr / _).json"
+
+	if ! terraform -chdir="$root" init -input=false -no-color >"$work/init.log" 2>&1; then
+		broke=1
+		append "$(jq -nc --arg r "$root" '{root: $r, kind: "error", severity: "page",
+      address: null, detail: "terraform init failed, so this root cannot be compared to anything"}')"
+		continue
+	fi
+
+	terraform -chdir="$root" plan -detailed-exitcode -refresh=true -input=false -no-color \
+		-out="$plan_bin" >"$work/plan.log" 2>&1
+	code=$?
+
+	# Until lesson 9 a clean plan skipped the rest of the loop, so an expired
+	# grant on a root with no other drift was never reported. The expiry check
+	# below runs whatever the plan said.
+	rows=""
+	case "$code" in
+	0) ;;
+	2)
+		any_drift=1
+		if terraform -chdir="$root" show -json "$plan_bin" >"$plan_json" 2>/dev/null; then
+			rows="$(plan_rows "$root" "$plan_json")"
+		else
+			broke=1
+		fi
+		;;
+	*)
+		broke=1
+		append "$(jq -nc --arg r "$root" --arg d "$(tail -5 "$work/plan.log" | tr '\n' ' ')" \
+			'{root: $r, kind: "error", severity: "page", address: null, detail: $d}')"
+		continue
+		;;
+	esac
 
 	while IFS= read -r row; do
 		[ -n "$row" ] || continue

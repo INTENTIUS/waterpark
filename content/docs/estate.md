@@ -49,6 +49,7 @@ are no IAM users and no IAM groups (decision 5).
 | `site-publisher` | workload | builds the site and writes it to the site bucket |
 | `runner-builder` | workload | builds the sandbox runner image and pushes it |
 | `desk-operator` | workload | the concierge in direct mode, bounded, and nothing in repo mode |
+| `on-call` | workload | the break-glass stand-in on the solo path, holding nothing at rest. Live, the on-call is a human and the grant lands on their permission set (decision 60) |
 
 ## Resources
 

@@ -31,9 +31,13 @@ lint will not catch it, so a change to it lands under the warn discipline in
 
 ## The constants
 
-`break_glass_max_ttl_hours` is 2 (decision 37) and `watcher_max_open_prs` is
-5 (decision 40). Lessons 10 and 13 read them from here, so a student changes
-one number in one place and watches the checks move with it.
+`break_glass_max_ttl_hours` is 2 (decision 37), `watcher_max_open_prs` is
+5 (decision 40) and `static_secret_max_age_days` is 90 (decision 39).
+Lessons 10, 13 and 9 read them from here, so a student changes one number in
+one place and watches the checks move with it. The break-glass TTL is
+restated as the rule pack's literal and the persona module's default,
+because neither can read this file, and `access/scripts/check` fails when
+the three differ.
 
 `forbidden_actions` is what the boundary denies, exported as a list so the
 lesson 6 proof checks consume it rather than restating it.

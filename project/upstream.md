@@ -257,3 +257,26 @@ mints credentials for any non-empty token, reports `Provider` as
 and enforces no `aud` or `sub` condition. Floci fails open on federation, so
 lesson 9 can manage trust on a laptop and cannot show a forged token
 refused.
+
+**Two more probes on the patched build, 2026-09-10, for lessons 9 and 10.**
+`AssumeRoleWithWebIdentity` is the stub the 2026-09-05 note describes, and
+lesson 9 runs the forged call on purpose so a student sees it succeed on the
+emulator and reads that a real STS refuses it with `InvalidIdentityToken`.
+The second finding is wider. Under enforcement, an `Allow` statement that
+carries any `Condition` at all is denied for an assumed-role session, and
+the same statement with the condition removed is allowed. Probed with
+`DateLessThan` and `DateGreaterThan` on `aws:CurrentTime`, `DateLessThan`
+on `aws:EpochTime`, and `StringEquals` on `aws:RequestedRegion`, each
+against `s3:PutObject` as a role assumed through `sts:AssumeRole` with the
+`test` root key. The fork's `IamConditionContextResolver` populates
+`iam:PermissionsBoundary` for four IAM actions and nothing for the global
+keys, and `IamPolicyEvaluator` carries no `Date*` operator, so a
+conditioned allow has no key to match and fails closed. The consequence for
+lesson 10 is the same shape as lesson 8's before the boundary fix. A
+break-glass grant with a `DateLessThan` expiry applies, reads back with
+its condition, is refused by the checks when too long, is reported by the
+watch once expired and is swept, and the one thing the emulator cannot
+show is the access working before the expiry and ending at it. That drill
+is live only until the fork populates `aws:CurrentTime` and `aws:EpochTime`
+and evaluates the date operators, which is a small change in those two
+classes plus an image build. The lesson says so rather than pretending.

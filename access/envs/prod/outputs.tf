@@ -8,6 +8,7 @@ output "roles" {
     (module.site_publisher.role_name)  = module.site_publisher.role_arn
     (module.desk_operator.role_name)   = module.desk_operator.role_arn
     (module.waterpark_apply.role_name) = module.waterpark_apply.role_arn
+    (module.on_call.role_name)         = module.on_call.role_arn
   }
 }
 
@@ -17,6 +18,7 @@ output "grants" {
     site-publisher  = module.site_publisher.grants
     desk-operator   = module.desk_operator.grants
     waterpark-apply = module.waterpark_apply.grants
+    on-call         = module.on_call.grants
   }
 }
 

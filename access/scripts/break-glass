@@ -1,0 +1,353 @@
+#!/usr/bin/env bash
+# Break-glass. Grant, list, revoke and sweep, on the files rather than on the
+# account, because the write path is always the PR (decision 1).
+#
+#   access/scripts/break-glass grant <principal file> <resource> <access> \
+#       --reason "<why>" [--hours N | --minutes N]
+#   access/scripts/break-glass list
+#   access/scripts/break-glass revoke <id>
+#   access/scripts/break-glass sweep [--open]
+#
+# grant writes one grant block into the principal file's grants list, with a
+# granted_at of now, an expires no later than the baseline TTL, and a reason,
+# fenced by two marker comments that carry an id. The file is then a pull
+# request like any other, and the checks refuse a grant longer than the TTL
+# at validate and at lint before a reviewer sees it.
+#
+# revoke removes the block by id. sweep finds every block whose expires has
+# passed and revokes it, one PR per principal file with --open and a plan
+# without. sweep is layer 2 of prescription 9, the cleanup, and it runs on
+# the drift watch's cron. Layer 1 is the DateLessThan condition the module
+# put on the policy, which ends the access with nothing alive. Layer 3 is
+# the drift watch, which reports the expired grant as a finding until the
+# sweep's PR is merged. Killing the sweep delays cleanup and never extends
+# access (decision 8).
+set -uo pipefail
+
+orig_pwd="$PWD"
+access_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+repo_root="$(cd "$access_root/.." && pwd)"
+cd "$access_root" || exit 1
+
+marker="wp-break-glass-sweep"
+
+say() { printf '%s\n' "$*"; }
+die() {
+	printf 'break-glass: %s\n' "$*" >&2
+	exit 1
+}
+
+usage() {
+	cat >&2 <<'USAGE'
+usage: access/scripts/break-glass grant <principal file> <resource> <access> --reason "<why>" [--hours N | --minutes N]
+       access/scripts/break-glass list
+       access/scripts/break-glass revoke <id>
+       access/scripts/break-glass sweep [--open]
+USAGE
+	exit 2
+}
+
+# The TTL, from baseline, the same way rotation and reconcile read theirs.
+max_ttl_hours="$(sed -n 's/^[[:space:]]*break_glass_max_ttl_hours[[:space:]]*=[[:space:]]*\([0-9]*\).*/\1/p' \
+	"$access_root/baseline/locals.tf" | head -1)"
+[ "$max_ttl_hours" -ge 0 ] 2>/dev/null || die "could not read break_glass_max_ttl_hours from access/baseline"
+
+# RFC3339 arithmetic on macOS and Linux.
+now_epoch="$(date -u +%s)"
+fmt_epoch() {
+	date -u -r "$1" +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date -u -d "@$1" +%Y-%m-%dT%H:%M:%SZ
+}
+to_epoch() {
+	local ts="${1%%.*}"
+	ts="${ts%Z}"
+	if date -u -j -f '%Y-%m-%dT%H:%M:%S' "$ts" +%s 2>/dev/null; then return; fi
+	date -u -d "$ts" +%s 2>/dev/null
+}
+
+# Paths are given the way every other script prints them, from the repo
+# root as access/envs/prod/iam_role.on_call.tf, and this script works from
+# access/, so the prefix comes off. A path relative to where the caller
+# stood, or an absolute one, is accepted too.
+relative_to_access() {
+	local f="$1"
+	case "$f" in
+	/*) f="${f#"$access_root"/}" ;;
+	access/*) f="${f#access/}" ;;
+	*)
+		if [ ! -f "$f" ] && [ -f "$orig_pwd/$f" ]; then
+			f="$(cd "$(dirname "$orig_pwd/$f")" && pwd)/$(basename "$f")"
+			f="${f#"$access_root"/}"
+		fi
+		;;
+	esac
+	printf '%s' "$f"
+}
+
+# Every principal file that can carry a grant.
+principal_files() {
+	find envs identity satellites -name 'iam_role.*.tf' -o -name 'ssoadmin_permission_set.*.tf' 2>/dev/null | sort
+}
+
+# Every break-glass block, as: id<TAB>file<TAB>expires
+blocks() {
+	local f
+	for f in $(principal_files); do
+		awk -v file="$f" '
+			/^[[:space:]]*# break-glass bg-/ { id = $3; sub(/\.$/, "", id); next }
+			id != "" && /^[[:space:]]*expires[[:space:]]*=/ { gsub(/"/, "", $3); expires = $3 }
+			id != "" && /^[[:space:]]*# end break-glass / { printf "%s\t%s\t%s\n", id, file, expires; id = ""; expires = "" }
+		' "$f"
+	done
+}
+
+cmd_grant() {
+	local file="${1:-}" resource="${2:-}" access="${3:-}"
+	shift 3 2>/dev/null || usage
+	local reason="" hours="" minutes=""
+	while [ $# -gt 0 ]; do
+		case "$1" in
+		--reason)
+			reason="${2:-}"
+			shift 2
+			;;
+		--hours)
+			hours="${2:-}"
+			shift 2
+			;;
+		--minutes)
+			minutes="${2:-}"
+			shift 2
+			;;
+		*) usage ;;
+		esac
+	done
+	[ -n "$file" ] && [ -n "$resource" ] && [ -n "$access" ] || usage
+	file="$(relative_to_access "$file")"
+	[ -f "$file" ] || die "no such principal file: access/$file"
+	[ -n "$reason" ] || die "a break-glass grant needs --reason. The reason is what the audit trail reads."
+	grep -q '^[[:space:]]*grants[[:space:]]*=' "$file" || die "$file has no grants list to add to"
+
+	local seconds
+	if [ -n "$minutes" ]; then
+		seconds=$((minutes * 60))
+	elif [ -n "$hours" ]; then
+		seconds=$((hours * 3600))
+	else
+		seconds=$((max_ttl_hours * 3600))
+	fi
+	if [ "$seconds" -gt $((max_ttl_hours * 3600)) ]; then
+		die "that is longer than the baseline TTL of $max_ttl_hours hour(s). Grant for less, or grant again when it runs out (decision 37)."
+	fi
+
+	local principal granted_at expires id
+	principal="$(basename "$file" .tf)"
+	principal="$(printf '%s' "${principal#*.}" | tr '_' '-')"
+	granted_at="$(fmt_epoch "$now_epoch")"
+	expires="$(fmt_epoch $((now_epoch + seconds)))"
+	id="bg-${principal}-$(date -u -r "$now_epoch" +%Y%m%dT%H%MZ 2>/dev/null || date -u -d "@$now_epoch" +%Y%m%dT%H%MZ)"
+
+	# The block goes through a file, because the awk on macOS refuses a
+	# newline in a -v string.
+	local block
+	block="$(mktemp -t wp-break-glass)"
+	cat >"$block" <<BLOCK
+    # break-glass $id. Written by access/scripts/break-glass, revoked by its sweep.
+    {
+      resource   = "$resource"
+      access     = "$access"
+      granted_at = "$granted_at"
+      expires    = "$expires"
+      reason     = "$reason"
+    },
+    # end break-glass $id
+BLOCK
+
+	# Insert after the grants line. An empty list is opened first.
+	awk -v block="$block" '
+		function emit(   line) { while ((getline line < block) > 0) print line; close(block) }
+		!done && /^[[:space:]]*grants[[:space:]]*=[[:space:]]*\[\][[:space:]]*$/ {
+			sub(/\[\]/, "[")
+			print
+			emit()
+			print "  ]"
+			done = 1
+			next
+		}
+		!done && /^[[:space:]]*grants[[:space:]]*=[[:space:]]*\[[[:space:]]*$/ {
+			print
+			emit()
+			done = 1
+			next
+		}
+		{ print }
+	' "$file" >"$file.new" && mv "$file.new" "$file"
+	rm -f "$block"
+	terraform fmt "$file" >/dev/null
+
+	say "granted   $id"
+	say "  file       access/$file"
+	say "  grant      $access on $resource"
+	say "  granted_at $granted_at"
+	say "  expires    $expires"
+	say "  reason     $reason"
+	say
+	say "  This is a file change and nothing more. The pull request is the request,"
+	say "  the merge is the approval, and the apply is what makes it access."
+}
+
+cmd_list() {
+	local found=0
+	while IFS=$'\t' read -r id file expires; do
+		[ -n "$id" ] || continue
+		found=1
+		local verdict="live"
+		if [ -n "$expires" ] && [ "$(to_epoch "$expires")" -le "$now_epoch" ]; then
+			verdict="expired"
+		fi
+		say "  [$verdict] $id"
+		say "      access/$file, expires $expires"
+	done <<EOT
+$(blocks)
+EOT
+	[ "$found" -eq 1 ] || say "  no break-glass grant in the repo"
+}
+
+revoke_in_file() {
+	local id="$1" file="$2"
+	awk -v id="$id" '
+		$0 ~ "^[[:space:]]*# break-glass " id "\\." { skipping = 1; next }
+		skipping && $0 ~ "^[[:space:]]*# end break-glass " id "$" { skipping = 0; next }
+		!skipping { print }
+	' "$file" >"$file.new" && mv "$file.new" "$file"
+	# A list the revoke emptied goes back to the one-line form the file had
+	# at rest, so the file is byte for byte what it was before the grant.
+	awk '
+		held != "" && /^[[:space:]]*\][[:space:]]*$/ { sub(/\[[[:space:]]*$/, "[]", held); print held; held = ""; next }
+		held != "" { print held; held = "" }
+		/^[[:space:]]*grants[[:space:]]*=[[:space:]]*\[[[:space:]]*$/ { held = $0; next }
+		{ print }
+		END { if (held != "") print held }
+	' "$file" >"$file.new" && mv "$file.new" "$file"
+	terraform fmt "$file" >/dev/null
+}
+
+cmd_revoke() {
+	local id="${1:-}"
+	[ -n "$id" ] || usage
+	local file
+	file="$(blocks | awk -F'\t' -v id="$id" '$1 == id { print $2 }' | head -1)"
+	[ -n "$file" ] || die "no break-glass grant with id $id. Run: access/scripts/break-glass list"
+	revoke_in_file "$id" "$file"
+	say "revoked   $id"
+	say "  file       access/$file"
+	say
+	say "  The block is gone from the file. Merging that is what removes the policy."
+}
+
+cmd_sweep() {
+	local do_open=false
+	while [ $# -gt 0 ]; do
+		case "$1" in
+		--open) do_open=true ;;
+		--dry-run) do_open=false ;;
+		*) usage ;;
+		esac
+		shift
+	done
+
+	local gh_ready=false
+	if command -v gh >/dev/null 2>&1 && gh auth status >/dev/null 2>&1; then
+		gh_ready=true
+	fi
+
+	say "break-glass sweep, $(fmt_epoch "$now_epoch")"
+	say
+	local expired_ids=""
+	local files=""
+	while IFS=$'\t' read -r id file expires; do
+		[ -n "$id" ] || continue
+		if [ -z "$expires" ] || [ "$(to_epoch "$expires")" -gt "$now_epoch" ]; then
+			say "  live     $id, expires $expires"
+			continue
+		fi
+		say "  expired  $id, expired $expires"
+		say "           access/$file"
+		expired_ids="$expired_ids $id"
+		case " $files " in
+		*" $file "*) ;;
+		*) files="$files $file" ;;
+		esac
+	done <<EOT
+$(blocks)
+EOT
+
+	if [ -z "$expired_ids" ]; then
+		say
+		say "  nothing to sweep. Every break-glass grant in the repo is still inside its window,"
+		say "  or there is none."
+		return 0
+	fi
+
+	say
+	local f
+	for f in $files; do
+		local principal branch
+		principal="$(basename "$f" .tf)"
+		principal="${principal#*.}"
+		branch="desk/break-glass/$(printf '%s' "$principal" | tr 'A-Z_' 'a-z-')"
+		say "  file   access/$f"
+		say "         branch $branch"
+		if [ "$do_open" = true ] && [ "$gh_ready" = true ]; then
+			(
+				cd "$repo_root" || exit 1
+				git switch -c "$branch" >/dev/null 2>&1 || git switch "$branch" >/dev/null 2>&1
+				local id
+				for id in $expired_ids; do
+					if blocks | awk -F'\t' -v id="$id" -v f="$f" '$1 == id && $2 == f { found = 1 } END { exit !found }'; then
+						revoke_in_file "$id" "access/$f"
+					fi
+				done
+				git add "access/$f"
+				git commit -q -m "break-glass: sweep expired grants from $principal" \
+					-m "The cloud already ended these at their expiry. This removes the artifact." \
+					-m "<!-- $marker file=$f -->"
+				git push -q -u origin "$branch"
+				gh pr create --title "break-glass: sweep expired grants from $principal" \
+					--body "The cloud already ended these grants at their expiry (layer 1). This PR removes the artifacts (layer 2), and the drift watch stops reporting them once it merges (layer 3).
+
+<!-- $marker file=$f -->" --head "$branch" --base main
+				git switch - >/dev/null 2>&1
+			)
+		elif [ "$do_open" = true ]; then
+			say "         gh is not available, so nothing can be opened from here"
+		fi
+	done
+
+	if [ "$do_open" = false ]; then
+		say
+		say "  This was the dry run. Nothing was edited, branched or opened."
+		say "  Add --open with a gh that can write to file the sweep, or revoke by id to edit in place:"
+		local id
+		for id in $expired_ids; do
+			say "    access/scripts/break-glass revoke $id"
+		done
+	fi
+	return 0
+}
+
+case "${1:-}" in
+grant)
+	shift
+	cmd_grant "$@"
+	;;
+list) cmd_list ;;
+revoke)
+	shift
+	cmd_revoke "$@"
+	;;
+sweep)
+	shift
+	cmd_sweep "$@"
+	;;
+*) usage ;;
+esac

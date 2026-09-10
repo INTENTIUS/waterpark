@@ -535,3 +535,35 @@ it. Reversing one requires editing this file in the same PR.
     paragraph on Roles Anywhere and builds the rest itself (decision 39).
     ([design/workload-identity](design/workload-identity.md),
     [IAM, lesson 9](../courses/iam/09-federation-trust.md))
+60. **A break-glass grant is a grant with a `granted_at`, and the on-call
+    is a role on the solo path.** The grant is the persona module's own
+    grant shape plus one field. `granted_at` marks it, `expires` is at most
+    `break_glass_max_ttl_hours` later, `reason` is required, and the module
+    renders the `DateLessThan aws:CurrentTime` condition and the
+    `break_glass`, `granted_at` and `approved_by` tags on the policy. The
+    TTL is refused three times, by `break-glass-ttl` in the rule pack at
+    lint, by the module at plan, and by `access/scripts/break-glass` before
+    the file is written, and `terraform validate` does not refuse it,
+    because a validation that reads another variable is evaluated at plan.
+    The constant lives in `access/baseline` and is restated as the rule's
+    literal and the module's default, and `access/scripts/check` fails when
+    the three differ. `access/scripts/break-glass` grants, lists, revokes
+    and sweeps by marker comments in the principal file, so the request is
+    a pull request and the cleanup is one too, and the sweep rides the
+    drift cron. The apply job stamps `approved_by` from the merged pull
+    request's approving review after the apply, and the module ignores
+    that one tag on the next plan, because the reviewer is not known when
+    the plan is made and the plan is what was approved. Live, the grant
+    lands on a human's permission set as an inline policy under the
+    standing account assignment, and the condition is what makes it
+    temporary. Floci runs no Identity Center, so on the solo path the
+    grant lands on `on-call`, a role under `envs/prod` that holds nothing
+    at rest and stands in for the permission set. Floci also evaluates no
+    condition on an allow, so the emulator shows the grant declared,
+    checked, watched and swept, and cannot show the access working before
+    the expiry and ending at it, which is live only until the fork
+    evaluates date conditions ([upstream](https://github.com/INTENTIUS/waterpark/blob/main/project/upstream.md)).
+    The lesson 7 watch never reported an expired grant on a root with no
+    other drift, and lesson 10 fixes that. TEAM interop stays open.
+    ([design/break-glass](design/break-glass.md),
+    [IAM, lesson 10](../courses/iam/10-break-glass.md))
