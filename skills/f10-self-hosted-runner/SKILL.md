@@ -68,8 +68,8 @@ Set the key from step 1 of the lesson page, which is
 `content/courses/fountain/10-self-hosted-runner.md` in this checkout, and
 run the three reads there. The API answer with `name`, `root`
 `/sandboxes`, `online` true and an `id` that every sandbox name on this
-runner starts with. The compose listing with one `compose-runner-1`
-container. The shell listing with `uid=1001(runner)`, PID 1 reading
+runner starts with. The compose listing, asked for the `runner` service,
+with one `compose-runner-1` line. The shell listing with `uid=1001(runner)`, PID 1 reading
 `fountain runner --name waterpark --root /sandboxes`, and an environment
 holding `FOUNTAIN_API_KEY` and the emulator's `AWS_` pair.
 
@@ -100,9 +100,11 @@ Two `env  +`, one `secret  ~`, two `agent  +`.
 
 **confirm**, then the locked run from step 3. `provision: started`,
 `network: failed`, `provisioning failed — the sandbox never started`, and
-a non-zero exit. Say that this is lesson 3 in one step, that the events
-call there names `backend_lacks_network_policy` and `provider: runner`,
-and that it goes first because a refused run holds no sandbox slot. Say
+a non-zero exit. Then the events curl from step 3 of the page on that
+conversation's id, whose `network failed` line names
+`backend_lacks_network_policy` and `provider: runner`. Say that this is
+lesson 3 in one step and that it goes first because a refused run holds no
+sandbox slot. Say
 what the unrestricted agent can reach instead, which is the host's whole
 network.
 
@@ -121,7 +123,8 @@ runner-disk row says anyone with the runner's disk, and say this is why.
 
 ### 3e. Must be online
 
-**confirm**, then `fountain conv list`, and terminate the second
+**confirm**, then the `fountain conv list --json` line from step 5, which
+prints the full ids the table form shortens, and terminate the second
 conversation by its full id to free a slot. **confirm**, then stop the
 container with the `docker compose ... stop runner` line from step 5,
 wait five seconds, and read the runners endpoint. `online` false with a
@@ -132,8 +135,9 @@ The run answers `http 409` saying this agent runs on a self-hosted runner
 and none of yours is connected, with `start fountain runner on the machine
 and try again` as the fix, and the prompt streams `turn: started`, `turn failed`. Say that the new run
 is refused before anything is minted, with the fix in the message, and that
-the parked one's events show `{:unavailable, :runner_offline}`, the word for
-a directory on a machine that is switched off, which the decision record
+the same events curl on the first conversation shows its `turn failed`
+reason as `{:unavailable, :runner_offline}`, the word for a directory on a
+machine that is switched off, which the decision record
 says is never `not_found` because the directory is still the memory.
 
 **confirm**, then `start runner`, wait five seconds, read the runners
@@ -152,10 +156,12 @@ a hosted provider and not on this.
 ### 3g. Tidy up
 
 **confirm**, then terminate the first conversation by its full id.
-**confirm**, then the runner shell line from step 7 with the `rm -rf`. The
-parked directory survives the terminate, which lesson 4 found, and the
-listing reads `0` after the remove. Leaving the environments and agents is
-fine.
+**confirm**, then the runner shell line from step 7 with the `rm -rf`. Read
+the first listing with the student. Empty means both sandboxes were awake
+when terminated and lost their directories, which is what happens inside
+two minutes. A directory named means it had parked and survived, which
+lesson 4 found, and the `rm -rf` is what removes it. The count reads `0`
+either way. Leaving the environments and agents is fine.
 
 ## 4. Done when
 
