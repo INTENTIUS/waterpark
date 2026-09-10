@@ -1,0 +1,90 @@
+#!/usr/bin/env bash
+# Every grant with an expiry, read from the account, soonest first.
+#
+#   access/scripts/expiring                 grants expiring within 30 days, and any already past
+#   access/scripts/expiring --within 90     a wider window
+#   access/scripts/expiring --all           every dated grant
+#   access/scripts/expiring --json          the same as JSON for the desk
+#
+# Exit 0 when nothing is past or inside the window, 2 when something is.
+# A grant already past its expiry grants nothing and is drift the watch
+# reports (lesson 7). This lists it beside the ones that are about to be.
+set -uo pipefail
+
+access_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# shellcheck source=lib-live.sh
+. "$access_root/scripts/lib-live.sh"
+
+within=30
+all=false
+as_json=false
+while [ $# -gt 0 ]; do
+	case "$1" in
+	--within)
+		within="${2:-30}"
+		shift 2
+		;;
+	--all)
+		all=true
+		shift
+		;;
+	--json)
+		as_json=true
+		shift
+		;;
+	*)
+		echo "usage: access/scripts/expiring [--within DAYS] [--all] [--json]" >&2
+		exit 2
+		;;
+	esac
+done
+
+require_account expiring
+window_end=$((now_epoch + within * 86400))
+
+rows="[]"
+while IFS= read -r role; do
+	[ -n "$role" ] || continue
+	name="$(jq -r .name <<<"$role")"
+	while IFS= read -r policy; do
+		[ -n "$policy" ] || continue
+		expires="$(jq -r '.tags.expires // empty' <<<"$policy")"
+		[ -n "$expires" ] && [ "$expires" != never ] || continue
+		e="$(to_epoch "$expires")"
+		[ -n "$e" ] || continue
+		verdict=later
+		if [ "$e" -le "$now_epoch" ]; then
+			verdict=past
+		elif [ "$e" -le "$window_end" ]; then
+			verdict=soon
+		fi
+		[ "$all" = true ] || [ "$verdict" != later ] || continue
+		parts="$(grant_parts "$name" "$policy")"
+		rows="$(jq -c --argjson p "$policy" --argjson g "$parts" --arg n "$name" --arg v "$verdict" --argjson e "$e" '
+      . + [{principal: $n, access: $g.access, resource: $g.resource, expires: $p.tags.expires,
+            epoch: $e, verdict: $v, break_glass: (($p.tags.break_glass // "false") == "true"),
+            reason: ($p.tags.reason // null), policy: $p.name}]' <<<"$rows")"
+	done <<EOT
+$(jq -c '.policies[]' <<<"$role")
+EOT
+done <<EOT
+$(roles_json)
+EOT
+rows="$(jq -c 'sort_by(.epoch)' <<<"$rows")"
+
+if [ "$as_json" = true ]; then
+	jq -n --arg at "$now_iso" --argjson w "$within" --argjson rows "$rows" '{read_at: $at, within_days: $w, grants: $rows}'
+else
+	echo "expiring grants, read from the account at $now_iso, window $within days"
+	echo
+	if [ "$(jq length <<<"$rows")" = 0 ]; then
+		echo "  nothing is past its expiry or inside the window."
+	else
+		jq -r '.[] | "  [" + .verdict + "] " + .principal + "  " + .access + " on " + .resource
+      + "\n      expires " + .expires + (if .break_glass then ", break-glass" else "" end)' <<<"$rows"
+	fi
+fi
+if jq -e '[.[] | select(.verdict != "later")] | length > 0' <<<"$rows" >/dev/null; then
+	exit 2
+fi
+exit 0

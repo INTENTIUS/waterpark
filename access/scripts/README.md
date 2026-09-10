@@ -20,10 +20,17 @@ jobs are thin wrappers around these rather than shell embedded in YAML.
 | `double-refusal` | strip the boundary, get refused twice | 8 |
 | `rotation` | every static secret the account holds, with its age against the window | 9 |
 | `break-glass` | grant, list, revoke and sweep a break-glass grant, by marker in the principal file | 10 |
+| `whocan` | every principal with a grant on a resource, read from the account | 11 |
+| `expiring` | every dated grant, soonest first, read from the account | 11 |
+| `offboard` | remove a principal and every reference, with a preview that reads the account | 11 |
+| `access-review` | the quarterly artifact, every principal and what it can reach, read from the account | 11 |
 
-None of them holds a credential of its own. The four that talk to an account
-take the throwaway `test` key pair against Floci by default, and the two that
-talk to the code host use whatever `gh` is already authenticated as.
+None of them holds a credential of its own. The ones that talk to an account
+take the throwaway `test` key pair against Floci by default, `LIVE=true`
+drops the endpoint override so the same script reads a real account with
+whatever credential the shell holds, and the two that talk to the code host
+use whatever `gh` is already authenticated as. `lib-live.sh` is the shared
+read side, sourced by the lesson 11 scripts and never run.
 
 ## The asymmetry, which is what lesson 7 is about
 

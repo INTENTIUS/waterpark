@@ -1,0 +1,172 @@
+#!/usr/bin/env bash
+# The access review. Every principal, what it can reach, and what expires,
+# read from the account and never from a satellite's HCL (decision 42).
+#
+#   access/scripts/access-review            the artifact as Markdown, to stdout
+#   access/scripts/access-review --json     the same as JSON for the desk
+#
+# The artifact is what a compliance reviewer accepts, so it says where each
+# fact came from and names what it did not see. It runs quarterly on
+# .github/workflows/access-review.yml against a Floci the job filled itself,
+# which proves the shape and nothing about a real account, and live as the
+# security account's reviewer against the real one.
+set -uo pipefail
+
+access_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# shellcheck source=lib-live.sh
+. "$access_root/scripts/lib-live.sh"
+
+as_json=false
+case "${1:-}" in
+--json) as_json=true ;;
+"") ;;
+*)
+	echo "usage: access/scripts/access-review [--json]" >&2
+	exit 2
+	;;
+esac
+
+require_account access-review
+
+account="$(awsq sts get-caller-identity --query Account --output text 2>/dev/null || echo unknown)"
+roles="$(roles_json | jq -s '.')"
+
+# Every grant, flattened, with the level and resource read off the policy
+# name and the dates off the tags.
+grants="$(jq -c '[ .[] as $r | $r.policies[] as $p
+  | (if ($p.name | startswith($r.name + "-")) then ($p.name | ltrimstr($r.name + "-") | split("-")) else ["attached", $p.name] end) as $parts
+  | { principal: $r.name, access: $parts[0], resource: ($parts[1:] | join("-")),
+      foreign: ($p.name | startswith($r.name + "-") | not),
+      expires: ($p.tags.expires // "never"), reason: ($p.tags.reason // ""),
+      break_glass: (($p.tags.break_glass // "false") == "true"),
+      granted_at: ($p.tags.granted_at // null), approved_by: ($p.tags.approved_by // null),
+      source: ($r.tags.satellite // $r.tags.env // "unknown") } ]' <<<"$roles")"
+
+# Expiry verdicts, ninety days out, the same reading scripts/expiring gives.
+window_end=$((now_epoch + 90 * 86400))
+expiring="[]"
+while IFS= read -r g; do
+	[ -n "$g" ] || continue
+	ex="$(jq -r .expires <<<"$g")"
+	[ "$ex" != never ] || continue
+	e="$(to_epoch "$ex")"
+	[ -n "$e" ] || continue
+	v=later
+	[ "$e" -le "$window_end" ] && v=soon
+	[ "$e" -le "$now_epoch" ] && v=past
+	expiring="$(jq -c --argjson g "$g" --arg v "$v" --argjson e "$e" '. + [$g + {verdict: $v, epoch: $e}]' <<<"$expiring")"
+done <<EOT
+$(jq -c '.[]' <<<"$grants")
+EOT
+expiring="$(jq -c 'sort_by(.epoch)' <<<"$expiring")"
+
+# Unused access, from Access Analyzer, when an analyzer answers.
+unused_note=""
+unused="[]"
+analyzer="$(awsq accessanalyzer list-analyzers --type ACCOUNT_UNUSED_ACCESS --query 'analyzers[0].arn' --output text 2>/dev/null || true)"
+if [ -z "$analyzer" ] || [ "$analyzer" = None ]; then
+	unused_note="no unused-access analyzer answered, so no unused-access finding is claimed. Live, waterpark-security runs one and this section fills."
+else
+	unused="$(awsq accessanalyzer list-findings-v2 --analyzer-arn "$analyzer" --query 'findings' 2>/dev/null || echo '[]')"
+fi
+
+# Humans are permission sets in the management account, live only.
+humans_note="permission sets and their assignments live in waterpark-mgmt through Identity Center, which is read on the live path and not here. Humans are listed from access/identity as declared, not as read."
+humans="$(grep -h '^  name ' "$access_root"/identity/ssoadmin_permission_set.*.tf 2>/dev/null | sed 's/.*= "\(.*\)"/\1/' | jq -R . | jq -s .)"
+
+# Static secrets, from the rotation check.
+rotation="$(FLOCI_ENDPOINT="$endpoint" LIVE="$live" "$access_root/scripts/rotation" --json 2>/dev/null || echo '{}')"
+
+if [ "$as_json" = true ]; then
+	jq -n --arg at "$now_iso" --arg acct "$account" --argjson roles "$roles" --argjson grants "$grants" \
+		--argjson expiring "$expiring" --argjson unused "$unused" --arg unused_note "$unused_note" \
+		--argjson humans "$humans" --arg humans_note "$humans_note" --argjson rotation "$rotation" '
+    { read_at: $at, account: $acct, principals: $roles, grants: $grants, expiring: $expiring,
+      unused_access: {findings: $unused, note: $unused_note},
+      humans: {declared: $humans, note: $humans_note}, static_secrets: $rotation }'
+	exit 0
+fi
+
+cat <<EOT
+# Access review, $now_iso
+
+Account \`$account\`, read through \`get-role\`, \`list-attached-role-policies\`,
+\`list-policy-tags\` and \`get-policy-version\`. Nothing below comes from a
+file, so a role a satellite created is here whichever repo declared it, and
+so is anything somebody attached in a console.
+
+## Principals
+
+| Principal | Persona | Owner | From | Boundary | Trust | Grants |
+|---|---|---|---|---|---|---|
+EOT
+jq -r '.[] | "| `" + .name + "` | " + (.tags.persona // "unknown") + " | " + (.tags.owner // "unknown")
+  + " | " + (.tags.satellite // .tags.env // "unknown")
+  + " | " + (if .boundary then "yes" else "**none**" end)
+  + " | " + .trust.kind + (if (.trust.subjects | length) > 0 then " `" + (.trust.subjects | join("`, `")) + "`" else "" end)
+  + " | " + (.policies | length | tostring) + " |"' <<<"$roles"
+
+cat <<EOT
+
+## What each can reach
+
+| Principal | Access | Resource | Expires | Reason |
+|---|---|---|---|---|
+EOT
+if [ "$(jq length <<<"$grants")" = 0 ]; then
+	echo "| | | no grant in the account | | |"
+else
+	jq -r '.[] | "| `" + .principal + "` | " + (if .foreign then "**attached, not written by the repo**" else .access end) + " | `" + .resource + "` | " + .expires
+    + (if .break_glass then " (break-glass, approved by " + (.approved_by // "nobody") + ")" else "" end)
+    + " | " + .reason + " |"' <<<"$grants"
+fi
+
+cat <<EOT
+
+## What expires
+
+Ninety days out, soonest first. A grant past its expiry grants nothing and
+is drift the watch reports until it is removed.
+
+EOT
+if [ "$(jq length <<<"$expiring")" = 0 ]; then
+	echo "Nothing is dated."
+else
+	jq -r '.[] | "- [" + .verdict + "] `" + .principal + "` " + .access + " on `" + .resource + "`, " + .expires
+    + (if .break_glass then ", break-glass" else "" end)' <<<"$expiring"
+fi
+
+cat <<EOT
+
+## Unused access
+
+EOT
+if [ -n "$unused_note" ]; then
+	echo "Skipped. $unused_note"
+elif [ "$(jq length <<<"$unused")" = 0 ]; then
+	echo "The analyzer reports no unused access."
+else
+	jq -r '.[] | "- " + (.resource // "?") + ", " + (.findingType // "?") + ", " + (.status // "?")' <<<"$unused"
+fi
+
+cat <<EOT
+
+## Humans
+
+$(jq -r 'if length == 0 then "None declared." else map("- `" + . + "`") | join("\n") end' <<<"$humans")
+
+$humans_note
+
+## Static secrets
+
+$(jq -r 'if .access_keys == null then "The rotation check did not run." elif .access_keys == 0 then "None. Every principal in the account is a role or a permission set. " + (.trust_anchors | tostring) + " trust anchor(s), nothing to rotate behind them." else (.access_keys | tostring) + " access key(s), " + (.over_window | tostring) + " over the " + (.max_age_days | tostring) + " day window." end' <<<"$rotation")
+
+## What this review did not see
+
+- A resource nobody has permission to read. The review is a set of reads
+  and it says nothing about what a read was refused on.
+- The module ref a satellite pins. That is in the satellite's HCL, and this
+  review reads no HCL (decision 42). The satellite's roles are above because
+  the account holds them.
+- Anything since $now_iso. The review is as current as its last read.
+EOT

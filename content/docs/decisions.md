@@ -567,3 +567,27 @@ it. Reversing one requires editing this file in the same PR.
     other drift, and lesson 10 fixes that. TEAM interop stays open.
     ([design/break-glass](design/break-glass.md),
     [IAM, lesson 10](../courses/iam/10-break-glass.md))
+61. **Offboard is a script over the files, the review is a script over
+    the account, and both are the desk's read side.** `access/scripts/offboard`
+    finds the principal file by the layout's own promise, removes it, the
+    output lines that name it, the variable a human's assignment reads and
+    the CODEOWNERS line derived from it, and then greps for what is left
+    outside a comment. `terraform plan` is the proof, because a dangling
+    reference fails it, and the apply is one PR and one apply
+    (estate.md scenario 4). Its preview reads the account for what the
+    apply will take away, and says that `access/identity` is live only
+    rather than pretending to read it. `whocan`, `expiring` and
+    `access-review` read the account through `get-role`,
+    `list-attached-role-policies`, `list-policy-tags` and
+    `get-policy-version` and never a file (decision 42), sharing one
+    library, so a satellite's role and a policy somebody attached in a
+    console both appear. The review is a Markdown artifact that says where
+    each fact came from and names what it did not see, unused access is a
+    named skip until an analyzer answers, and humans are listed as
+    declared under `access/identity` because Identity Center is read only
+    live. It runs quarterly on `access-review.yml` against a Floci the job
+    filled itself, which proves the shape. `LIVE=true` drops the endpoint
+    override on every read script. The cost is that a review is as
+    current as its last read and knows nothing about a read it was
+    refused, and the artifact says so.
+    ([design/agentic](design/agentic.md), [IAM, lesson 11](../courses/iam/11-offboard-and-access-review.md))

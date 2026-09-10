@@ -1,0 +1,82 @@
+#!/usr/bin/env bash
+# Who can reach a resource, read from the account (decision 42).
+#
+#   access/scripts/whocan <resource>          every principal with a grant on it
+#   access/scripts/whocan <resource> --json   the same as JSON for the desk
+#
+# The answer comes from the account and not from the HCL, so a role a
+# satellite created is in it whichever repo declared it, and so is a policy
+# somebody attached in a console. The grant's access level and its resource
+# are read off the policy name the persona module writes, and the expiry,
+# the reason and the break-glass marks are read off its tags.
+set -uo pipefail
+
+access_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# shellcheck source=lib-live.sh
+. "$access_root/scripts/lib-live.sh"
+
+resource="${1:-}"
+as_json=false
+[ -n "$resource" ] || {
+	echo "usage: access/scripts/whocan <resource> [--json]" >&2
+	exit 2
+}
+case "${2:-}" in
+--json) as_json=true ;;
+esac
+
+require_account whocan
+
+rows="[]"
+while IFS= read -r role; do
+	[ -n "$role" ] || continue
+	name="$(jq -r .name <<<"$role")"
+	while IFS= read -r policy; do
+		[ -n "$policy" ] || continue
+		if ! jq -e --arg r "$resource" '
+        [.document.Statement // [] | if type == "array" then .[] else . end
+         | .Resource // [] | if type == "array" then .[] else . end
+         | select(type == "string") | select(test(":" + $r + "(/|$)"))] | length > 0' <<<"$policy" >/dev/null; then
+			continue
+		fi
+		parts="$(grant_parts "$name" "$policy")"
+		rows="$(jq -c --argjson role "$role" --argjson p "$policy" --argjson g "$parts" '
+      . + [{
+        principal: $role.name,
+        persona: ($role.tags.persona // "unknown"),
+        owner: ($role.tags.owner // "unknown"),
+        source: ($role.tags.satellite // $role.tags.env // "unknown"),
+        access: $g.access,
+        foreign: $g.foreign,
+        actions: ([$p.document.Statement // [] | if type == "array" then .[] else . end | .Action // [] | if type == "array" then .[] else . end] | unique),
+        expires: ($p.tags.expires // "never"),
+        break_glass: (($p.tags.break_glass // "false") == "true"),
+        approved_by: ($p.tags.approved_by // null),
+        reason: ($p.tags.reason // null),
+        policy: $p.name
+      }]' <<<"$rows")"
+	done <<EOT
+$(jq -c '.policies[]' <<<"$role")
+EOT
+done <<EOT
+$(roles_json)
+EOT
+
+# Sorted, so two reads of the same account print the same order.
+rows="$(jq -c 'sort_by(.principal, .access)' <<<"$rows")"
+
+if [ "$as_json" = true ]; then
+	jq -n --arg r "$resource" --arg at "$now_iso" --argjson rows "$rows" '{resource: $r, read_at: $at, grants: $rows}'
+	exit 0
+fi
+
+echo "who can reach $resource, read from the account at $now_iso"
+echo
+if [ "$(jq length <<<"$rows")" = 0 ]; then
+	echo "  nobody. No principal in the account holds a grant on it."
+	exit 0
+fi
+jq -r '.[] | "  " + .principal + "  " + (if .foreign then "attached policy " + .policy + ", not written by the repo" else .access end)
+  + "\n      persona " + .persona + ", owner " + .owner + ", from " + .source
+  + "\n      expires " + .expires + (if .break_glass then ", break-glass, approved by " + (.approved_by // "nobody") else "" end)
+  + (if .reason then "\n      " + .reason else "" end)' <<<"$rows"

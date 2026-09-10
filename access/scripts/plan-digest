@@ -10,6 +10,15 @@
 # to the address, the actions and the after-value, with the timestamp, the
 # provider versions and the prior state dropped.
 #
+# On an update in place the after-value is further reduced to the attributes
+# that differ from before. An in-place update copies every unchanged
+# attribute forward, and some of those are the account's rather than the
+# plan's, a role's create_date and unique_id above all, so two jobs that each
+# built the same estate in their own container would compute two digests for
+# one change. The first in-place update the pipeline saw, lesson 9's trust
+# change on site-publisher, was refused for exactly that, and this is the fix.
+# A create keeps its whole after-value, because all of it is the change.
+#
 # What that buys. Two runs of the same plan against the same estate produce
 # the same digest, and any change to what would actually be created, changed
 # or destroyed produces a different one. The apply job compares the digest it
@@ -43,11 +52,16 @@ normalised="$(jq -S '{
   resource_changes: [
     (.resource_changes // [])[]
     | select((.change.actions // []) != ["no-op"])
+    | (.change.before // null) as $before
     | {
         address: .address,
         type: .type,
         actions: .change.actions,
-        after: .change.after,
+        after: (
+          if $before == null or (.change.after // null) == null then .change.after
+          else (.change.after | with_entries(select(.value != $before[.key])))
+          end
+        ),
         after_unknown: .change.after_unknown
       }
   ] | sort_by(.address)
