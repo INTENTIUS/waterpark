@@ -80,9 +80,10 @@ Lesson 6 built two jobs and said the whole lesson was the difference between the
 
    `200`, then `Resources: 18 added`.
 
-2. Read the two jobs before running anything, because every step below is one of their steps done by hand.
+2. Bring in the two files this lesson changes, the delta with its replacement section and the workflow with its replacement label, then read the two jobs before running anything, because every step below is one of their steps done by hand.
 
    ```sh
+   git checkout checkpoint/i14 -- access/scripts/render-delta .github/workflows/access.yml
    grep -n 'Save the plan\|Find the approved plan\|Compare the digest\|environment: prod\|Label a replacement' .github/workflows/access.yml
    gh api repos/INTENTIUS/waterpark/environments/prod --jq '{name, protection_rules: (.protection_rules | length)}'
    ```
@@ -95,13 +96,6 @@ Lesson 6 built two jobs and said the whole lesson was the difference between the
    environment exists so it can be configured, and nobody has. On this
    repository the merge is the approval, and the digest is what makes that
    approval mean the plan rather than the diff.
-
-   Bring in the two files this lesson changes, the delta with its
-   replacement section and the workflow with its replacement label.
-
-   ```sh
-   git checkout checkpoint/i14 -- access/scripts/render-delta .github/workflows/access.yml
-   ```
 
 3. Make the change a pull request would make, and save the plan. Give `site-publisher` write on the artifacts bucket by adding a fourth grant to `access/envs/prod/iam_role.site_publisher.tf`, after the `read` grant.
 
@@ -279,8 +273,10 @@ Lesson 6 built two jobs and said the whole lesson was the difference between the
        ...
    ```
 
-   Read the top of the same delta. It says `site-publisher-v2` gains four
-   grants, which is true and is not the story. The story is that
+   Read the top of the same delta. It lists `site-publisher-v2` with four
+   grants marked `!` and a `Principals` block with `! site-publisher-v2`,
+   which read quickly says a new role with four grants, which is true and
+   is not the story. The story is that
    `site-publisher` stops existing, its ARN with it, and the GitHub Actions
    trust anchor that names its subject, the CODEOWNERS line derived from
    its file, and anything live that trusts the old ARN all break at apply.
@@ -292,7 +288,7 @@ Lesson 6 built two jobs and said the whole lesson was the difference between the
 
 8. Say the two things the digest cannot say, out loud. It proves the plan did not move between approval and apply. It does not prove who produced the plan, because a PR job's Terraform is whatever the pull request's checkout runs, and a pull request can change the workflow, which is why lesson 6 routes that path to platform review and labels it. An attested build checked before apply would close that, nobody has scheduled it, and property XIV is half closed until someone does. And it does not prove the apply landed on the account the reviewer imagined, because on this repository the apply job's account is a container it built from the base commit, which proves the digest check and nothing about a real account, which is lesson 6's honesty line and still true.
 
-9. Compare with the reference repo, then tear down both worktrees and the second container.
+9. Take the step 3 grant back out of `iam_role.site_publisher.tf`, so the leaf file is the checkpoint's again, then compare with the reference repo and tear down both worktrees and the second container.
 
    ```sh
    git add -A access .github
@@ -305,7 +301,8 @@ Lesson 6 built two jobs and said the whole lesson was the difference between the
    ```
 
    Nothing printed means the delta and the workflow are the reference's
-   and the leaf file is back to what the checkpoint holds. If the diff names
+   and the leaf file is back to what the checkpoint holds. The saved plans
+   and the old digest are ignored by name. If the diff names
    `iam_role.site_publisher.tf`, the grant from step 3, the description from
    step 6 or the name from step 7 is still in it. If you started your own
    container in step 1, `docker rm -f wp-i14-floci` as well.

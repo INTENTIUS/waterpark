@@ -52,8 +52,7 @@ two jobs come from and this lesson reads their steps, and offer to carry
 on.
 
 Require `waterpark.checkout` true and `tools.docker.installed` true. The
-check does not report `terraform`, `tflint` or `jq`, so ask for those
-directly.
+check does not report `terraform` or `tflint`, so ask for those directly.
 
 ```sh
 terraform version
@@ -61,8 +60,9 @@ tflint --version
 jq --version
 ```
 
-Terraform 1.9 or newer, any tflint, and any jq. `gh` is used once for a
-read of the environment and can be skipped if missing. `docker` is needed
+Terraform 1.9 or newer, any tflint, and any jq, which the check does
+report. `gh` is used once for a read of the environment and can be skipped
+if missing. `docker` is needed
 whatever the stack is doing, because step 5e starts a second container.
 
 Note the check's `floci.reachable`. If it is true, the Start-here stack's
@@ -103,13 +103,13 @@ covers `envs/prod`, which is what the apply job applies.
 
 ### 5a. Read the two jobs
 
-The `grep` and the `gh api` from step 2 of the page. Walk the five lines,
-save, find, compare, environment, label. `{"name":"prod","protection_rules":0}`,
-and say that the environment exists so it can be configured and nobody
-has, so on this repository the merge is the approval and the digest is
-what makes that mean the plan.
-
-**confirm**, then the checkout of the two files from step 2.
+**confirm**, then the checkout of the two files from step 2 of the page,
+first, because the fifth line the grep looks for arrives with it. Then
+the `grep` and the `gh api`. Walk the five lines, save, find, compare,
+environment, label. `{"name":"prod","protection_rules":0}`, and say that
+the environment exists so it can be configured and nobody has, so on this
+repository the merge is the approval and the digest is what makes that
+mean the plan.
 
 ### 5b. The change, the delta, the digest
 
@@ -167,8 +167,9 @@ the numbers differ, so `unset` it as the page does.
 this one, then the plan and the delta from step 7. `must be replaced` on
 the role and every grant policy, and the `Replacements` section listing
 each with `forced by name` or `forced by policy_arn, role`. Read the top of
-the delta first with the student, `site-publisher-v2` gains four grants,
-and then the section, and say that the delta was telling the truth both
+the delta first with the student, `site-publisher-v2` with four `!` lines
+and a `Principals` block, which read quickly says a new role with four
+grants, and then the section, and say that the delta was telling the truth both
 times and the second truth is the one a reviewer is paid to read. Say what
 the PR job does, the summary section and the `replacement` label. Do not
 apply. **confirm**, then the name back.
@@ -182,14 +183,18 @@ container the job built.
 
 ### 5h. Compare with the reference repo
 
+**confirm**, then have the student take the step 3 grant back out of
+`iam_role.site_publisher.tf`, so the leaf file is the checkpoint's. Then
+
 ```sh
 git add -A access .github
 git diff --cached --stat checkpoint/i14 -- access .github ':!*README.md'
 ```
 
 Nothing printed means the delta and the workflow are the reference's and
-the leaf file is back. If `iam_role.site_publisher.tf` is named, one of
-the three edits is still in it, and the checkpoint's copy is the fix.
+the leaf file is back, and the saved plans are ignored by name. If
+`iam_role.site_publisher.tf` is named, one of the three edits is still in
+it, and the checkpoint's copy is the fix.
 
 ## 6. Done when
 

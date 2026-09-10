@@ -4,6 +4,9 @@ terraform.tfstate
 terraform.tfstate.backup
 .terraform.tfstate.lock.info
 *.tfplan
+tfplan*
+plan*.json
+old-digest
 generated.tf
 
 # The copy access/scripts/double-refusal works on. It is created and destroyed
