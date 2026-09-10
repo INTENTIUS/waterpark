@@ -45,7 +45,7 @@ not built by this workflow.
 
 - 11 of the 26 lesson bodies are skeletons with TODO markers. Written
   and student-run: Fountain lessons 1 to 4, and IAM lessons 1 to 11.
-  `just todos` counts 83 today.
+  `just todos` counts 76 today.
 - The access repo exists under `access/` for what IAM lessons 1 to 8
   need (layout, personas, the check stack, the Floci deploy, the
   boundary, the PR and apply jobs, drift and reconcile, the satellite and
