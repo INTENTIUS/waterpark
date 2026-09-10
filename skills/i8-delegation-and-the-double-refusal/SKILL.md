@@ -315,7 +315,8 @@ because a satellite in the world federates through its own issuer and there is
 no OIDC subject on a laptop to bind to, and Floci honors trust policies so a
 role trusting an issuer is a role nothing here can become. It is minted and
 deleted by a script and never declared, so the rule and the decision both
-hold, and lesson 9 builds the issuer side for real. And it does not carry the
+hold, and lesson 9 federates a workload through the issuer side for real and
+says what this credential's federated form waits on. And it does not carry the
 estate boundary itself, deliberately, because that boundary denies all IAM
 write and a credential inside it could not create the role the satellite
 exists to create. Its cap is the condition instead.
@@ -481,6 +482,6 @@ original checkout rather than in the `../waterpark-i8` worktree.
 
 Say the next step is IAM lesson 9, federation trust
 (https://intentius.io/waterpark/courses/iam/09-federation-trust/), which
-builds the issuer side of the credential this lesson stood in for with an IAM
-user, so a satellite's deploy role is assumed by a workload that proves who it
-is rather than by a key on a laptop.
+federates the last placeholder workload in the estate through the trust
+anchor lesson 6 declared, writes the rules that refuse a trust anybody could
+match, and says what the satellite's own federated deploy role waits on.
