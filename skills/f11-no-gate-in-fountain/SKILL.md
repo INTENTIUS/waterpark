@@ -83,22 +83,28 @@ on every OS.)
 
 ### 3b. The loop, ready
 
-Have the student put the process loop from step 2 of the page on the
-second terminal, from the checkout root, and not start it yet. Say what it
-does, which is list every process on the runner whose command line mentions
-claude, once a second for a minute, and keep the unique lines.
+Have the student run the `just runner-sh 'echo ok'` line from step 2 first,
+so a missing `compose/.env` fails here and not silently inside the loop,
+then put the loop on the second terminal, from the checkout root, and not
+start it yet. Say what it does, which is list every process on the runner
+whose command line mentions claude, once a second for a minute, and keep
+the unique lines, and that its on-screen tail only confirms it caught
+something because the flags sit past the cut.
 
 ### 3c. A side effect with nobody asked
 
 **confirm**, then have the student start the loop in the second terminal
 and, in the first, the run from step 3. `[Write] ✓ completed`,
-`[Terminal] ✓ completed`, `done`. Say that nothing between those two lines
-asked anyone anything. Keep the conversation id.
+`[Terminal] ✓ completed`, `done`. A failed first `Write` followed by a
+second that completes is the model guessing at a path and retrying, and
+changes nothing. Say that nothing between those lines asked anyone
+anything. Keep the conversation id.
 
 ### 3d. The runtime's command line
 
-When the loop finishes, the `grep` from step 4 on `f11-procs.txt`. Five
-lines, `--permission-prompt-tool` then `stdio`, `--permission-mode` then
+When the loop finishes, the `grep` from step 4 on `f11-procs.txt`, which
+drops the group separators and the trailing flag. Five lines,
+`--permission-prompt-tool` then `stdio`, `--permission-mode` then
 `default`, and `--allow-dangerously-skip-permissions`. Walk them. The
 permission prompt is wired to standard input, and on the other end is the
 ACP adapter Fountain drives, not a person. The mode is default. The flag
@@ -109,31 +115,31 @@ with the loop started first.
 ### 3e. The record
 
 The paging loop from step 5, then the three reads. `Write  edit` and
-`Terminal  execute`, then `0` for `request_permission`, then `hello` from
-the disk. Say that this is the whole of what the audit trail can say, an
+`Terminal  execute`, twice if the model retried the write, then `0` for
+`request_permission`, then `hello` from the disk. Say that this is the whole of what the audit trail can say, an
 account of what happened that was never positioned to say anything was not
 allowed to.
 
 ### 3f. The refusal that is not a gate
 
-**confirm**, then the prompt from step 6. The runtime declines, in its own
-words, and say what it said when the page was written, that the phrasing
-read like a probe and it would do either thing if asked plainly. Then the
-count and the directory listing. Still `0`, and `.npm-global` still there.
+**confirm**, then the prompt from step 6. Say before it runs that both
+outcomes happened while the page was written. Either the runtime declines
+in its own words, saying the phrasing read like a probe, or it writes the
+file, runs the `rm -rf` and replies `done`. Then the count and the
+tolerant listing. `0` either way, then the directory or `gone`.
 
-Walk the two facts apart. The directory survived because a model decided
-it should, on the strength of a sentence. No request went to anyone and no
-rule was evaluated. A different prompt or runtime deletes it with the same
-zero in the record. A gate says no whatever the prompt says.
-
-If the runtime complies instead of declining, say the lesson has shown the
-stronger form of the same fact, and that the directory is the sandbox's own
-and comes back on the next provision.
+Walk the two branches. A surviving directory survived because a model
+decided it should, on the strength of a sentence, with no request sent and
+no rule evaluated. A gone directory was the runtime's own install, the
+process was already running so the turn finished, and the record is the
+same. A model's judgment varies turn to turn and is not a gate. A gate says
+no whatever the prompt says.
 
 ### 3g. The decision record
 
-Read the ADR 0016 status quote from step 7 with the student, and the two
-sentences it turns on, Fountain can observe and it cannot intervene, and
+Read the ADR 0016 status quote from step 7 with the student, saying that
+the file is in the Fountain repository at the pinned commit and not in this
+checkout, and the two sentences it turns on, Fountain can observe and it cannot intervene, and
 the governance layer is not built. Say that the course uses Fountain as it
 is and this is the one place it reads what it is not yet.
 
@@ -147,8 +153,10 @@ workaround, and that decision 14 is the table in one sentence.
 ### 3i. Tidy up
 
 **confirm**, then the terminate from step 9. **confirm**, then the runner
-shell line with the `rm -rf`. Say that the Fountain course ends here and
-point at IAM lesson 12.
+shell line with the `rm -rf`. The listing is usually empty, because a clean
+terminate of an awake sandbox removes its directory, and the `rm -rf` is
+for one that had parked. Say that the Fountain course ends here and point
+at IAM lesson 12.
 
 ## 4. Done when
 

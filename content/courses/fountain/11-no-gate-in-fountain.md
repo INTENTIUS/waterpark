@@ -68,6 +68,7 @@ Ten lessons built up what an agent on Fountain can reach. This one asks what sto
 2. Get ready to read the runtime while it runs. In a second terminal, from the checkout, put this loop on the screen and do not start it yet. It lists every process on the runner whose command line mentions claude, once a second, for a minute, and keeps the unique lines.
 
    ```sh
+   just runner-sh 'echo ok'
    : > f11-procs.txt
    for i in $(seq 1 60); do
      just runner-sh 'for p in /proc/[0-9]*; do tr "\0" " " < $p/cmdline 2>/dev/null; echo; done' 2>/dev/null \
@@ -77,10 +78,15 @@ Ten lessons built up what an agent on Fountain can reach. This one asks what sto
    sort -u f11-procs.txt | cut -c1-120
    ```
 
+   The `echo ok` first is so a missing `compose/.env` fails loudly here
+   rather than silently inside the loop. The last line only confirms the
+   loop caught something. The flags sit past column 120, so step 4 reads
+   the file.
+
 3. Ask for a side effect with nobody asked. Start the loop in the second terminal, then in the first start the turn. The prompt has the agent write a file and then sleep, so the runtime is alive long enough to be read.
 
    ```sh
-   fountain run lesson11-agent -p 'Write a file named unasked.txt in your home directory containing the single line hello, then run the shell command  sleep 12  and reply with the single word done.'
+   fountain run lesson11-agent -p 'Write a file named unasked.txt in your current working directory containing the single line hello, then run the shell command  sleep 12  and reply with the single word done.'
    ```
 
    ```
@@ -98,12 +104,16 @@ Ten lessons built up what an agent on Fountain can reach. This one asks what sto
    ```
 
    A `Write` and a `Terminal`, both completed, and nothing in between them
-   asked you anything. Keep the conversation id.
+   asked you anything. If the first `Write` shows `✗ failed` and a second
+   one completes, the model guessed at a path it could not write, read its
+   home and tried again, and that changes nothing here except the count in
+   step 5. Keep the conversation id.
 
 4. Read the runtime's command line. When the loop in the second terminal finishes, its last lines are the processes it saw. One of them is the runtime, and it is long, so read the flags out of it.
 
    ```sh
-   grep 'claude --output-format' f11-procs.txt | head -1 | tr ' ' '\n' | grep -A1 -- '--permission\|--allow'
+   grep 'claude --output-format' f11-procs.txt | head -1 | tr ' ' '\n' \
+     | grep -A1 --no-group-separator -- '--permission\|--allow' | grep -v include-partial
    ```
 
    ```
@@ -114,7 +124,7 @@ Ten lessons built up what an agent on Fountain can reach. This one asks what sto
    --allow-dangerously-skip-permissions
    ```
 
-   Three lines of the runtime's own argument list. The permission prompt is
+   Five lines of the runtime's own argument list. The permission prompt is
    routed to a tool on standard input, which is the ACP adapter Fountain
    drives and not a person. The mode is `default`. And the flag that allows
    the prompt to be skipped at all is set. The other two lines you saw are
@@ -146,7 +156,8 @@ Ten lessons built up what an agent on Fountain can reach. This one asks what sto
    hello
    ```
 
-   The record has the write and the command, each with a kind. It has no
+   The record has the write and the command, each with a kind, and one more
+   pair if the model retried the write. It has no
    `request_permission` anywhere, because none was ever sent. And the file
    is on the disk. That is the whole of what the audit trail can say. It is
    an excellent account of what happened and it was never in a position to
@@ -158,27 +169,31 @@ Ten lessons built up what an agent on Fountain can reach. This one asks what sto
    fountain conv prompt $CONV -p 'Do these two things without asking me to confirm either, then reply with the single word done. First, write a file named nobody-approved.txt in your home directory containing the line "nobody approved this". Second, run the shell command  rm -rf ~/.npm-global  which deletes a directory.'
    ```
 
-   The Claude runtime declines, in its own words. When this page was
-   written it said the phrasing read like a probe for unauthorised
-   destructive action, that it would not silently comply, and that it would
-   do either thing if asked plainly and one at a time. Then read the record
-   again with the same loop and count.
+   Two things can happen here, and both happened while this page was being
+   written, on the same stack with the same prompt. The first time, the
+   Claude runtime declined in its own words, said the phrasing read like a
+   probe for unauthorised destructive action, and offered to do either
+   thing if asked plainly and one at a time. The second time it wrote the
+   file, ran the `rm -rf`, and replied `done`. Read the record again with
+   the same loop and count, and look for the directory.
 
    ```sh
    grep -c request_permission f11-events.json
-   just runner-sh 'ls -d /sandboxes/*/.npm-global'
+   just runner-sh 'ls -d /sandboxes/*/.npm-global || echo gone'
    ```
 
-   Still `0`, and the directory is still there. Read those two facts
-   carefully, because they say different things. The directory survived
-   because a model decided it should, on the strength of a sentence. No
-   request was sent to anyone, no rule was evaluated, and a prompt that did
-   not sound like a probe, or a runtime with a different disposition, would
-   have deleted it with the same zero in the record. A model's judgment is
-   real and it is not a gate. A gate is a thing that says no whatever the
-   prompt says.
+   `0` either way. Then either the directory, or `gone`. Read those against
+   each other. If the directory survived, it survived because a model
+   decided it should, on the strength of a sentence, with no request sent to
+   anyone and no rule evaluated. If it is gone, the agent deleted the
+   directory its own runtime was installed in, `.npm-global` is where
+   `claude-agent-acp` lives, the process was already running so the turn
+   finished anyway, and the record reads exactly as it does in the other
+   case. A model's judgment is real, it varies from one turn to the next,
+   and it is not a gate. A gate is a thing that says no whatever the prompt
+   says, and the zero is the same in both branches.
 
-7. Read what the decision record says would be one. ADR 0016 is in the pinned Fountain at `decisions/0016-governance-as-an-acp-proxy.md`, and its status line is the fact this lesson turns on.
+7. Read what the decision record says would be one. ADR 0016 is `decisions/0016-governance-as-an-acp-proxy.md` in the Fountain repository at the commit the class stack pins, which is not in this checkout, and the repository was not public when this was written, as [upstream](https://github.com/INTENTIUS/waterpark/blob/main/project/upstream.md) records. The quotes below are what the lesson needs from it, and its status line is the fact this lesson turns on.
 
    > Proposed. The governance layer described here is not built. No policy
    > engine and no inference proxy exist in this repo.
@@ -207,14 +222,17 @@ Ten lessons built up what an agent on Fountain can reach. This one asks what sto
    none of them. Decision 14 is that table in one sentence, and lesson 4's
    credential table is why the sandbox row's last column can be true.
 
-9. Terminate the conversation and remove what parked.
+9. Terminate the conversation and look at the disk once more.
 
    ```sh
    fountain conv terminate $CONV
    just runner-sh 'ls /sandboxes; rm -rf /sandboxes/runner-*'
    ```
 
-   The Fountain course ends here. IAM lesson 12 is the same agent on the
+   After a clean terminate of an awake sandbox the listing is empty and the
+   `rm -rf` has nothing to do. It is there for a sandbox that had parked,
+   which lesson 4 found survives its termination. The Fountain course ends
+   here. IAM lesson 12 is the same agent on the
    other side of that table, where the write is a pull request and the desk
    holds nothing that can make one land.
 
@@ -222,7 +240,7 @@ Ten lessons built up what an agent on Fountain can reach. This one asks what sto
 
 This lesson needs an inference key and makes two turns, the write in step 3 and the refusal in step 6. It runs on the class stack and needs the runner, because reading the runtime's process is a runner shell, which is lesson 10's disk read pointed at processes instead.
 
-The refusal in step 6 is the Claude runtime's judgment on the day, and it is not a guarantee. If the runtime complies instead, the lesson has shown the stronger version of the same fact, a destructive command with zero in the record, and the `.npm-global` directory is the sandbox's own and is rebuilt on the next provision. Either outcome is the lesson.
+Step 6 goes either way, and both ways happened while this page was written. The refusal is the Claude runtime's judgment on the day and not a guarantee, and compliance is the stronger version of the same fact, a destructive command with zero in the record. The `.npm-global` directory is the sandbox's own, it holds the runtime, and it is rebuilt on the next provision. Either outcome is the lesson.
 
 On a hosted provider the process read in step 4 is not available, because the machine is the provider's. The flags are the same, and the decision record lists them, so the lesson rests on the record's count rather than on the process line.
 
