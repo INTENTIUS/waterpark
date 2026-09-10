@@ -89,7 +89,9 @@ cd ../waterpark-i10
 just access-init
 ```
 
-Every command after this runs from `../waterpark-i10`.
+Every command after this runs from `../waterpark-i10`. If `just access-init`
+prints `All plugins are already installed`, that is tflint's plugin cache
+from an earlier lesson on this machine, and it is fine.
 
 **confirm** again, then start Floci.
 
@@ -199,6 +201,7 @@ grant is a pull request that adds one grant to it.
 access/scripts/gen-codeowners
 grep on_call .github/CODEOWNERS
 
+terraform -chdir=access/envs/prod init
 terraform -chdir=access/envs/prod apply -auto-approve
 
 export AWS_ACCESS_KEY_ID=test AWS_SECRET_ACCESS_KEY=test AWS_DEFAULT_REGION=us-east-1
@@ -206,8 +209,10 @@ aws --endpoint-url http://localhost:4566 iam list-attached-role-policies \
   --role-name on-call --query 'AttachedPolicies'
 ```
 
-`/access/envs/prod/iam_role.on_call.tf @INTENTIUS/platform`, then
-`Resources: 1 added`, then `[]`. A role with a boundary, a trust and no
+`/access/envs/prod/iam_role.on_call.tf @INTENTIUS/platform`, then the init
+lists `- on_call in ../../modules/persona`, because a new module block is
+a module Terraform has not installed yet, then `Resources: 1 added`, then
+`[]`. A role with a boundary, a trust and no
 policy, which is what the on-call holds at four on a Friday afternoon.
 
 ### 5c. Grant
@@ -454,8 +459,8 @@ Leave the `../waterpark-i10` worktree. Lesson 11 starts a fresh one from
 ## 8. Record
 
 **confirm**, then update `.waterpark/profile.json` at the checkout root,
-appending `"i10"` to its `completed` array (creating the array if the file
-somehow lacks one). Leave every other field untouched. Write it in the
+appending `"i10"` to its `completed` array, creating the file and the
+array if either is missing, which on a fresh clone they are. Leave every other field untouched. Write it in the
 original checkout rather than in the `../waterpark-i10` worktree.
 
 ```json

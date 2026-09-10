@@ -64,7 +64,9 @@ Lesson 9 pinned who may become a principal. This lesson is about access that sho
    terraform -chdir=access/satellites/waterpark-runner apply -auto-approve
    ```
 
-   `200`, then `Resources: 17 added` and `8 added`. Then read the constant this
+   `200`, then `Resources: 17 added` and `8 added`. If `just access-init`
+   printed `All plugins are already installed`, that is tflint's plugin cache
+   from an earlier lesson and it is fine. Then read the constant this
    lesson turns on, out of the applied estate rather than out of a page.
 
    ```sh
@@ -179,6 +181,7 @@ Lesson 9 pinned who may become a principal. This lesson is about access that sho
    access/scripts/gen-codeowners
    grep on_call .github/CODEOWNERS
 
+   terraform -chdir=access/envs/prod init
    terraform -chdir=access/envs/prod apply -auto-approve
 
    export AWS_ACCESS_KEY_ID=test AWS_SECRET_ACCESS_KEY=test AWS_DEFAULT_REGION=us-east-1
@@ -186,8 +189,10 @@ Lesson 9 pinned who may become a principal. This lesson is about access that sho
      --role-name on-call --query 'AttachedPolicies'
    ```
 
-   `/access/envs/prod/iam_role.on_call.tf @INTENTIUS/platform`, then
-   `Resources: 1 added`, then `[]`. A role with a boundary, a trust and no
+   `/access/envs/prod/iam_role.on_call.tf @INTENTIUS/platform`, then the init
+   prints `- on_call in ../../modules/persona`, because a new module block is
+   a module Terraform has not installed yet, then `Resources: 1 added`, then
+   `[]`. A role with a boundary, a trust and no
    policy at all. That is what the on-call holds at four on a Friday
    afternoon, and it is the point.
 
@@ -264,6 +269,8 @@ Lesson 9 pinned who may become a principal. This lesson is about access that sho
    approved_by	unapproved
    break_glass	true
    ```
+
+   The four tags come back in whatever order the account keeps them.
 
    ```json
    {
@@ -374,7 +381,7 @@ Lesson 9 pinned who may become a principal. This lesson is about access that sho
      [pr] envs/prod  grant on-call write-waterpark-site
          expired
          expires
-           declared 2026-09-10T19:06:34Z
+           declared 2026-09-10T20:06:44Z
            live     past
 
      1 finding(s), 0 of them paging
