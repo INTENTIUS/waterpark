@@ -7,14 +7,16 @@ summary: "An app drives a teammate through fenced blocks and the team stream."
 # skill. a directory in this repo with a SKILL.md that drives the lesson. empty renders nothing
 skill: "skills/f7-driving-an-agent-from-an-app"
 # card. empty renders as TODO
-goal: "Give the AWS desk its four objects and put it on the team, open the page this repo ships at /desk/, sign in with Fountain and watch a one time code become an API key. Ask the desk in plain words what the estate holds, watch it answer in prose with a fenced block underneath, and see the page render that block as the Estate pane. Then reload and find the same view rebuilt from the conversation, rename the block on the page's side of the protocol and watch the pane go empty while the desk's words stay, and let the repo's own check refuse the rename."
+goal: "Give the AWS desk its three objects and a seat on the team, which opens the fourth, open the page this repo ships at /desk/, sign in with Fountain and watch a one time code become an API key. Ask the desk in plain words what the estate holds, watch it answer in prose with a fenced block underneath, and see the page render that block as the Estate pane. Then reload and find the same view rebuilt from the conversation, rename the block on the page's side of the protocol and watch the pane go empty while the desk's words stay, and let the repo's own check refuse the rename."
 done_when: >-
   `GET /api/auth/api-keys` lists a key named `oauth:aws-desk` that the page
-  got without you pasting anything, the Estate pane names every role and
-  bucket the account holds after one question asked in plain words, a reload
-  of the page rebuilds that pane with nothing stored but the Fountain URL and
-  the key, and renaming `aws-state` in `desk/protocol.js` empties the pane
-  while the desk's prose stays, which `just desk-check` then refuses by name.
+  got without you pasting anything, one question asked in plain words puts an
+  `aws-state` block in the conversation and the Estate pane shows what it
+  holds, which on an empty account is nothing and on a built one is every role
+  and bucket, a reload of the page rebuilds that pane with nothing in the
+  browser but the Fountain URL, the teammate name and the key, and renaming
+  `aws-state` in `desk/protocol.js` empties the pane while the desk's prose
+  stays, which `just desk-check` then refuses by name.
 restart_from: "lesson 5"
 properties: ["IX"]
 # activity. kind is hands-on, watch-along or discuss
@@ -31,7 +33,7 @@ activity:
 - An app that drives an agent needs two facts from the server and nothing else. `API_CORS_ORIGINS` admits the origin the page is served from, because a browser calling another origin's API makes a CORS request and it is off by default. `OAUTH_CLIENTS` names the app that may offer Sign in with Fountain, with its redirect URI exact. Both are set for you in `compose/docker-compose.yml`, for `http://localhost:1313` and `http://localhost:8080`, which are `just serve` and `just docker-run`.
 - Sign in with Fountain is OAuth 2.0 authorization code with PKCE, and the app is a public client with no secret. `GET /oauth/authorize` remembers the request and sends you to login, the consent page names the app asking, and allowing it issues a one time code that lives five minutes and works once. `POST /api/oauth/token` swaps that code plus the verifier for a key. The key **is** an API key, full scope, thirty days, listed under Account and API keys as `oauth:<client_id>`, and a sign out revokes it. A client or a redirect nobody registered is rendered as an error and redirected nowhere.
 - The protocol is fenced blocks in the agent's replies. The desk emits `aws-state`, `aws-plan` and `aws-result`, each a fenced code block whose info string is the block name and whose body is one JSON object. `desk/PROMPT.md` is the desk's half of that agreement and `desk/protocol.js` is the page's half, and `desk/bin/check-protocol` fails the build when the two stop naming the same blocks.
-- The page holds no state a server could lose. Everything on screen is derived from the conversation's turns and its log events, which is why a reload rebuilds it. What the browser keeps is the Fountain URL and the key, in `localStorage`, and nothing else.
+- The page holds no state a server could lose. Everything on screen is derived from the conversation's turns and its log events, which is why a reload rebuilds it. What the browser keeps is the Fountain URL, the teammate name and the key, in `localStorage`, and nothing else.
 - `?blocks=true` is what makes that cheap. Fountain parses the runtime's dialect on the server into `text`, `thinking`, `tool_use` and the rest, so the page joins the text blocks of a turn and looks for fences in the result. Before that existed, the team app shipped a two hundred line port of Fountain's own parser.
 - One connection covers every teammate. `GET /api/team/stream` carries each teammate's log events with `conversation_id` and `agent_id` on each, so the page routes an event to a row and looks nothing up. Fountain closes an idle stream after a minute, so a client reattaches rather than going quiet.
 - The desk is [the AWS desk](../../docs/aws-desk.md), and this lesson only makes it talk. What it does with a request is lesson 8.
@@ -43,7 +45,7 @@ Lessons 1 to 6 drove agents from a terminal. This one drives one from a page, an
 1. Read what the server admits, and prove it. Both settings are already in `compose/docker-compose.yml` under the `fountain` service, so read them there first.
 
    ```sh
-   grep -A1 'API_CORS_ORIGINS\|OAUTH_CLIENTS' compose/docker-compose.yml
+   grep -E '^ +(API_CORS_ORIGINS|OAUTH_CLIENTS):' compose/docker-compose.yml
    ```
 
    Then ask the API what it says to a browser on the page's origin, and to one it has never heard of.
@@ -58,7 +60,7 @@ Lessons 1 to 6 drove agents from a terminal. This one drives one from a page, an
 
    That prints `access-control-allow-origin: http://localhost:1313`. Run it again with `-H 'Origin: http://example.com'` and the header is absent, which is a browser being told no. The bearer key is what the request carries either way, because a cookie never crosses an origin.
 
-2. Give the desk its objects. `desk/fountain.yaml` is the four primitives from lesson 1 wearing real clothes, and it is generated from `desk/PROMPT.md` rather than written by hand, so read both.
+2. Give the desk its objects. It applies three of lesson 1's four primitives, generated from `desk/PROMPT.md` rather than written by hand, so read both. The fourth is the Conversation, and step 3 opens it.
 
    ```sh
    just desk-apply
@@ -72,14 +74,17 @@ Lessons 1 to 6 drove agents from a terminal. This one drives one from a page, an
    just desk-hire
    ```
 
-   It prints the conversation id. `curl` the roster from lesson 5 if you want to see the desk sitting in it.
+   It prints the conversation id. Keep it, because later steps read that conversation. `curl` the roster from lesson 5 if you want to see the desk sitting in it.
 
-4. Serve the page and open it. In a second terminal run `just serve`, then open <http://localhost:1313/desk/>. The settings bar wants the Fountain URL, which is `http://localhost:4000`, and the teammate, which is `aws-desk`.
+   The thread is open and the computer is not running yet. A conversation with no turn in it reads `pending` with presence `starting computer` for as long as you leave it alone, and the sandbox wakes on the first message rather than on the seat. Do not wait for it to turn green. Step 6 is what starts it.
 
-5. Sign in with Fountain. Press the button rather than pasting a key. You are sent to login, the consent page names **The AWS desk** as the app asking, and allowing it sends you back to the page signed in. Then read what you were given.
+4. Serve the page and open it. In a second terminal run `just serve`, which you can stop when the lesson ends, then open <http://localhost:1313/desk/>. The settings bar wants the Fountain URL, which is `http://localhost:4000`, and the teammate, which is `aws-desk`.
+
+5. Sign in with Fountain. Press the button rather than pasting a key. You are sent to login, the consent page names **The AWS desk** as the app asking, and allowing it sends you back to the page signed in. Then read what you were given, with your own key, which the stack wrote into `compose/.env` when you registered.
 
    ```sh
-   curl -s -H "Authorization: Bearer $FOUNTAIN_API_KEY" \
+   KEY=$(grep '^FOUNTAIN_API_KEY=' compose/.env | cut -d= -f2-)
+   curl -s -H "Authorization: Bearer $KEY" \
      http://localhost:4000/api/auth/api-keys | jq -r '.data[].name'
    ```
 
@@ -93,13 +98,14 @@ Lessons 1 to 6 drove agents from a terminal. This one drives one from a page, an
 
    The first turn takes a few minutes, because the desk clones this repo, runs `terraform init` and reads the account. Watch the commands line count climb in the Activity pane while it works. Then its prose arrives, and under it the Estate pane fills with the roles and buckets the account holds.
 
-   On a fresh stack the account is empty and the desk says so, with `complete` false and the reason named. That is the honest answer and the pane is right to be empty. Lesson 8 is what fills it, by having the desk plan the estate this repo declares and apply it on your approval.
+   On a fresh stack the account is empty, so the block comes back with `complete` true and `resources` empty, and the Estate pane says it has nothing to show. That is the right answer and not a failure. The account is empty and the desk read it successfully, which are two different facts and the block carries both. `complete` goes false only when a read did not finish, and then the desk names what it could not reach. Lesson 8 is what fills the pane, by having the desk plan the estate this repo declares and apply it on your approval.
 
 7. Prove the conversation is the record. Reload the page. The Estate pane comes back, the whole exchange comes back, and nothing was stored to make that happen. Then read the same block yourself, out of the log feed the page reads.
 
    ```sh
-   curl -s -H "Authorization: Bearer $FOUNTAIN_API_KEY" \
-     "http://localhost:4000/api/conversations/<conversation id>/events?blocks=true&streams=acp&limit=1000" |
+   CONV=<the thread id just desk-hire printed>
+   curl -s -H "Authorization: Bearer $KEY" \
+     "http://localhost:4000/api/conversations/$CONV/events?blocks=true&streams=acp&limit=1000" |
      jq -r '[.data[].blocks[]? | select(.kind=="text") | .body] | join("")' | grep -A3 'aws-state'
    ```
 

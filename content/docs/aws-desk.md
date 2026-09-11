@@ -99,8 +99,7 @@ derives everything from turns plus blocks on load, and from one
 `/api/team/stream` while live.
 
 ```
-aws-state   {"fetched_at":…,"workspace":"prod","account":"…","region":"…",
-             "endpoint":"…","complete":true,
+aws-state   {"fetched_at":…,"workspace":"prod","account":"…","complete":true,
              "resources":[{"type":"aws_iam_role","name":"site-publisher","id":"…",
                            "boundary":"…",
                            "grants":["read on waterpark-artifacts"]}]}
@@ -122,6 +121,13 @@ aws-drift   {"workspace":"prod","detected_at":…,
 One block carries one workspace, and a second workspace is a second block,
 because a read of two accounts that half failed should not arrive as one
 object with a flag on it.
+
+No block carries a value the desk's own environment holds. Fountain scrubs
+every environment value of eight bytes or more out of the log events it
+records, which is what keeps a printed credential out of the database, and it
+cannot tell a region from a token. So `us-east-1` and the Floci endpoint come
+back as `[REDACTED]` inside a block that carries them, and the blocks carry
+what the account said rather than how the desk reached it.
 
 `delta` and `proofs` are never model output. `render-delta` and `proofs`
 produce them and the desk copies them in (decision 14). `changes` is read

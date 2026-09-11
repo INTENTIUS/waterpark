@@ -54,6 +54,21 @@ where it finds it and says why. Whether the separator is dropped by the
 runtime, by the ACP parse or by the join is an upstream question once the
 repo is reachable. Any app copying dns-desk's parser wants to know.
 
+**Redaction reaches plain env vars, not only secrets, 2026-09-11.**
+`Fountain.Conversations.Redaction` registers the whole sprite env for a
+conversation and scrubs any value of eight bytes or more out of every log
+event, which is the single write path. The sprite env is the runtime's
+defaults plus the Environment's `env_vars` plus the merged secrets, so a
+plain, non-secret variable is scrubbed on the same rule as a token. The
+module's own docstring names "a region" as the kind of short non-secret the
+floor is meant to spare, and `us-east-1` is nine bytes, so it is not spared.
+The desk saw its `aws-state` block arrive with `region` and `endpoint` as the
+literal string `[REDACTED]`, and the block no longer carries either. Anything
+an app's protocol needs to carry has to come from the target rather than from
+the environment. One run of the desk escaped this and the fresh one did not,
+which is not yet explained and is worth a question upstream alongside the
+behaviour itself.
+
 **Two earlier claims corrected.** The demo-era runbook called the
 self-hosted runner "the answer to shared infra"; ADR 0022 says the
 opposite about containment (decision 29). And `design/agentic.md` once

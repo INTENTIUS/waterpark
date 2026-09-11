@@ -178,7 +178,10 @@ function renderEstate() {
 
   const head = el("div", "estate-head");
   head.append(el("span", "workspace", estate.workspace || "?"));
-  head.append(el("span", "meta", `${estate.account || "?"} · ${estate.region || "?"}`));
+  // The account is a fact the account gave up. Where the desk reached it from
+  // is not, and cannot be, because Fountain scrubs the desk's own environment
+  // values out of what it records. See desk/PROMPT.md.
+  head.append(el("span", "meta", estate.account || "?"));
   head.append(el("span", "meta", `read ${estate.fetched_at || "?"}`));
   if (estate.complete === false) head.append(el("span", "warn", "partial read"));
   pane.append(head);

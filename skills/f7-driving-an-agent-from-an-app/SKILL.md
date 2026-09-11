@@ -11,9 +11,18 @@ The outcome is the desk page open and signed in, one fenced block the desk
 emitted rendered as the Estate pane, and the fact that the page stores none
 of it. About 45 minutes.
 
-This lesson has a browser in it and you do not. Steps 4, 5, 6 and 8 are the
-student's hands and eyes. Ask them what they see, in their words, and verify
-the API side yourself. Never claim a pane filled. Ask.
+This lesson has a browser in it and you do not. Steps 5, 6, 7 and 8 need the
+student's hands and eyes, and step 4 is yours alone. Ask them what they see,
+in their words, and verify the API side yourself. Never claim a pane filled.
+Ask.
+
+If the student has no browser either, say so at the start rather than at step
+5. Everything except the sign in and the four pane readings can be done from
+a terminal, the message in step 6 goes in with
+`POST /api/team/<agent id>/messages` and a JSON body of `{"prompt": "..."}`,
+which is the call the page's own button makes, and the lesson then proves
+seven of its eight steps and leaves the `oauth:aws-desk` clause unchecked.
+Say which clauses you could not reach rather than working around them.
 
 Confirm with the student before `just desk-apply`, before `just desk-hire`,
 before the message in step 6 and before editing `desk/protocol.js` in step 8.
@@ -99,8 +108,16 @@ Then put it on the team. **confirm**
 just desk-hire
 ```
 
-It prints the conversation id. Keep it. Every later step uses it, and it is
-the desk's one thread.
+It prints `on the team, thread <uuid>`, and that uuid is the conversation id
+every later step wants. Keep it as `CONV`.
+
+```sh
+CONV=<the uuid it printed>
+```
+
+The conversation now reads `pending` with presence `starting computer`, and
+it stays that way until somebody sends a message. That is not a failure and
+there is nothing to wait for. Do not poll it. Step 6 starts the computer.
 
 ## 5. The page, and signing in
 
@@ -117,10 +134,12 @@ settings bar gone. If they land on an error page instead, the client id or
 the redirect URI does not match `OAUTH_CLIENTS`, and the fix is in
 `compose/docker-compose.yml` followed by `docker compose up -d fountain`.
 
-Then verify it yourself, which needs the student's own key from
-`~/.fountain/credentials` or the `FOUNTAIN_API_KEY` in `compose/.env`.
+Then verify it yourself. The key is the one the stack wrote when the student
+registered, and `~/.fountain/credentials` can hold several profiles, so read
+it from the stack's own file rather than guessing which profile is meant.
 
 ```sh
+KEY=$(grep '^FOUNTAIN_API_KEY=' compose/.env | cut -d= -f2-)
 curl -s -H "Authorization: Bearer $KEY" \
   http://localhost:4000/api/auth/api-keys | jq -r '.data[].name'
 ```
@@ -151,14 +170,22 @@ curl -s -H "Authorization: Bearer $KEY" \
   jq -r '[.data[].blocks[]? | select(.kind=="text") | .body] | join("")' | grep -c 'aws-state'
 ```
 
-If that prints `0`, the turn's events are past the first page. Read
-`.meta.next_cursor` from the same response and pass it as `&after=<cursor>`,
-then run it again. Repeat while `.meta.has_more` is `true`.
+If that prints `0`, look at `meta` in the same response before anything else.
+When `has_more` is `false` there is no more to fetch and the turn has simply
+not said it yet, so wait and run it again. When `has_more` is `true` the rest
+is on the next page, and `next_cursor` is an integer you pass back as
+`&after=<cursor>`. Repeat while `has_more` stays `true`.
+
+A `tool_use` count that sits still for several minutes is the turn working,
+not the paging failing. Check `GET /api/conversations/$CONV` for a status of
+`running` and leave it alone.
 
 Ask the student what the Estate pane shows. On a fresh stack the account is
-empty, the desk says so with `complete` false and the reason named, and the
-pane is right to be empty. That is the correct outcome for this lesson and it
-is lesson 8 that fills it.
+empty, so the block reads `complete` true with an empty `resources` list and
+the pane has nothing to show. That is the correct outcome for this lesson and
+lesson 8 is what fills it. `complete` false means something different, which
+is that a read did not finish, and then the desk names what it could not
+reach. Do not treat an empty account as an incomplete read.
 
 ## 7. The conversation is the record
 
@@ -193,10 +220,11 @@ The lesson's card says this, and all four have to hold.
 
 1. `GET /api/auth/api-keys` lists a key named `oauth:aws-desk` that the page
    got without the student pasting anything.
-2. The Estate pane names what the account holds, or says the account is
-   empty with the reason named, from one question asked in plain words.
+2. One question asked in plain words puts an `aws-state` block in the
+   conversation, and the Estate pane shows what it holds. On an empty account
+   that is nothing, with `complete` true.
 3. A reload rebuilds the page from the conversation, with only the Fountain
-   URL, the teammate and the key in the browser.
+   URL, the teammate name and the key in the browser.
 4. Renaming `aws-state` in `desk/protocol.js` empties the pane while the
    desk's prose stays, and `just desk-check` refuses it by name.
 
