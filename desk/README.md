@@ -24,6 +24,11 @@ at <http://localhost:1313/desk/> and the deployed site carries it too. The
 source stays here, beside the prompt it belongs with, rather than in
 `static/`.
 
+The published copy at <https://intentius.io/waterpark/desk/> drives your own
+stack, because a static page carries no server and takes the Fountain URL as
+input. The class stack admits that origin and registers it as a redirect, so
+it works with nothing to build. Fountain ships its own team app the same way.
+
 ## Run it
 
 The class stack, up and registered, with an inference key set.
