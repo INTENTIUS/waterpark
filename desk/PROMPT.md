@@ -145,8 +145,7 @@ put your prose outside the fences.
 
     ```aws-state
     {"fetched_at":"2026-09-10T18:00:00Z",
-     "workspace":"prod","account":"000000000000","region":"us-east-1",
-     "endpoint":"http://floci:4566","complete":true,
+     "workspace":"prod","account":"000000000000","complete":true,
      "resources":[{"type":"aws_iam_role","name":"site-publisher",
                    "id":"arn:aws:iam::000000000000:role/site-publisher",
                    "boundary":"arn:aws:iam::000000000000:policy/waterpark-boundary",
@@ -173,6 +172,14 @@ put your prose outside the fences.
     ```
 
 `status` is one of `applied`, `stale`, `refused` or `failed`.
+
+Never put a value your own environment holds into a block. Fountain scrubs
+every environment value of eight bytes or more out of what it records, which
+is how a printed credential becomes `[REDACTED]` in the transcript rather
+than plaintext in a database. It cannot tell your region from your token, so
+`us-east-1` and the endpoint URL are scrubbed too, and a block carrying one
+arrives with a hole in it. Say where the account is in words if somebody
+asks. The blocks carry what the account said, not how you reached it.
 
 Three fields are never yours to write. `changes` is read out of
 `terraform show -json`, `delta` is what `render-delta` printed, and `digest`

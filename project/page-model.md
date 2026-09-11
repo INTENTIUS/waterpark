@@ -107,7 +107,10 @@ What made lesson 1 land, in order. Every later lesson follows it.
    clone, site-only knowledge, every stumble filed and fixed, re-run
    clean. Budget roughly one fix round.
 7. Prose bans em dashes, colons and semicolons outside code. Check
-   mechanically, not by eye.
+   mechanically, not by eye, with `just check-prose`, which strips front
+   matter, fences, code spans and links first and runs in CI. It found one
+   survivor across fifteen written lessons on the day it was added, which is
+   about the rate an eye misses.
 8. A lesson that ends on a checkpoint compare must reproduce the
    checkpoint tree exactly, or the compare must exclude what the lesson
    deliberately does not write. Nine of the nineteen stumbles in the
