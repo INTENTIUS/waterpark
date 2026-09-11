@@ -3,6 +3,12 @@ name: Deploy Hugo site to Pages
 on:
   push:
     branches: ["main"]
+  # The checks below are the only thing standing between a broken lesson and
+  # the published site, and until now they ran after the merge. A pull request
+  # runs build, which is every check. It does not deploy and it does not push
+  # an image, because those are what main is for.
+  pull_request:
+    branches: ["main"]
   workflow_dispatch:
 
 permissions:
@@ -12,7 +18,8 @@ permissions:
   packages: write
 
 concurrency:
-  group: "pages"
+  # Per ref, so a pull request's build never queues behind main's deploy.
+  group: "pages-${{ github.ref }}"
   cancel-in-progress: false
 
 defaults:
@@ -47,10 +54,12 @@ jobs:
       - name: Check the desk's protocol
         run: desk/bin/check-protocol
       - name: Upload artifact
+        if: github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@v5
         with:
           path: ./public
   deploy:
+    if: github.event_name != 'pull_request'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -61,6 +70,7 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v5
   image:
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     needs: build
     steps:
