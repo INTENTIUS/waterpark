@@ -74,9 +74,9 @@ Lessons 1 to 6 drove agents from a terminal. This one drives one from a page, an
    just desk-hire
    ```
 
-   It prints the conversation id. Keep it, because later steps read that conversation. `curl` the roster from lesson 5 if you want to see the desk sitting in it.
+   It prints two ids, the agent's and the conversation's. Keep both. Later steps read that conversation, and the agent id is how you talk to the desk from a terminal instead of from the page.
 
-   The thread is open and the computer is not running yet. A conversation with no turn in it reads `pending` with presence `starting computer` for as long as you leave it alone, and the sandbox wakes on the first message rather than on the seat. Do not wait for it to turn green. Step 6 is what starts it.
+   The conversation reads `pending` and stays that way until somebody sends a message, because status is about turns and there have not been any yet. Its presence and its sandbox may say `online` and `ready` beside that, which is a computer that is up with nothing to do. There is nothing to wait for here. Step 6 is what gives it work.
 
 4. Serve the page and open it. In a second terminal run `just serve`, which you can stop when the lesson ends, then open <http://localhost:1313/desk/>. The settings bar wants the Fountain URL, which is `http://localhost:4000`, and the teammate, which is `aws-desk`.
 
@@ -88,7 +88,7 @@ Lessons 1 to 6 drove agents from a terminal. This one drives one from a page, an
      http://localhost:4000/api/auth/api-keys | jq -r '.data[].name'
    ```
 
-   One of those names is `oauth:aws-desk`. The page never saw your password and Fountain never gave it one, and the thing in the browser's `localStorage` is a key you can revoke from that same listing.
+   One of those names is `oauth:aws-desk`. The page never saw your password and Fountain never gave it one, and the thing in the browser's `localStorage` is a key you can revoke from that same listing. Other names in there are not yours. A key called `sprite:` and eight hex characters is one Fountain minted for a sandbox to call home with, named after its conversation.
 
 6. Ask the desk what the estate holds, in the box at the bottom of the page. Words, not a command.
 
@@ -96,7 +96,7 @@ Lessons 1 to 6 drove agents from a terminal. This one drives one from a page, an
    Set up your clone and read the estate. Tell me what the account holds.
    ```
 
-   The first turn takes a few minutes, because the desk clones this repo, runs `terraform init` and reads the account. Watch the commands line count climb in the Activity pane while it works. Then its prose arrives, and under it the Estate pane fills with the roles and buckets the account holds.
+   How long this takes varies. The desk clones this repo and reads the account every time, and it fetches the Terraform provider only when it has to plan, so this turn has landed in under a minute and it has taken six. Watch the commands line count climb in the Activity pane while it works. Then its prose arrives, and under it the Estate pane shows what the account holds.
 
    On a fresh stack the account is empty, so the block comes back with `complete` true and `resources` empty, and the Estate pane says it has nothing to show. That is the right answer and not a failure. The account is empty and the desk read it successfully, which are two different facts and the block carries both. `complete` goes false only when a read did not finish, and then the desk names what it could not reach. Lesson 8 is what fills the pane, by having the desk plan the estate this repo declares and apply it on your approval.
 
@@ -111,7 +111,7 @@ Lessons 1 to 6 drove agents from a terminal. This one drives one from a page, an
 
    The block is in the conversation. The page is one reading of it.
 
-   If that prints nothing, the turn is longer than one page of events. `limit` caps at a thousand, the response carries `meta.has_more` and `meta.next_cursor`, and passing `&after=<cursor>` gets the next page. The desk page pages to the end for exactly this reason, and a first turn that clones a repo is long enough to need it.
+   If that prints nothing, read `meta` in the same response. A turn usually fits in one page and `has_more` is `false`, which means the block is not there yet rather than further along. When `has_more` is `true`, `limit` caps at a thousand and passing `&after=<cursor>` with `meta.next_cursor` gets the rest. The desk page pages to the end either way, because a long turn does eventually need it.
 
 8. Break the protocol on purpose. In `desk/protocol.js`, rename the key `"aws-state"` to `"aws-estate"` and reload the page. The Estate pane is empty, because the page is now looking for a block nobody emits, and the block itself has not vanished. It is sitting in the Activity pane as a lump of raw JSON, because a block nobody recognizes is just text. Then ask the repo what it thinks.
 

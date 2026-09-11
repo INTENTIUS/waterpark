@@ -52,7 +52,7 @@ desk-hire:
     [ -n "$agent" ] || { echo "no aws-desk agent. just desk-apply first"; exit 1; }; \
     curl -fsS -X POST -H "Authorization: Bearer $key" -H 'Content-Type: application/json' \
       -d "{\"agent_id\":\"$agent\",\"vault_id\":\"$vault\",\"name\":\"AWS desk\"}" \
-      "$base/api/team" | jq -r '"on the team, thread \(.data.conversation.id)"'
+      "$base/api/team" | jq -r '"on the team\n  agent        \(.data.agent_id)\n  conversation \(.data.conversation.id)"'
 
 # Everything CI would care about
 ci: check check-md check-prose desk-check

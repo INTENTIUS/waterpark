@@ -17,12 +17,16 @@ in their words, and verify the API side yourself. Never claim a pane filled.
 Ask.
 
 If the student has no browser either, say so at the start rather than at step
-5. Everything except the sign in and the four pane readings can be done from
-a terminal, the message in step 6 goes in with
-`POST /api/team/<agent id>/messages` and a JSON body of `{"prompt": "..."}`,
-which is the call the page's own button makes, and the lesson then proves
-seven of its eight steps and leaves the `oauth:aws-desk` clause unchecked.
-Say which clauses you could not reach rather than working around them.
+5. What is left is still most of the lesson. The message in step 6 goes in
+with `POST /api/team/$AGENT/messages` and a JSON body of `{"prompt": "..."}`,
+which is the call the page's own button makes, and `just desk-hire` prints
+the agent id beside the conversation id for exactly this.
+
+Be precise about what that run proves. Done when 1 is out of reach, because
+only the button gets that key. Done when 2 and 4 are half checkable, since
+the block and the check are in the terminal and the pane is not. Done when 3
+is not checkable at all, because a reload is a browser. Say that, rather than
+reporting the halves you reached as if they were the whole.
 
 Confirm with the student before `just desk-apply`, before `just desk-hire`,
 before the message in step 6 and before editing `desk/protocol.js` in step 8.
@@ -62,7 +66,7 @@ computer. `just status` says whether it is.
 Read the two settings where they live.
 
 ```sh
-grep -A1 'API_CORS_ORIGINS\|OAUTH_CLIENTS' compose/docker-compose.yml
+grep -E '^ +(API_CORS_ORIGINS|OAUTH_CLIENTS):' compose/docker-compose.yml
 ```
 
 Then prove the first one, twice. The page's origin.
@@ -98,7 +102,10 @@ just desk-apply
 ```
 
 It regenerates `desk/fountain.yaml` from `desk/PROMPT.md` and applies three
-objects. Show the output. Offer to open `desk/fountain.yaml` and point at the
+objects. Show the output. The file is generated and committed, so rewriting
+it produces the same bytes and `git status` stays quiet. Running the whole
+thing twice is safe, and the second run prints `~` for what it updated in
+place instead of `+`. Offer to open `desk/fountain.yaml` and point at the
 split, which is an Environment saying where the account is, a Vault holding
 the credential that reaches it, and an Agent carrying the prompt as `system`.
 
@@ -115,9 +122,11 @@ every later step wants. Keep it as `CONV`.
 CONV=<the uuid it printed>
 ```
 
-The conversation now reads `pending` with presence `starting computer`, and
-it stays that way until somebody sends a message. That is not a failure and
-there is nothing to wait for. Do not poll it. Step 6 starts the computer.
+The conversation now reads `pending`, and it stays `pending` until somebody
+sends a message, because status is about turns and there have not been any.
+Its presence and its sandbox may well say `online` and `ready` beside that,
+which is the computer being up with nothing to do. Neither is a failure and
+there is nothing to wait for. Do not poll it. Step 6 is what gives it work.
 
 ## 5. The page, and signing in
 
@@ -144,7 +153,12 @@ curl -s -H "Authorization: Bearer $KEY" \
   http://localhost:4000/api/auth/api-keys | jq -r '.data[].name'
 ```
 
-One of the names is `oauth:aws-desk`. Say what that proves. The page asked
+One of the names is `oauth:aws-desk`. Others in that listing are not yours to
+explain away in silence. A name like `sprite:f7e85030` is the key Fountain
+minted for a sandbox to call home with, named after its conversation, and it
+appears whether or not anybody signed in. Say so if the student asks.
+
+Say what `oauth:aws-desk` proves. The page asked
 for a credential and got one scoped to a client the server knows, the
 password never went near it, and revoking it is a row in that same listing.
 
@@ -157,9 +171,11 @@ at the bottom of the page.
 Set up your clone and read the estate. Tell me what the account holds.
 ```
 
-It takes a few minutes, because the desk clones this repo, runs
-`terraform init` and reads the account. Ask the student to describe the
-Activity pane while it works, where a commands line counts up.
+How long it takes varies more than you would expect. The desk clones this
+repo and reads the account every time, and it downloads the Terraform
+provider only when it needs to plan, so this turn has landed in under a
+minute and it has taken six. Ask the student to describe the Activity pane
+while it works, where a commands line counts up.
 
 When it settles, verify the block in the record rather than on the screen.
 Page the log feed, because a first turn runs past one page of events.
@@ -170,15 +186,16 @@ curl -s -H "Authorization: Bearer $KEY" \
   jq -r '[.data[].blocks[]? | select(.kind=="text") | .body] | join("")' | grep -c 'aws-state'
 ```
 
-If that prints `0`, look at `meta` in the same response before anything else.
-When `has_more` is `false` there is no more to fetch and the turn has simply
-not said it yet, so wait and run it again. When `has_more` is `true` the rest
-is on the next page, and `next_cursor` is an integer you pass back as
-`&after=<cursor>`. Repeat while `has_more` stays `true`.
+If that prints `0`, read `meta` in the same response before anything else.
+When `has_more` is `false` there is nothing more to fetch and the turn has
+simply not said it yet, so check whether it is still running and wait. When
+`has_more` is `true` the rest is on the next page, and `next_cursor` is an
+integer you pass back as `&after=<cursor>`. A turn usually fits in one page,
+so `has_more` is normally `false` and paging is the exception rather than the
+step.
 
-A `tool_use` count that sits still for several minutes is the turn working,
-not the paging failing. Check `GET /api/conversations/$CONV` for a status of
-`running` and leave it alone.
+The cheapest way to know whether to wait is `GET /api/conversations/$CONV`,
+where `status` is `running` or `idle`. Poll that rather than counting events.
 
 Ask the student what the Estate pane shows. On a fresh stack the account is
 empty, so the block reads `complete` true with an empty `resources` list and
