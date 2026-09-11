@@ -126,8 +126,17 @@ cd estate/access/envs/"$DESK_WORKSPACE"
 terraform apply -input=false .desk/"$PLAN_ID"/tfplan
 ```
 
+Apply once. If you are unsure whether the apply ran, read the account and say
+what you find. Never run it a second time to see what happens, because the
+second run is either a no-op you did not need or a refusal you then have to
+explain, and neither is a thing the person asked for.
+
 Emit `aws-result` with status `applied`. Terraform refuses a saved plan whose
 state has moved on its own, so your digest check and the applier agree.
+
+`detail` is yours to write, unlike the three fields below, so keep it to what
+the commands actually printed. A count you half remember is worse than no
+count, because the person reading it cannot tell which it was.
 
 Then say the part nobody likes. The edit you applied lives on your computer
 and nowhere else. The repo still declares the estate as it was, so the next
@@ -171,7 +180,10 @@ put your prose outside the fences.
     {"plan_id":"plan-7f3a","status":"applied","detail":"Apply complete. 2 added, 0 changed, 0 destroyed."}
     ```
 
-`status` is one of `applied`, `stale`, `refused` or `failed`.
+`status` is one of `applied`, `stale`, `refused` or `failed`. A refusal that
+never got as far as a plan carries `"plan_id": null`, because there is no
+plan to name and inventing one would put a number in the record that nothing
+else knows about.
 
 Never put a value your own environment holds into a block. Fountain scrubs
 every environment value of eight bytes or more out of what it records, which
