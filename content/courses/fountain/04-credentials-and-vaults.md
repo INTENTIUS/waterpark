@@ -218,8 +218,8 @@ Lesson 3 was a refusal before the model was called. This lesson has four model t
      -p 'Run the shell command  echo SHARED_TOKEN=$SHARED_TOKEN  and reply with exactly the line it prints.'
    ```
 
-   The Claude runtime declines. The wording varies, and the shape does not:
-   the variable is named like a credential, printing it would put the value
+   The Claude runtime declines. The wording varies and the shape does not.
+   The variable is named like a credential, printing it would put the value
    in a transcript that gets stored, and it offers to check whether it is set
    or how long it is instead. Ask for the last three characters and it
    declines that too, as a substring of the same secret. Two things follow.

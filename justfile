@@ -27,6 +27,10 @@ check: build
 check-md:
     python3 scripts/check_md_links.py
 
+# The prose rule over the lesson pages. No em dashes, colons or semicolons
+check-prose *paths:
+    python3 scripts/check_prose.py {{paths}}
+
 # Hold the desk's prompt, its page and its generated manifest to each other
 desk-check:
     desk/bin/check-protocol
@@ -51,7 +55,7 @@ desk-hire:
       "$base/api/team" | jq -r '"on the team, thread \(.data.conversation.id)"'
 
 # Everything CI would care about
-ci: check check-md desk-check
+ci: check check-md check-prose desk-check
 
 # Print the lesson list: course, number, id, title
 lessons:
