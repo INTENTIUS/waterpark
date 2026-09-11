@@ -47,6 +47,8 @@ Lesson 7 made the desk talk. This one makes it work, and the loop it runs is the
    aws iam list-roles --query 'Roles[].RoleName' --output text
    ```
 
+   Keep that shell for the rest of the lesson. Every later read is a bare `aws` call and wants those four variables, so a fresh terminal reads a real account instead of the emulator.
+
 2. Ask the desk to plan what the repo already declares. This is the first apply of an estate, and it needs no edit at all.
 
    ```
@@ -65,6 +67,8 @@ Lesson 7 made the desk talk. This one makes it work, and the loop it runs is the
 
    The desk plans again before it applies, compares the new digest against the one it showed you, and applies the plan you approved rather than the one it just made. Then read the account back yourself, because the live system is the truth and the desk saying so is not the same as the account saying so.
 
+   Read the account rather than the sentence. `detail` is the desk's own words, unlike the delta and the digest beside it, so the count in it is the model reporting rather than a script. One run of this lesson said seventeen added for an eighteen resource plan and the estate was correct anyway.
+
    ```sh
    aws iam list-roles --query 'Roles[].RoleName' --output text
    aws iam list-policies --scope Local --query 'Policies[].PolicyName' --output text
@@ -77,6 +81,8 @@ Lesson 7 made the desk talk. This one makes it work, and the loop it runs is the
    ```
 
    Now the block carries a diff, because this time the desk edited a file. One entry added to the `grants` list in `access/envs/prod/iam_role.site_publisher.tf`, with the reason you gave it carried into the file. Two resources to create, which are the policy and its attachment. Note the plan id and do not approve it yet.
+
+   That file is in the desk's own clone, inside its sandbox, and not in your checkout. The diff in the block is the only sight of it you get, which is a fact about direct mode worth noticing now rather than in step 9.
 
 5. Move the account under the approval, by hand, the way a console click would. Take away a grant the desk is not touching.
 

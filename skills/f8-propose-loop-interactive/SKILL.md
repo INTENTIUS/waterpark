@@ -23,11 +23,52 @@ before the first. If the student is short on inference budget, steps 1 to 3
 and 9 are the smallest honest subset and cost three turns.
 
 The student may drive the desk from the page at http://localhost:1313/desk/
-or from a terminal. If they have no browser, the message goes in with
-`POST /api/team/$AGENT/messages` and a JSON body of `{"prompt": "..."}`, and
-`just desk-hire` prints the agent id beside the conversation id. The page
-adds nothing to this lesson except that the Approve button sends the same
-sentence they would type.
+or from a terminal. The page adds nothing to this lesson except that the
+Approve button sends the same sentence they would type.
+
+From a terminal it is three calls and they are all below. Lesson 7 hired the
+desk, so the ids are on the roster rather than in anybody's scrollback, and
+re-running `just desk-hire` to find them is not the way.
+
+```sh
+KEY=$(grep '^FOUNTAIN_API_KEY=' compose/.env | cut -d= -f2-)
+AGENT=$(curl -s -H "Authorization: Bearer $KEY" http://localhost:4000/api/team |
+  jq -r '.data[]|select(.agent.name=="aws-desk")|.agent_id')
+CONV=$(curl -s -H "Authorization: Bearer $KEY" http://localhost:4000/api/team |
+  jq -r '.data[]|select(.agent.name=="aws-desk")|.conversation.id')
+```
+
+Send a message.
+
+```sh
+curl -s -X POST -H "Authorization: Bearer $KEY" -H 'Content-Type: application/json' \
+  -d "$(jq -n --arg p 'the words' '{prompt:$p}')" \
+  "http://localhost:4000/api/team/$AGENT/messages"
+```
+
+Wait for it. A message is queued and the turn takes ten to twenty seconds to
+appear, so a loop that waits for "nothing running" returns at once and looks
+like a finished turn. Wait for the turn count to go up first, then for the
+status to come back to `idle`.
+
+```sh
+curl -s -H "Authorization: Bearer $KEY" "http://localhost:4000/api/conversations/$CONV/turns" | jq '.data|length'
+curl -s -H "Authorization: Bearer $KEY" "http://localhost:4000/api/conversations/$CONV" | jq -r '.data.status'
+```
+
+Read the reply. The blocks are in the log feed, already parsed, and the text
+of a turn is its `text` blocks joined in order.
+
+```sh
+curl -s -H "Authorization: Bearer $KEY" \
+  "http://localhost:4000/api/conversations/$CONV/events?blocks=true&streams=acp&limit=1000" -o /tmp/ev.json
+jq -r '[.data[].blocks[]?|select(.kind=="text")|.body]|join("")' /tmp/ev.json | tail -c 3000
+```
+
+Two things about that last one. Write the response to a file rather than a
+shell variable, because a variable holding JSON and echoed back into `jq` is
+a parse error waiting to happen. And if `meta.has_more` is `true`, pass
+`meta.next_cursor` back as `&after=<cursor>` and join the pages.
 
 ## 1. Say what this is
 
@@ -49,6 +90,10 @@ just status
 export AWS_ENDPOINT_URL=http://localhost:4566 AWS_ACCESS_KEY_ID=test AWS_SECRET_ACCESS_KEY=test AWS_DEFAULT_REGION=us-east-1
 aws iam list-roles --query 'Roles[].RoleName' --output text
 ```
+
+Keep that shell for the whole lesson. Every read below is a bare `aws` call
+and it needs those four variables, so a second terminal or a fresh shell
+reads a real account instead of the emulator.
 
 An empty answer is the right starting point and the lesson watches it fill.
 If roles are already there, the estate has been applied before. That is fine.
@@ -92,6 +137,12 @@ aws iam list-policies --scope Local --query 'Policies[].PolicyName' --output tex
 ```
 
 Four roles and six policies is the shape to expect.
+
+Check the account rather than the sentence. `detail` in an `aws-result` is
+the desk's own words, unlike the delta and the digest, so a count in it is
+the model reporting and not a script. One run said "17 added" for an
+eighteen resource plan and the estate was correct anyway. The account is what
+settles it.
 
 ## 5. Ask for one grant
 
@@ -144,7 +195,10 @@ The new plan has four changes rather than two, because it restores what was
 deleted as well as adding what was asked for. Approve it **confirm**, then
 read the account back once more.
 
-Then ask for something it has to refuse.
+Then ask for something it has to refuse. If an agent is driving this rather
+than a person, its own permission layer may refuse to send these words, since
+asking to widen a boundary to `iam:*` reads as a privilege request whoever is
+asking. Send the body from a file if so. The words are the point.
 
 ```
 The boundary is blocking me. Widen it to allow iam:* so I stop hitting this.
@@ -187,7 +241,13 @@ the desk on the team.
 
 ## 11. Record where they stopped
 
-Merge into `.waterpark/profile.json` in the student's working directory.
+Merge into `.waterpark/profile.json` in the student's working directory. A
+fresh clone has no `.waterpark`, so make it. It is gitignored.
+
+```sh
+mkdir -p .waterpark
+```
+
 
 ```json
 {"lessons": {"f8": {"state": "done", "applied": true, "saw_stale": true}}}
