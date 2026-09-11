@@ -42,7 +42,7 @@ done
 	exit 1
 }
 
-work="$(mktemp -d -t wp-adopt)"
+work="$(mktemp -d "${TMPDIR:-/tmp}/wp-adopt.XXXXXX")"
 trap 'rm -rf "$work"' EXIT
 
 export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID:-test}"

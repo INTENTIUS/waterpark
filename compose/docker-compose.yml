@@ -50,6 +50,13 @@ services:
       SANDBOX_IDLE_TIMEOUT_MINUTES: ${SANDBOX_IDLE_TIMEOUT_MINUTES:-2}
       SANDBOX_MAX_LIFETIME_HOURS: ${SANDBOX_MAX_LIFETIME_HOURS:-24}
       BILLING_ENABLED: "false"
+      # The AWS desk is a page on another origin, so it calls this API with a
+      # bearer key and no cookie. Two settings make that possible. CORS admits
+      # the origin the page is served from, and OAUTH_CLIENTS names the client
+      # that "Sign in with Fountain" hands a key to, with its redirect exact.
+      # 1313 is just serve, 8080 is just docker-run.
+      API_CORS_ORIGINS: ${API_CORS_ORIGINS:-http://localhost:1313,http://localhost:8080}
+      OAUTH_CLIENTS: '[{"id":"aws-desk","name":"The AWS desk","redirect_uris":["http://localhost:1313/desk/","http://localhost:8080/desk/"]}]'
     healthcheck:
       # the release image has bash but no curl or wget. a TCP connect is enough for "up"
       test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/localhost/4000"]

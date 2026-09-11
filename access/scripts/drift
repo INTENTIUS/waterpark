@@ -71,7 +71,7 @@ if [ "$(curl -s -o /dev/null -m 3 -w '%{http_code}' "$floci_endpoint/" 2>/dev/nu
 	exit 1
 fi
 
-work="$(mktemp -d -t wp-drift)"
+work="$(mktemp -d "${TMPDIR:-/tmp}/wp-drift.XXXXXX")"
 trap 'rm -rf "$work"' EXIT
 
 export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID:-test}"

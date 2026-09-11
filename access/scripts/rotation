@@ -113,7 +113,7 @@ to_epoch() {
 	date -u -d "$ts" +%s 2>/dev/null
 }
 
-work="$(mktemp -d -t wp-rotation)"
+work="$(mktemp -d "${TMPDIR:-/tmp}/wp-rotation.XXXXXX")"
 trap 'rm -rf "$work"' EXIT
 findings="$work/findings.json"
 echo "[]" >"$findings"

@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The AWS desk</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body data-connected="false" data-busy="false">
+
+<header class="topbar">
+  <div>
+    <span class="brand">The AWS desk</span>
+    <span class="tagline">direct mode. Ask for access, read the plan, approve it.</span>
+  </div>
+  <div class="account">
+    <span id="status">starting</span>
+    <button id="signout" type="button">Sign out</button>
+  </div>
+</header>
+
+<form id="settings" class="settings">
+  <label>Fountain <input id="base-url" type="url" placeholder="http://localhost:4000"></label>
+  <label>Teammate <input id="agent" type="text" placeholder="aws-desk"></label>
+  <label>API key <input id="api-key" type="password" placeholder="paste one, or sign in"></label>
+  <button id="signin" type="button">Sign in with Fountain</button>
+  <button type="submit">Connect</button>
+</form>
+
+<main>
+  <section class="pane">
+    <h2>Estate</h2>
+    <div id="estate"></div>
+  </section>
+
+  <section class="pane wide">
+    <h2>Activity</h2>
+    <div id="activity"></div>
+    <form id="composer">
+      <input id="prompt" type="text" autocomplete="off"
+             placeholder="on-call needs read on waterpark-artifacts">
+      <button id="send" type="submit">Ask</button>
+    </form>
+  </section>
+</main>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>

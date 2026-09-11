@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+# Hold the two halves of the protocol to each other.
+#
+#   desk/bin/check-protocol
+#
+# desk/PROMPT.md tells the desk which blocks to emit. desk/protocol.js tells
+# the page which blocks to read. A block added to one and forgotten in the
+# other is the failure this catches, and it is the one failure that makes the
+# page silently drop what the desk said.
+#
+# It also checks that the generated manifest still matches the prompt.
+set -euo pipefail
+
+desk="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+python3 - "$desk" <<'PY'
+import pathlib, re, sys
+
+desk = pathlib.Path(sys.argv[1])
+prompt = (desk / "PROMPT.md").read_text()
+protocol = (desk / "protocol.js").read_text()
+
+# The names the page will parse.
+page = set(re.findall(r'^\s*"(aws-[a-z-]+)":', protocol, re.M))
+
+# The names the prompt shows the desk how to emit, as fenced examples.
+told = set(re.findall(r"```(aws-[a-z-]+)", prompt))
+
+problems = []
+for name in sorted(told - page):
+    problems.append(f"desk/PROMPT.md teaches {name} and desk/protocol.js does not read it")
+for name in sorted(page - told):
+    problems.append(f"desk/protocol.js reads {name} and desk/PROMPT.md never shows it")
+
+# The statuses the page styles, against the statuses the prompt allows.
+page_statuses = set(re.findall(r'^export const STATUSES = \[(.*)\];', protocol, re.M))
+if page_statuses:
+    page_status_set = set(re.findall(r'"([a-z]+)"', page_statuses.pop()))
+    line = re.search(r"`status` is one of (.+?)\.", prompt, re.S)
+    told_statuses = set(re.findall(r"`([a-z]+)`", line.group(1))) if line else set()
+    for name in sorted(told_statuses ^ page_status_set):
+        problems.append(f"status {name} is in one half of the protocol and not the other")
+
+if problems:
+    for problem in problems:
+        print(problem, file=sys.stderr)
+    raise SystemExit(1)
+
+print(f"protocol: {len(page)} blocks, both halves agree")
+PY
+
+"$desk/bin/render-manifest" --check

@@ -60,7 +60,7 @@ while [ $# -gt 0 ]; do
 	esac
 done
 
-work="$(mktemp -d -t wp-reconcile)"
+work="$(mktemp -d "${TMPDIR:-/tmp}/wp-reconcile.XXXXXX")"
 trap 'rm -rf "$work"' EXIT
 
 if [ -z "$report" ]; then
