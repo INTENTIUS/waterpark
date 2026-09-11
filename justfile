@@ -27,8 +27,31 @@ check: build
 check-md:
     python3 scripts/check_md_links.py
 
+# Hold the desk's prompt, its page and its generated manifest to each other
+desk-check:
+    desk/bin/check-protocol
+
+# Create the desk's Environment, Vault and Agent on the local stack
+desk-apply:
+    desk/bin/render-manifest
+    fountain apply -f desk/fountain.yaml
+
+# Put the desk on the team. Opens its one thread and binds its vault to it
+desk-hire:
+    @set -euo pipefail; \
+    key=$(grep -E '^FOUNTAIN_API_KEY=' compose/.env | cut -d= -f2-); \
+    port=$(grep -E '^PORT=' compose/.env | cut -d= -f2); port=${port:-4000}; \
+    [ -n "$key" ] || { echo "no FOUNTAIN_API_KEY in compose/.env. just register first"; exit 1; }; \
+    base="http://localhost:$port"; \
+    agent=$(curl -fsS -H "Authorization: Bearer $key" "$base/api/agents" | jq -r '.data[]|select(.name=="aws-desk")|.id'); \
+    vault=$(curl -fsS -H "Authorization: Bearer $key" "$base/api/vaults" | jq -r '.data[]|select(.name=="aws-desk-floci")|.id'); \
+    [ -n "$agent" ] || { echo "no aws-desk agent. just desk-apply first"; exit 1; }; \
+    curl -fsS -X POST -H "Authorization: Bearer $key" -H 'Content-Type: application/json' \
+      -d "{\"agent_id\":\"$agent\",\"vault_id\":\"$vault\",\"name\":\"AWS desk\"}" \
+      "$base/api/team" | jq -r '"on the team, thread \(.data.conversation.id)"'
+
 # Everything CI would care about
-ci: check check-md
+ci: check check-md desk-check
 
 # Print the lesson list: course, number, id, title
 lessons:

@@ -149,7 +149,7 @@ cmd_grant() {
 	# The block goes through a file, because the awk on macOS refuses a
 	# newline in a -v string.
 	local block
-	block="$(mktemp -t wp-break-glass)"
+	block="$(mktemp "${TMPDIR:-/tmp}/wp-break-glass.XXXXXX")"
 	cat >"$block" <<BLOCK
     # break-glass $id. Written by access/scripts/break-glass, revoked by its sweep.
     {

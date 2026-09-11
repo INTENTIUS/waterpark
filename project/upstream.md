@@ -41,6 +41,19 @@ concurrent sandboxes (`http 429`), and an idle conversation holds its slot
 until `fountain conv terminate`. All three are upstream questions once the
 repo is reachable.
 
+**A fenced block does not always start on its own line, 2026-09-11.** An app
+that reads protocol blocks out of replies joins the `text` blocks that
+`?blocks=true` returns, which arrive as streaming fragments a few characters
+long. Across the desk's first eight turns, the newline between the prose and
+a following fence survived in the early replies and was gone in the last
+three, so the joined text reads
+`…confirmed live before editing.` immediately followed by the fence. A parser
+that anchors the opening fence to a line start therefore shows a plan as
+prose and renders nothing, intermittently. `desk/protocol.js` takes the fence
+where it finds it and says why. Whether the separator is dropped by the
+runtime, by the ACP parse or by the join is an upstream question once the
+repo is reachable. Any app copying dns-desk's parser wants to know.
+
 **Two earlier claims corrected.** The demo-era runbook called the
 self-hosted runner "the answer to shared infra"; ADR 0022 says the
 opposite about containment (decision 29). And `design/agentic.md` once

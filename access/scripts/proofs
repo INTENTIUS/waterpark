@@ -102,7 +102,11 @@ say "== validate-policy"
 # One line per changed policy document, address then a tab then the document
 # as a JSON string. A file rather than an array, because the class runs on
 # macOS where bash is 3.2 and mapfile does not exist.
-docs_file="$(mktemp -t wp-proofs)"
+# The template is spelled out with its own X's rather than left to mktemp -t,
+# which means one thing on macOS and another on the GNU coreutils a sandbox
+# runs, where a template with no X's is an error. The desk runs these scripts
+# on Linux and a student runs them on a laptop, so they run on both.
+docs_file="$(mktemp "${TMPDIR:-/tmp}/wp-proofs.XXXXXX")"
 trap 'rm -f "$docs_file"' EXIT
 
 jq -r '

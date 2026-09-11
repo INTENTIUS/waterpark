@@ -83,8 +83,8 @@ how Terraform maps one to the other and nothing more.
 
 | Object | Contents |
 |---|---|
-| Environment `aws-desk toolkit` | `apt`: `terraform`, `awscli`, `jq`; no secrets; `networking_type: limited`, `allowed_hosts`: the code host, the provider registry, and the AWS endpoints (or the Floci host) the mode needs |
-| Agent `aws-desk` | the system prompt is `spec.ts` (the protocol and the rules); skills: the repo's SKILL.md; `allowed_vault_ids` pinned |
+| Environment `aws-desk-toolkit` | no secrets, only where the account is; `networking_type: limited` with `allowed_hosts` for the code host, the provider registry and the AWS endpoints (or the Floci host) the mode needs. The class stack's runner holds no egress policy, so the class environment is `unrestricted` and says so |
+| Agent `aws-desk` | the system prompt is [`desk/PROMPT.md`](https://github.com/INTENTIUS/waterpark/blob/main/desk/PROMPT.md) (the protocol and the rules); `allowed_vault_ids` pinned |
 | Vault, direct mode | `AWS_ROLE_ARN` (the desk-operator role), `AWS_ROLE_SESSION_NAME`, `AWS_WEB_IDENTITY_TOKEN_FILE`, or static keys for Floci; one vault per account |
 | Vault, repo mode | `GITHUB_TOKEN` fine-grained, contents and pull-requests on the access repo only |
 | Teammate | one desk per estate (`AWS desk: waterpark`); its computer keeps the clone and the last `aws-state` |
@@ -92,16 +92,18 @@ how Terraform maps one to the other and nothing more.
 
 ## The protocol
 
-Fenced blocks parsed out of replies (`protocol.ts`), pinned in the prompt
-(`spec.ts`). Change one, change both. The page derives everything from
-turns plus blocks on load, and from one `/api/team/stream` while live.
+Fenced blocks parsed out of replies (`desk/protocol.js`), pinned in the
+prompt (`desk/PROMPT.md`). Change one, change both, and
+`desk/bin/check-protocol` fails the build when they disagree. The page
+derives everything from turns plus blocks on load, and from one
+`/api/team/stream` while live.
 
 ```
-aws-state   {"fetched_at":…,"complete":false,
-             "workspaces":[{"name":"prod","account":"…","region":"…",
-                            "last_apply":"…","drift":"none",
-                            "resources":[{"address":"aws_iam_role.site_publisher",
-                                          "type":"aws_iam_role","id":"…"}]}]}
+aws-state   {"fetched_at":…,"workspace":"prod","account":"…","region":"…",
+             "endpoint":"…","complete":true,
+             "resources":[{"type":"aws_iam_role","name":"site-publisher","id":"…",
+                           "boundary":"…",
+                           "grants":["read on waterpark-artifacts"]}]}
 aws-plan    {"id":"plan-7f3a","workspace":"prod","mode":"repo",
              "changes":[{"action":"update","replace":false,
                          "address":"module.site_publisher.aws_iam_policy.grant[\"read-waterpark_artifacts\"]"}],
@@ -116,6 +118,10 @@ aws-drift   {"workspace":"prod","detected_at":…,
                            "diff":[{"path":"ingress[0].cidr_blocks",
                                     "declared":"10.0.0.0/8","live":"0.0.0.0/0"}]}]}
 ```
+
+One block carries one workspace, and a second workspace is a second block,
+because a read of two accounts that half failed should not arrive as one
+object with a flag on it.
 
 `delta` and `proofs` are never model output. `render-delta` and `proofs`
 produce them and the desk copies them in (decision 14). `changes` is read
@@ -215,11 +221,19 @@ Terraform's saved plan, JSON plan output, `-detailed-exitcode`, `import`
 blocks and `removed` blocks. Access Analyzer `validate-policy` and
 `check-no-new-access`. Floci's IAM, STS and S3 for the solo path.
 
-To build: the page, `spec.ts` and `protocol.ts`, `render-delta`, `proofs`,
-the apply workflow with the digest check, and the open-PR count in the PR
-job that enforces the watcher's cap. No propose endpoint, because a job
-that already reads the code host can do the counting (decision 40). None
-of it is a toolchain. All of it is repo scripts, a page and a prompt.
+Built, as v0 in [`desk/`](https://github.com/INTENTIUS/waterpark/tree/main/desk):
+the page, the prompt and `protocol.js`, direct mode against Floci with
+`aws-state`, `aws-plan` and `aws-result`. `render-delta`, `proofs`,
+`plan-digest` and the apply workflow with the digest check were built with the
+IAM lessons and live under `access/scripts`. The desk's sandbox gets
+`terraform`, the AWS CLI, `jq` and `tflint` from the class runner image
+rather than from an `apt` list, because the runner installs no packages.
+
+Still to build: repo mode, the drift pane and the `aws-drift` block, and the
+open-PR count in the PR job that enforces the watcher's cap. No propose
+endpoint, because a job that already reads the code host can do the counting
+(decision 40). None of it is a toolchain. All of it is repo scripts, a page
+and a prompt.
 
 ## Where it lands in the courses
 
