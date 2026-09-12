@@ -22,8 +22,52 @@ step 7. Those are marked **confirm**. Reads run freely.
 Three model turns, all of them the schedule firing. Say so before the first.
 
 The student may watch from the page at http://localhost:1313/desk/, where the
-Drift pane fills, or from a terminal. The terminal path is the same three
-calls lesson 8's skill spells out, and `just desk-hire` prints both ids.
+Drift pane fills, or from a terminal. From a terminal it is these, and do not
+send them off to another lesson for them.
+
+```sh
+KEY=$(grep '^FOUNTAIN_API_KEY=' compose/.env | cut -d= -f2-)
+AGENT=$(curl -s -H "Authorization: Bearer $KEY" http://localhost:4000/api/team |
+  jq -r '.data[]|select(.agent.name=="aws-desk")|.agent_id')
+CONV=$(curl -s -H "Authorization: Bearer $KEY" http://localhost:4000/api/team |
+  jq -r '.data[]|select(.agent.name=="aws-desk")|.conversation.id')
+```
+
+Whether a turn has finished is `.data.status` on the conversation, which is
+`running` or `idle`, and how many there have been is `.data.turn_count`. There
+is no `.data.turns`, and asking for its length gets you `0` forever.
+
+```sh
+curl -s -H "Authorization: Bearer $KEY" "http://localhost:4000/api/conversations/$CONV" |
+  jq -r '"\(.data.status)  turns \(.data.turn_count)"'
+```
+
+The reply itself is in the log feed, already parsed, so read the `text` blocks
+and join them.
+
+```sh
+curl -s -H "Authorization: Bearer $KEY" \
+  "http://localhost:4000/api/conversations/$CONV/events?blocks=true&streams=acp&limit=1000" -o /tmp/ev.json
+jq -r '[.data[].blocks[]?|select(.kind=="text")|.body]|join("")' /tmp/ev.json | tail -c 3000
+```
+
+Write it to a file rather than a shell variable, and if `meta.has_more` is
+true, pass `meta.next_cursor` back as `&after=<cursor>`.
+
+This lesson talks to GitHub, which every earlier lesson did not. `gh` reads
+the repository from the clone's `origin`, so a student working in a clone
+whose origin is not their GitHub fork has to say which repository they mean.
+
+```sh
+REPO=INTENTIUS/waterpark   # or their own fork
+gh pr list -R "$REPO" --state open
+```
+
+If `gh` answers "none of the git remotes configured for this repository point
+to a known GitHub host", that is what happened, and `-R` on every `gh` call is
+the fix. The same goes for `git fetch` and `git push` in step 7, which want
+the GitHub URL rather than `origin`, or they will quietly act on a local
+clone where no CI exists and nothing will ever run.
 
 ## 1. Say what this is
 
@@ -61,7 +105,9 @@ unattended run auditable rather than invisible.
 
 ## 4. Plant drift **confirm**
 
-Two kinds, because they read differently in the report.
+Two edits, which is not two findings. Deleting a policy drifts the policy and
+its attachment, so two edits make three findings and three pull requests. Say
+that before step 5 or the student waits for a fourth.
 
 ```sh
 export AWS_ENDPOINT_URL=http://localhost:4566 AWS_ACCESS_KEY_ID=test AWS_SECRET_ACCESS_KEY=test AWS_DEFAULT_REGION=us-east-1
@@ -73,7 +119,9 @@ aws iam delete-policy --policy-arn "$ARN"
 ```
 
 Keep that shell for the rest of the lesson. Every later read wants those four
-variables.
+variables, and if you are an agent whose every command is a fresh shell,
+re-export them each time rather than wondering why a read went to a real
+account.
 
 Do not use `aws iam update-role` to plant drift, even though it looks like the
 obvious way to change a role. Floci writes the change and then fails to
@@ -151,9 +199,27 @@ Commit only `access/baseline/locals.tf`. A `git add -A` here sweeps in the
 backend file the desk's setup writes and the plan step fails for an unrelated
 reason, which costs ten minutes of looking at the wrong thing.
 
-Its own `pr` job fails, naming the count and the cap. Say what that proves,
-which is that the cap held without the watcher's cooperation, because the
-watcher had already opened them.
+Its own `pr` job fails, naming the count and the cap.
+
+```
+cap 1, open reconcile PRs 3
+The watcher has 3 open reconcile pull requests and the cap in
+access/baseline is 1. Close or merge one before this lands (decision 40).
+```
+
+Warn them about the wait. That job applies the base branch into its own
+account and runs the whole check stack before it reaches the cap step, so it
+is about eight minutes to a failure that takes two seconds to decide. The cap
+step is near the end on purpose, because a pull request that fails the checks
+has a worse problem than the cap.
+
+Stop the schedule before doing this, or delete it and make it again after. The
+watcher rewrites its own `desk/drift` branches, so a run that fires between
+the probe push and the job finishing overwrites the probe and the failure
+never happens.
+
+Say what the failure proves, which is that the cap held without the watcher's
+cooperation, because the watcher had already opened them.
 
 Put the cap back and push again.
 

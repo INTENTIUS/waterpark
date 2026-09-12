@@ -63,7 +63,7 @@ Lesson 8 had you in the room for every step. This one takes you out of it.
 
    Weekdays at six in the morning, which you are not going to wait for. Keep the id.
 
-3. Move the account by hand, which is what the watch exists to find. Two kinds, one changed and one gone.
+3. Move the account by hand, which is what the watch exists to find. Two edits, one changing a role and one deleting a grant. Two edits are not two findings, because deleting a policy drifts the policy and the attachment that held it, so expect three.
 
    ```sh
    export AWS_ENDPOINT_URL=http://localhost:4566 AWS_ACCESS_KEY_ID=test AWS_SECRET_ACCESS_KEY=test AWS_DEFAULT_REGION=us-east-1
@@ -88,7 +88,9 @@ Lesson 8 had you in the room for every step. This one takes you out of it.
      --jq '.[]|"\(.number) \(.title)  files \(.files|length)"'
    ```
 
-   One pull request per drifted resource, and `files 0` on every one of them.
+   One pull request per drifted resource, three of them, and `files 0` on every one.
+
+   `gh` takes the repository from your clone's `origin`. If yours does not point at your fork on GitHub, say which repository you mean with `-R <owner>/<repo>` on every `gh` command in this lesson, and use the GitHub URL rather than `origin` in step 7. A push to the wrong remote is the worst version of this, because it succeeds and then no job ever runs.
 
 5. Say no to one of them, the way a person actually says no, by closing it.
 
@@ -117,12 +119,14 @@ Lesson 8 had you in the room for every step. This one takes you out of it.
    git commit -am "probe: lower the cap below what is open" && git push origin HEAD:<the branch>
    ```
 
-   Its own `pr` job fails, and the message names the count and the cap.
+   Delete the schedule first, or make it again afterwards. The watcher rewrites its own `desk/drift` branches, so a run that fires between your push and the job finishing overwrites your probe and the failure you are waiting for never happens.
+
+   Its own `pr` job fails, and the message names the count and the cap. Give it eight minutes or so, because that job applies the base branch into its own account and runs the whole check stack before it gets anywhere near the cap.
 
    ```
-   cap 1, open reconcile pull requests 2
-   The watcher has 2 open reconcile pull requests and the cap in
-   access/baseline is 1. Close or merge one before this lands.
+   cap 1, open reconcile PRs 3
+   The watcher has 3 open reconcile pull requests and the cap in
+   access/baseline is 1. Close or merge one before this lands (decision 40).
    ```
 
    Read what that proves. The cap was not enforced by the watcher agreeing to it. The watcher had already opened them, and the gate refused anyway. Put the cap back.
@@ -136,9 +140,11 @@ Lesson 8 had you in the room for every step. This one takes you out of it.
    | a decline sticks | `reconcile` | the closed pull request, until somebody labels it |
    | at most five open | `access/baseline` | the `pr` job's own cap step, on the pull request itself |
    | never adopt what it found | the prompt | nothing. See below |
-   | a page is not a pull request | `reconcile` | nothing. See below |
+   | a page is not a pull request | `reconcile` | half of it. See below |
 
-   Two of those rows have nothing in the last column, and finding that honest is the point of the exercise. Write one sentence for each saying what it would take to move it, and what it would cost.
+   Two of those rows are the point of the exercise. Write a sentence for each saying what it would take to move it, and what that would cost.
+
+   The second one is worth being precise about. `reconcile` does filter on severity, so a `page` finding genuinely cannot be filed as paperwork, and that half holds with the prompt ignored. What nothing enforces is that anybody hears it. The finding is printed inside a sandbox at six in the morning and the sandbox goes away, so an unread page and no watcher at all look identical from outside.
 
 ## Self-paced
 
