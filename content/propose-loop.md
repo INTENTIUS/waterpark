@@ -3,9 +3,15 @@ title: "The propose loop"
 weight: 1
 ---
 
-{{< todo "prose" >}}
+How work gets done on the access repo is one loop, and it was not invented
+here. It is what is left when you take three Fountain apps that were built
+separately, Mend and Rounds and dns-desk, and write down what they have in
+common. They differ on two axes and agree on everything else, which is the
+reason a course can teach one thing rather than three.
 
-<!-- context. How work gets done on the access repo is one loop abstracted from three Fountain apps, Mend, Rounds and dns-desk. The apps differ on two axes, interactive or ambient and audit-driven or request-driven, and share everything else. -->
+The two axes are whether a person is in the room, interactive or ambient, and
+what starts the work, an audit or a request. Four boxes, and every app this
+course reads is in one of them.
 
 ## The parts
 
@@ -21,9 +27,20 @@ weight: 1
 | **record** | Where the state lives. It is where the person who decides is already standing, with nothing to keep in sync. | The conversation. Report, plan and patch are derived from turns and blocks. | GitHub. Branch name and a marker in the PR body. The conversation holds the round report. | The conversation. Plan status is always derived, never stored. |
 | **refusal** | An outcome, not a failure, rendered as one. | `skipped`, with the note. | `already-open`, `declined`, `deferred`, `clean`. A decline sticks until `rounds:reconsider`. | A request outside the token's zones. |
 
-{{< todo "prose" >}}
+Two things hold down every column, and they are worth reading the table twice
+for.
 
-<!-- context. Two invariants run through every column. The claim and the report are one copy. The operator never holds a write. -->
+The claim and the report are one copy. The plan a person approves is the same
+artifact the machinery acts on, rendered once by something deterministic, so
+there is no summary that could be generous about what the diff does. An
+operator that wrote its own account of its own work would be the only witness
+to it.
+
+The operator never holds a write. Whatever the mode, the thing that reads and
+proposes is not the thing that applies, and the credential that could apply
+lives somewhere the operator cannot reach. Every refusal in the last row of
+that table is cheap because of it. An operator that could apply would have to
+be trusted; one that cannot only has to be read.
 
 ## The four forms
 
@@ -34,9 +51,18 @@ weight: 1
 
 ## The loop on IAM
 
-{{< todo "prose" >}}
+IAM is the case where the target and the repo are the same object, and that
+collapses part of the loop in a useful way. The estate is declared in files,
+so a proposal is a diff rather than a description of one, and propose is a
+pull request in every form. Approval is the merge and never a message in a
+conversation, which is decision 18 and the reason there is no approve button
+anywhere in this course.
 
-<!-- context. The applier is Terraform, never the agent. The desk proposes in repo mode and applies only in direct mode with a bounded role. See docs/aws-desk.md. IAM is a target that is also a repo, so propose is the PR in every form and approval is the merge, never an in-conversation message (decision 18). -->
+The applier is Terraform and never the agent. [The AWS desk](docs/aws-desk.md)
+is the app the lessons build, and it proposes in repo mode holding nothing
+that can reach the account. It can apply, in direct mode, with a role bounded
+by the estate's own permission boundary, and the course is careful about when
+it says that is acceptable.
 
 | Form | IAM instance | Build or reuse | Lessons |
 |---|---|---|---|
@@ -45,9 +71,9 @@ weight: 1
 | interactive, audit-driven | **Mend the access repo.** Point Mend at the access repo. Its aws catalog reads the declared Terraform. | Mend as-is. | I3 |
 | ambient, request-driven | A ticket that opens a desk conversation and tracks the PR as comments. | Later. | I12 |
 
-{{< todo "prose" >}}
-
-<!-- context. The parts, on IAM. -->
+The same eight parts, with this estate's names in them. Reading this table
+beside the first one is the quickest way to see that nothing about IAM needed
+a new mechanism, only new instances of the old ones.
 
 | Part | IAM on the water park estate | Lessons |
 |---|---|---|
@@ -63,6 +89,23 @@ weight: 1
 
 ## What the loop asks of Fountain
 
-{{< todo "prose" >}}
+The loop asks for less from a runtime than you would expect, and the Fountain
+course teaches each piece where it is first needed.
 
-<!-- context. An environment with the tool preinstalled and no secrets (F1, F4). A vault per target bound at creation (F4). A teammate per target with a persistent computer (F5). A schedule for the ambient forms (F6). Protocol blocks and the conversation as record for the interactive forms (F7). A hosted sandbox provider wherever the operator reads untrusted input while holding anything (F10). No approval gate in the loop, which is why propose lives outside it (F11). -->
+An environment with the tools on it and no secrets in it, which is lesson 1
+and lesson 4. A vault per target, bound to the conversation when it starts, so
+the blast radius is decided before any work is, which is lesson 4. A teammate
+per target with a computer that persists, which is lesson 5. A schedule, for
+the ambient forms, which is lesson 6. Protocol blocks and the conversation as
+the record, for the interactive ones, which is lesson 7. And a sandbox
+provider that actually isolates, wherever the operator reads untrusted input
+while holding anything at all, which is lesson 10's honesty about what a
+self-hosted runner does not give you.
+
+One thing the loop does not ask for, and this is the load-bearing absence.
+There is no approval gate inside the runtime. Fountain has none, lesson 11 is
+the lesson about not having one, and propose lives outside the loop for
+exactly that reason. The gate is wherever the write lands, which on this
+estate is a protected branch and a job holding a bounded role. A loop that
+waited for a runtime to ask permission would be a loop with its safety in the
+one place nobody can audit after the fact.
