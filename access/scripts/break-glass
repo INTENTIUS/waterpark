@@ -300,18 +300,19 @@ EOT
 		if [ "$do_open" = true ] && [ "$gh_ready" = true ]; then
 			(
 				cd "$repo_root" || exit 1
-				# Start the branch from the base every time. A sweep branch
-				# holds one edit against what main declares, and reusing a
-				# local branch left over from a previous sweep makes a pull
-				# request whose diff is the inverse of its title: the base has
-				# moved on and the stale branch reads as adding back the very
-				# grant this is meant to retire. It succeeds and it lies, which
-				# is worse than failing.
-				git fetch -q origin main >/dev/null 2>&1 || true
+				# Drop any branch of this name left over from an earlier sweep,
+				# then branch from where we are. Reusing a stale one makes a
+				# pull request whose diff is the inverse of its title, because
+				# the base has moved on and the old branch reads as adding back
+				# the very grant this is retiring. It succeeds and it lies.
+				#
+				# Deleted rather than checked out from origin/main on purpose.
+				# A switch with a start point rewrites every file in the tree,
+				# including this script while bash is still reading it, and the
+				# edit below then runs against a file nobody chose.
 				git branch -q -D "$branch" >/dev/null 2>&1 || true
-				git switch -q -c "$branch" FETCH_HEAD >/dev/null 2>&1 ||
-					git switch -q -c "$branch" origin/main >/dev/null 2>&1 ||
-					git switch -q -c "$branch" >/dev/null 2>&1
+				git switch -q -c "$branch" >/dev/null 2>&1 ||
+					git switch -q "$branch" >/dev/null 2>&1
 				local id
 				for id in $expired_ids; do
 					if blocks | awk -F'\t' -v id="$id" -v f="$f" '$1 == id && $2 == f { found = 1 } END { exit !found }'; then
