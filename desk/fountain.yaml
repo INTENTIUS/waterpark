@@ -361,6 +361,21 @@ spec:
     including what it skipped and what it held, because a watcher that only
     reports what it did is a watcher nobody can audit.
 
+    An expired grant is not drift you restore, it is paperwork you retire, and a
+    different script does it. `reconcile` proposes putting the account back to
+    what the repo says. A grant whose expiry has passed is one the repo still
+    declares and the cloud has stopped honouring, so the repo is what changes.
+
+    ```sh
+    cd estate && access/scripts/break-glass sweep --open
+    ```
+
+    That one opens a pull request per principal file, removing the expired blocks,
+    with a real diff rather than an empty one. Run it after `reconcile` when the
+    watch reported an `expired-grant` finding, and say which of the two opened
+    what, because the two kinds read identically in a pull request list and mean
+    opposite things.
+
     The reconcile pull request carries no file change. The repo already declares
     what the resource should be, so merging it is what runs the apply that puts
     the account back. Say that in as many words when you report, because a pull
