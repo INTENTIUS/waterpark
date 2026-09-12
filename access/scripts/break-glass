@@ -298,6 +298,23 @@ EOT
 		say "  file   access/$f"
 		say "         branch $branch"
 		if [ "$do_open" = true ] && [ "$gh_ready" = true ]; then
+			# Do the edit first, from the access root, because blocks and
+			# revoke_in_file resolve their paths from there. The subshell used
+			# to cd to the repository root before calling them, so the guard
+			# below matched nothing, no block was ever removed, and the sweep
+			# went on to commit an empty tree and open a pull request with no
+			# diff in it. It reported success every time.
+			local swept=false
+			local id
+			for id in $expired_ids; do
+				if blocks | awk -F'\t' -v id="$id" -v f="$f" '$1 == id && $2 == f { found = 1 } END { exit !found }'; then
+					revoke_in_file "$id" "$f" >/dev/null && swept=true
+				fi
+			done
+			if [ "$swept" != true ]; then
+				say "         nothing in this file was still expired, so nothing was opened"
+				continue
+			fi
 			(
 				cd "$repo_root" || exit 1
 				# Drop any branch of this name left over from an earlier sweep,
@@ -313,12 +330,6 @@ EOT
 				git branch -q -D "$branch" >/dev/null 2>&1 || true
 				git switch -q -c "$branch" >/dev/null 2>&1 ||
 					git switch -q "$branch" >/dev/null 2>&1
-				local id
-				for id in $expired_ids; do
-					if blocks | awk -F'\t' -v id="$id" -v f="$f" '$1 == id && $2 == f { found = 1 } END { exit !found }'; then
-						revoke_in_file "$id" "access/$f"
-					fi
-				done
 				git add "access/$f"
 				git commit -q -m "break-glass: sweep expired grants from $principal" \
 					-m "The cloud already ended these at their expiry. This removes the artifact." \
