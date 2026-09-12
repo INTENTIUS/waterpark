@@ -48,12 +48,32 @@ just desk-hire
 Open <http://localhost:1313/desk/> with `just serve` running. Sign in with
 Fountain, or paste an API key. Ask for access in plain words.
 
-## What it holds, and what it cannot do
+## Two modes, chosen when the desk sits down
+
+`just desk-hire` seats it in direct mode and `just desk-hire repo` seats it in
+repo mode. A teammate is one conversation per agent, so the second call
+removes the first seat. The environment and the vault are picked at that
+moment, and that pair is the whole of what a mode is.
 
 | Who | Holds | Can |
 |---|---|---|
-| the desk | a vault with Floci's throwaway pair, bound to its one conversation | plan and apply on `access/envs/prod` |
-| the page | your Fountain session | approve, by message |
+| the desk, direct | Floci's throwaway pair, bound to its one conversation | plan and apply on `access/envs/prod` |
+| the desk, repo | a fine-grained GitHub token, one repo, contents and pull requests | clone, commit on `desk/*`, open a pull request, and nothing that reaches AWS |
+| the page | your Fountain session | approve by message in direct mode, read the pull request in repo mode |
+| the apply job | the apply role, gated by the prod environment | apply on `main`, and only a plan whose digest matches what the pull request job recorded |
+
+Repo mode needs a token, which is minted by a person and never committed.
+
+```sh
+fountain vault set-secret aws-desk-github GITHUB_TOKEN <token>
+```
+
+The desk opens an ordinary pull request against `access/`, so the checks that
+already guard that directory run on it unchanged. It records no digest for the
+machinery, because the pull request job computes its own from the head commit
+and the apply job recomputes it from the merge. The digest in the pull request
+body is for the person reading it. The two are the same script on two
+machines, which is why they agree.
 
 Direct mode is honest about what it is. The desk holds a credential that
 writes to the account, and the approval is a message rather than a merge. The

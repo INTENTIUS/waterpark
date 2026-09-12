@@ -40,19 +40,37 @@ desk-apply:
     desk/bin/render-manifest
     fountain apply -f desk/fountain.yaml
 
-# Put the desk on the team. Opens its one thread and binds its vault to it
-desk-hire:
+# Put the desk on the team in one mode. just desk-hire        (direct)
+#                                        just desk-hire repo   (repo)
+# A teammate is one conversation per agent, so seating it in the other mode
+# removes the old seat first. The environment and the vault are chosen here,
+# at seating time, which is the whole of what a mode is.
+desk-hire mode="direct":
     @set -euo pipefail; \
     key=$(grep -E '^FOUNTAIN_API_KEY=' compose/.env | cut -d= -f2-); \
     port=$(grep -E '^PORT=' compose/.env | cut -d= -f2); port=${port:-4000}; \
     [ -n "$key" ] || { echo "no FOUNTAIN_API_KEY in compose/.env. just register first"; exit 1; }; \
     base="http://localhost:$port"; \
+    case "{{mode}}" in \
+      direct) envname=aws-desk-toolkit; vaultname=aws-desk-floci;; \
+      repo)   envname=aws-desk-toolkit-repo; vaultname=aws-desk-github;; \
+      *) echo "mode is direct or repo"; exit 1;; \
+    esac; \
     agent=$(curl -fsS -H "Authorization: Bearer $key" "$base/api/agents" | jq -r '.data[]|select(.name=="aws-desk")|.id'); \
-    vault=$(curl -fsS -H "Authorization: Bearer $key" "$base/api/vaults" | jq -r '.data[]|select(.name=="aws-desk-floci")|.id'); \
+    envid=$(curl -fsS -H "Authorization: Bearer $key" "$base/api/environments" | jq -r --arg n "$envname" '.data[]|select(.name==$n)|.id'); \
+    vault=$(curl -fsS -H "Authorization: Bearer $key" "$base/api/vaults" | jq -r --arg n "$vaultname" '.data[]|select(.name==$n)|.id'); \
     [ -n "$agent" ] || { echo "no aws-desk agent. just desk-apply first"; exit 1; }; \
+    [ -n "$envid" ] || { echo "no $envname environment. just desk-apply first"; exit 1; }; \
+    if [ "{{mode}}" = repo ]; then \
+      has=$(curl -fsS -H "Authorization: Bearer $key" "$base/api/vaults/$vault/secrets" | jq -r '[.data[].key]|index("GITHUB_TOKEN")'); \
+      [ "$has" != null ] || { echo "the aws-desk-github vault holds no GITHUB_TOKEN."; \
+        echo "mint a fine-grained token with contents and pull-requests on the estate repo, then:"; \
+        echo "  fountain vault set-secret aws-desk-github GITHUB_TOKEN <token>"; exit 1; }; \
+    fi; \
+    curl -fsS -X DELETE -H "Authorization: Bearer $key" "$base/api/team/$agent" >/dev/null 2>&1 || true; \
     curl -fsS -X POST -H "Authorization: Bearer $key" -H 'Content-Type: application/json' \
-      -d "{\"agent_id\":\"$agent\",\"vault_id\":\"$vault\",\"name\":\"AWS desk\"}" \
-      "$base/api/team" | jq -r '"on the team\n  agent        \(.data.agent_id)\n  conversation \(.data.conversation.id)"'
+      -d "{\"agent_id\":\"$agent\",\"environment_id\":\"$envid\",\"vault_id\":\"$vault\",\"name\":\"AWS desk\"}" \
+      "$base/api/team" | jq -r '"on the team in {{mode}} mode\n  agent        \(.data.agent_id)\n  conversation \(.data.conversation.id)"'
 
 # Everything CI would care about
 ci: check check-md check-prose desk-check

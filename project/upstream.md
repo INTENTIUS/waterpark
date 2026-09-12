@@ -69,6 +69,15 @@ the environment. One run of the desk escaped this and the fresh one did not,
 which is not yet explained and is worth a question upstream alongside the
 behaviour itself.
 
+**Floci's `iam:UpdateRole` writes and then fails to answer, 2026-09-12.**
+`aws iam update-role --role-name on-call --description ...` against the
+patched build returns `aws: [ERROR]: 'UpdateRoleResult'`, exit 255, and the
+description is changed when you read the role back. The mutation lands and
+the response serialisation is what breaks. It matters for the drift lessons,
+where hand-editing a role in the account is the whole setup, so the step
+looks like it failed and did not. Tagging with `iam:tag-role` changes a role
+with no such noise and is the cleaner way to plant drift.
+
 **Two earlier claims corrected.** The demo-era runbook called the
 self-hosted runner "the answer to shared infra"; ADR 0022 says the
 opposite about containment (decision 29). And `design/agentic.md` once
