@@ -263,6 +263,44 @@ jobs:
           fi
           cat severity.md
 
+      # The watcher's cap, enforced where the write lands rather than in the
+      # prompt that opened this (decision 40). The watcher is told to hold at
+      # most watcher_max_open_prs open at once and a watcher that ignored its
+      # prompt would still be counted here. Only PRs carrying the reconcile
+      # marker are counted, so a person's PR is never held up by a robot's.
+      #
+      # The cap is read from access/baseline rather than restated, which is
+      # the same constant access/scripts/reconcile reads, so changing one
+      # number moves the script and the gate together.
+      - name: The watcher's cap
+        if: github.event.pull_request.number
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BODY: ${{ github.event.pull_request.body }}
+        run: |
+          marker=wp-drift-reconcile
+          case "$BODY" in
+            *"$marker"*) ;;
+            *) echo "not a reconcile PR, the cap does not apply"; exit 0;; 
+          esac
+
+          cap=$(sed -n 's/^[[:space:]]*watcher_max_open_prs[[:space:]]*=[[:space:]]*\([0-9]*\).*/\1/p' \
+                  access/baseline/locals.tf | head -1)
+          case "$cap" in ''|*[!0-9]*) echo "::error::could not read watcher_max_open_prs from access/baseline"; exit 1;; esac
+
+          # Every open PR carrying the marker, this one included. The search is
+          # over bodies, because the marker is in the body and a label can be
+          # taken off by whoever is being capped.
+          open=$(gh pr list --state open --limit 100 --json number,body \
+                   --jq "[.[] | select(.body != null and (.body | contains(\"$marker\")))] | length")
+          echo "cap $cap, open reconcile PRs $open"
+
+          if [ "$open" -gt "$cap" ]; then
+            echo "::error::The watcher has $open open reconcile pull requests and the cap in access/baseline is $cap. Close or merge one before this lands (decision 40)."
+            exit 1
+          fi
+          echo "within the cap"
+
       - name: The job summary
         run: |
           {

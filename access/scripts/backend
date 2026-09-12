@@ -2,6 +2,7 @@
 # Swap an env directory between the two backends.
 #
 #   access/scripts/backend local envs/prod   state in the directory, no AWS
+#   access/scripts/backend floci envs/prod   state in the emulator's own S3
 #   access/scripts/backend s3    envs/prod   state in waterpark-security
 #
 # Exactly one backend file is present at a time, because Terraform allows one
@@ -11,7 +12,7 @@ set -euo pipefail
 access_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 usage() {
-  echo "usage: access/scripts/backend <local|s3> [env-dir, default envs/prod]" >&2
+  echo "usage: access/scripts/backend <local|floci|s3> [env-dir, default envs/prod]" >&2
   exit 2
 }
 
@@ -27,11 +28,35 @@ dir="$access_root/$env_dir"
 
 case "$which" in
 local)
-  rm -f "$dir/backend.s3.tf"
+  rm -f "$dir/backend.s3.tf" "$dir/backend.floci.tf"
   cp "$access_root/backends/backend.local.tf" "$dir/backend.local.tf"
   ;;
+floci)
+  rm -f "$dir/backend.local.tf" "$dir/backend.s3.tf"
+  cp "$access_root/backends/backend.floci.tf" "$dir/backend.floci.tf"
+  # The bucket is this script's business, because it is the thing the backend
+  # it just wrote will not start without. On the live path the state bucket is
+  # the security account's and predates everything; on the solo path there is
+  # nobody to have made it, so make it and say so. Creating it twice is fine.
+  endpoint="${AWS_ENDPOINT_URL_S3:-${FLOCI_ENDPOINT:-http://localhost:4566}}"
+  bucket="$(sed -n 's/^[[:space:]]*bucket[[:space:]]*=[[:space:]]*"\(.*\)".*/\1/p' \
+              "$access_root/backends/backend.floci.tf" | head -1)"
+  if AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID:-test}" \
+     AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY:-test}" \
+     AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION:-us-east-1}" \
+     aws --endpoint-url "$endpoint" s3api head-bucket --bucket "$bucket" >/dev/null 2>&1; then
+    echo "state bucket $bucket is already there"
+  else
+    AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID:-test}" \
+    AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY:-test}" \
+    AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION:-us-east-1}" \
+    aws --endpoint-url "$endpoint" s3api create-bucket --bucket "$bucket" >/dev/null &&
+      echo "made the state bucket $bucket at $endpoint" ||
+      { echo "could not make the state bucket $bucket at $endpoint" >&2; exit 1; }
+  fi
+  ;;
 s3)
-  rm -f "$dir/backend.local.tf"
+  rm -f "$dir/backend.local.tf" "$dir/backend.floci.tf"
   cp "$access_root/backends/backend.s3.tf" "$dir/backend.s3.tf"
   ;;
 *)

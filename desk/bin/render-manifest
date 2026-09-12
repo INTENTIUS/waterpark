@@ -39,6 +39,9 @@ env = {
     "AWS_ENDPOINT_URL": os.environ["FLOCI_URL"],
     "FLOCI_ENDPOINT": os.environ["FLOCI_URL"],
     "TF_VAR_floci_endpoint": os.environ["FLOCI_URL"],
+    # Terraform's S3 backend reads this, which is how state reaches the
+    # emulator's bucket without a backend block that names a host.
+    "AWS_ENDPOINT_URL_S3": os.environ["FLOCI_URL"],
     "AWS_DEFAULT_REGION": "us-east-1",
 }
 
