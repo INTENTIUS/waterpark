@@ -15,6 +15,8 @@
 #   one PR per resource         the branch name is derived from the address
 #   never a second while one    an open PR on that branch is a skip
 #     is open
+#   a decline sticks            a PR closed unmerged is a no, and stays a no
+#                               until somebody labels it desk:reconsider
 #   capped in volume            the cap is watcher_max_open_prs in
 #                               access/baseline, read rather than restated
 #   a marker in the body        so the count above can find them again
@@ -179,6 +181,27 @@ while IFS= read -r f; do
 		say "         a PR is already open on $branch"
 		skipped=$((skipped + 1))
 		continue
+	fi
+
+	# A decline sticks. Somebody closed this without merging it, which is an
+	# answer, and a watcher that files it again next cycle is a watcher that
+	# argues. The way back in is a label, because a label is a deliberate act
+	# by somebody with write access and a reopened branch is not.
+	if [ "$gh_ready" = true ]; then
+		declined="$(gh pr list --state closed --head "$branch" --limit 5 \
+			--json number,mergedAt,labels 2>/dev/null ||
+			echo '[]')"
+		declined="$(printf '%s' "$declined" |
+			jq -c '[.[] | select(.mergedAt == null)
+                   | select([.labels[].name] | index("desk:reconsider") | not)]' 2>/dev/null ||
+			echo '[]')"
+		if [ "$(printf '%s' "$declined" | jq 'length' 2>/dev/null || echo 0)" != "0" ]; then
+			say "  declined $address"
+			say "         closed unmerged as $(printf '%s' "$declined" | jq -r '.[0].number | "#" + tostring')"
+			say "         label it desk:reconsider to let this be filed again"
+			skipped=$((skipped + 1))
+			continue
+		fi
 	fi
 
 	if [ $((open_prs + planned)) -ge "$cap" ]; then
