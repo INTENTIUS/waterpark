@@ -278,11 +278,16 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           BODY: ${{ github.event.pull_request.body }}
         run: |
-          marker=wp-drift-reconcile
-          case "$BODY" in
-            *"$marker"*) ;;
-            *) echo "not a reconcile PR, the cap does not apply"; exit 0;; 
-          esac
+          # Every marker the watcher opens under, not just the drift one. The
+          # sweep files burndown pull requests under its own marker, and a cap
+          # that counted one kind would let the watcher hold five of each while
+          # access/baseline says five. The cap is on the watcher, not on a
+          # script.
+          markers='wp-drift-reconcile|wp-break-glass-sweep|desk-proposed'
+          if ! printf '%s' "$BODY" | grep -qE "$markers"; then
+            echo "not a watcher pull request, the cap does not apply"
+            exit 0
+          fi
 
           cap=$(sed -n 's/^[[:space:]]*watcher_max_open_prs[[:space:]]*=[[:space:]]*\([0-9]*\).*/\1/p' \
                   access/baseline/locals.tf | head -1)
@@ -291,12 +296,15 @@ jobs:
           # Every open PR carrying the marker, this one included. The search is
           # over bodies, because the marker is in the body and a label can be
           # taken off by whoever is being capped.
-          open=$(gh pr list --state open --limit 100 --json number,body \
-                   --jq "[.[] | select(.body != null and (.body | contains(\"$marker\")))] | length")
-          echo "cap $cap, open reconcile PRs $open"
+          # gh's own --jq takes no arguments, so the list comes back raw and jq
+          # does the matching with the marker list passed in.
+          open=$(gh pr list --state open --limit 100 --json number,body |
+                   jq --arg m "$markers" \
+                     '[.[] | select(.body != null and (.body | test($m)))] | length')
+          echo "cap $cap, open watcher pull requests $open"
 
           if [ "$open" -gt "$cap" ]; then
-            echo "::error::The watcher has $open open reconcile pull requests and the cap in access/baseline is $cap. Close or merge one before this lands (decision 40)."
+            echo "::error::The watcher has $open open pull requests and the cap in access/baseline is $cap. Close or merge one before this lands (decision 40)."
             exit 1
           fi
           echo "within the cap"
