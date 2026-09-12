@@ -300,7 +300,18 @@ EOT
 		if [ "$do_open" = true ] && [ "$gh_ready" = true ]; then
 			(
 				cd "$repo_root" || exit 1
-				git switch -c "$branch" >/dev/null 2>&1 || git switch "$branch" >/dev/null 2>&1
+				# Start the branch from the base every time. A sweep branch
+				# holds one edit against what main declares, and reusing a
+				# local branch left over from a previous sweep makes a pull
+				# request whose diff is the inverse of its title: the base has
+				# moved on and the stale branch reads as adding back the very
+				# grant this is meant to retire. It succeeds and it lies, which
+				# is worse than failing.
+				git fetch -q origin main >/dev/null 2>&1 || true
+				git branch -q -D "$branch" >/dev/null 2>&1 || true
+				git switch -q -c "$branch" FETCH_HEAD >/dev/null 2>&1 ||
+					git switch -q -c "$branch" origin/main >/dev/null 2>&1 ||
+					git switch -q -c "$branch" >/dev/null 2>&1
 				local id
 				for id in $expired_ids; do
 					if blocks | awk -F'\t' -v id="$id" -v f="$f" '$1 == id && $2 == f { found = 1 } END { exit !found }'; then
@@ -311,7 +322,15 @@ EOT
 				git commit -q -m "break-glass: sweep expired grants from $principal" \
 					-m "The cloud already ended these at their expiry. This removes the artifact." \
 					-m "<!-- $marker file=$f -->"
-				git push -q -u origin "$branch"
+				# Forced, guarded by the prefix, for the same reason reconcile
+				# forces its own: the branch is this file's one current
+				# proposal rather than a history.
+				if ! push_err="$(git push -u --force origin "$branch" 2>&1)"; then
+					say "  FAIL   could not push $branch"
+					printf '         %s\n' "$push_err" | head -3
+					git switch - >/dev/null 2>&1
+					exit 1
+				fi
 				gh pr create --title "break-glass: sweep expired grants from $principal" \
 					--body "The cloud already ended these grants at their expiry (layer 1). This PR removes the artifacts (layer 2), and the drift watch stops reporting them once it merges (layer 3).
 
