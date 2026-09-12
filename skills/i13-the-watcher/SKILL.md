@@ -14,8 +14,12 @@ Lesson 12 and Fountain lesson 9 come first. If they have not seen the watcher
 file a reconcile pull request, step 4's comparison has nothing to compare
 against, so send them to Fountain lesson 9 rather than describing it.
 
-Confirm before merging anything in step 2 and before `sweep --open` in step 4.
-Those are marked **confirm**. Every read runs freely.
+Confirm before the merge in step 3 and before `sweep --open` in step 4. Those
+are marked **confirm**. Every read runs freely, and step 2 is all reads.
+
+The student needs `gh` authenticated with write access. The sweep degrades
+quietly when it is not, printing that gh is not available and opening nothing,
+which looks like a lesson with no findings rather than a missing credential.
 
 Most of this lesson needs no model turn at all, which is worth saying, because
 the scripts are the watcher and the agent is only the thing that runs them on
@@ -48,15 +52,47 @@ compliance reviewer accepts and a dashboard.
 
 ## 3. Leave something lying around **confirm**
 
-Have them put a break-glass grant on `on-call` whose expiry has already
-passed, fenced by the two marker comments the script writes, with `granted_at`
-three hours ago and `expires` one hour ago. The block's shape is in
-`access/envs/prod/iam_role.on_call.tf` after any break-glass grant, and lesson
-10 wrote one.
+Give them the block rather than sending them to find one. Lesson 10's grant
+has usually been swept by the time anybody gets here, so the file reads
+`grants = []` and there is nothing to copy.
+
+```hcl
+  grants = [
+    # break-glass bg-on-call-drill. Written by access/scripts/break-glass, revoked by its sweep.
+    {
+      resource   = "waterpark-artifacts"
+      access     = "write"
+      granted_at = "<three hours ago, RFC3339>"
+      expires    = "<one hour ago, RFC3339>"
+      reason     = "An incident grant nobody swept, left past its expiry on purpose."
+    },
+    # end break-glass bg-on-call-drill
+  ]
+```
+
+Three things about it that cost time if nobody says them. The id in the
+opening marker is parsed as the third whitespace-separated field and has to
+start with `bg-`, so a fence written another way makes `list` and `sweep` find
+nothing. `access` is validated against read, list, write and push. And the two
+dates are two hours apart because `break_glass_max_ttl_hours` is 2, so that
+pair is the only one that is both already expired and accepted by
+`terraform validate`.
+
+Have them run `access/scripts/check lint` before committing, since the script
+would have run `terraform fmt` and their hand did not.
 
 It has to reach the base branch. A burndown removes what the base declares and
 there is nothing to remove until the base declares it, so this is a commit, a
 pull request and a merge.
+
+```sh
+gh pr merge <number> --squash --delete-branch
+```
+
+That command matters beyond tidiness. It leaves them standing on `main`, and
+the sweep in step 4 branches from wherever they are, so a student who merged
+some other way sweeps from their own feature branch and gets a pull request
+whose diff reads as adding the grant back.
 
 Watch the checks pass on the way through, and ask why nothing refused a grant
 that was already dead. The answer is that the rule is about the length of the
@@ -80,9 +116,12 @@ hold, and the sweep reads files for exactly this reason.
 Then the dry run, then the real one.
 
 ```sh
+git branch --show-current
 access/scripts/break-glass sweep
 access/scripts/break-glass sweep --open
 ```
+
+If that first command does not say `main`, stop and get them there.
 
 ```sh
 gh pr diff <number> | head -20
@@ -95,8 +134,9 @@ says. A burndown asks the repo to stop saying something the account already
 stopped doing.
 
 If the sweep says nothing in the file was still expired and opens nothing,
-that is the script being honest rather than failing. Check the dates on the
-block they wrote.
+that is the script being honest rather than failing. Check the marker line
+first, because a fence whose id is not the third field or does not start with
+`bg-` is invisible to it, and check the dates second.
 
 ## 5. Whether the cap counts both
 
@@ -118,7 +158,8 @@ curl -s -H "Authorization: Bearer $KEY" \
   jq -r '.data[]? | "\(.kind)  \(.snippet[0:70])"'
 ```
 
-The lesson 12 request comes back. The conversation is the record for requests
+The lesson 12 request comes back as a `reply` row with the words in its
+snippet, and not as a separate request row. The conversation is the record for requests
 and the code host is the record for changes, and neither is trying to be the
 other. If they want to see the watcher do this itself rather than running the
 scripts by hand, the schedule from Fountain lesson 9 is still the way, and
@@ -153,6 +194,9 @@ If one fails, say which. The restart point is lesson 12.
 ```sh
 mkdir -p .waterpark
 ```
+
+Merge into `.waterpark/profile.json`, which is the file every skill in this
+course writes and which `.gitignore` already covers.
 
 ```json
 {"lessons": {"i13": {"state": "done", "swept": true}}}

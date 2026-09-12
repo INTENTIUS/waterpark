@@ -32,7 +32,7 @@ activity:
 - Fountain lesson 9 built the watcher and its rules. This lesson points it at what IAM has that a generic target does not, which is a set of projections over the account. Nothing here is a new mechanism.
 - Drift is the account moving. Burndown is the clock moving. A reconcile pull request restores what the repo declares and carries no file change, and a sweep pull request removes what the repo declares and carries a real one. They arrive in the same list looking alike and they push in opposite directions.
 - The projections read the account and never a file, which is Accessible Ops XI. `expiring` lists dated grants soonest first, `rotation` finds static secrets past their age, and `access-review` is the artifact a compliance reviewer accepts, saying where each fact came from and naming what it did not see.
-- A grant past its expiry grants nothing, because the cloud stopped honouring it at the date in its condition. What is left is paperwork, and the paperwork is what the sweep retires. The drift watch reports it too, as an `expired-grant` finding, so the same fact arrives by two roads.
+- A grant past its expiry grants nothing, because the cloud stopped honouring it at the date in its condition. What is left is paperwork, and the paperwork is what the sweep retires. A grant that was applied before it expired arrives by two roads, since the drift watch reports it as an `expired-grant` finding as well. One that was never applied arrives by one road only, and step 3 is where you find out which road that is.
 - The cap is on the watcher rather than on a script. The `pr` job counts every open pull request carrying any of the watcher's markers against `watcher_max_open_prs` in `access/baseline`, so a watcher that filed five reconciles and five sweeps is over the cap, not twice under it.
 - The conversation is the record for requests and the code host is the record for changes. `GET /api/search` searches the first, which is how "which requests did the concierge handle" is a query rather than an archaeology project.
 - Rounds as-is covers the lint tier on this repository. The IAM projections use its form rather than its code, which is decision 28.
@@ -54,7 +54,27 @@ Lesson 12 put an agent in front of the pipeline. This one leaves it running and 
 
 2. Leave something lying around. Put a break-glass grant on `on-call` whose expiry has already passed, the way lesson 10's grant would look if nobody had swept it.
 
-   Edit `access/envs/prod/iam_role.on_call.tf` so its `grants` holds one block with a `granted_at` three hours ago and an `expires` one hour ago, fenced by the two marker comments the break-glass script writes. Then commit it on a branch and merge it, because a burndown removes what the base branch declares and there is nothing to remove until the base declares it.
+   Put this in `access/envs/prod/iam_role.on_call.tf` in place of `grants = []`, with the two dates moved to three hours ago and one hour ago. The marker comments are not decoration. `break-glass` parses the id out of the opening one as the third whitespace-separated field, and it has to begin with `bg-`, so a fence written any other way leaves `list` and `sweep` finding nothing at all.
+
+   ```hcl
+   grants = [
+     # break-glass bg-on-call-drill. Written by access/scripts/break-glass, revoked by its sweep.
+     {
+       resource   = "waterpark-artifacts"
+       access     = "write"
+       granted_at = "<three hours ago, RFC3339>"
+       expires    = "<one hour ago, RFC3339>"
+       reason     = "An incident grant nobody swept, left past its expiry on purpose."
+     },
+     # end break-glass bg-on-call-drill
+   ]
+   ```
+
+   Those two hours are not a suggestion. `break_glass_max_ttl_hours` in `access/baseline` is 2 and the module refuses a longer window, so three hours ago to one hour ago sits exactly on the line. Move one of them and you are choosing between a grant that has not expired yet and a grant `terraform validate` rejects.
+
+   Run `access/scripts/check lint` before you commit, because the script normally runs `terraform fmt` after writing a block and your hand does not.
+
+   Then commit it on a branch, open a pull request and merge it, because a burndown removes what the base branch declares and there is nothing to remove until the base declares it. Merge with `gh pr merge <number> --squash --delete-branch`, which also puts you back on `main`, and being on `main` is what the next step needs.
 
    Watch what the checks say about that pull request on the way through. They pass. Nothing refuses a grant that is already dead, because a check cannot know when somebody will merge it, and the rule it would have to break is about the length of the window rather than about where the window sits. What catches it is the thing that runs afterwards, which is this lesson.
 
@@ -64,11 +84,14 @@ Lesson 12 put an agent in front of the pipeline. This one leaves it running and 
    access/scripts/expiring
    ```
 
-   Nothing. The grant was never applied, so the account never had it, and a projection that reads the account is right to say so. Two facts are hiding in that, which are that the repo can declare access the account does not hold, and that a projection over the account will not find paperwork. The sweep reads the files for exactly this reason.
+   Nothing, and the reason is worth more than the finding. The grant was never applied, so the account never had it, and a projection that reads the account is right to say so. Two facts are hiding in that, which are that the repo can declare access the account does not hold, and that a projection over the account will not find paperwork. The sweep reads the files for exactly this reason.
 
-4. Sweep it.
+4. Sweep it, standing on `main`.
+
+   Which branch you are on decides what the sweep's pull request says. It branches from where you are, and a branch that is not the base makes a diff that reads as adding the grant rather than removing it. The script says as much in its own comments, having done it.
 
    ```sh
+   git branch --show-current
    access/scripts/break-glass sweep
    ```
 
@@ -105,7 +128,7 @@ Lesson 12 put an agent in front of the pipeline. This one leaves it running and 
      jq -r '.data[]? | "\(.kind)  \(.snippet[0:70])"'
    ```
 
-   The request you made in lesson 12 comes back, with the turn it was in. The conversation is the record for requests and the code host is the record for changes, and neither one is trying to be the other.
+   The request you made in lesson 12 comes back as a `reply` row with the words in its snippet. The conversation is the record for requests and the code host is the record for changes, and neither one is trying to be the other. Search reads the first, which is why this is a query rather than an afternoon of scrolling.
 
 7. Fill in the last column, one more time. Fountain lesson 9's table had a rule per row and a column for what enforces it. Add the rows this lesson adds.
 
@@ -115,7 +138,11 @@ Lesson 12 put an agent in front of the pipeline. This one leaves it running and 
    | the cap covers every kind the watcher files | `access/baseline` | the `pr` job, counting every marker |
    | a projection reads the account | `lib-live.sh`, which every read script sources | nothing, and see below |
 
+   The `apply` job shows `skipping` on both of your pull requests, which is the pipeline working. It runs on a push to `main` and never on a pull request, which is lesson 6's whole shape.
+
    That last row is worth sitting with. Every read script goes through one helper that talks to the account, and a script that read a state file instead would still pass every check in this repository. What keeps the projections honest is that they were written that way, which is a convention rather than a control.
+
+   Work out what it would cost to change that, in tiers, because the tiers are the interesting part. A grep gate that lets only the helper name an endpoint is an afternoon and catches carelessness. A negative test per projection, pointed at a dead endpoint and expecting a named failure, is ongoing work forever and catches laziness. Neither catches a script that reads the account and then prints something else, and closing that means a fixture per projection, seeded into the emulator and asserted in the output. The estate stopped at the convention because the first two tiers cost more than the failure they prevent, given that a wrong projection still has to get past somebody reading the artifact.
 
 ## Self-paced
 

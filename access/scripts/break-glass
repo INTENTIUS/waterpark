@@ -293,7 +293,11 @@ EOT
 	for f in $files; do
 		local principal branch
 		principal="$(basename "$f" .tf)"
-		principal="${principal#*.}"
+		# Hyphenated, the way the grant path spells it and the way the estate
+		# names a principal. The file label is underscored because Terraform
+		# labels are, and a pull request titled on_call while everything else
+		# says on-call reads as a different principal.
+		principal="$(printf '%s' "${principal#*.}" | tr '_' '-')"
 		branch="desk/break-glass/$(printf '%s' "$principal" | tr 'A-Z_' 'a-z-')"
 		say "  file   access/$f"
 		say "         branch $branch"
