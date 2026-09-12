@@ -1,6 +1,7 @@
 # A Fountain runner in a container. The sandboxes are directories in here, not on the laptop.
 # What a runner machine needs (Fountain docs, runners.md): bash, git, node/npm/npx, bun. Plus the lessons' tools:
-# the AWS CLI and jq for reading an account, terraform for the desk's plan and apply.
+# the AWS CLI and jq for reading an account, terraform for the desk's plan and apply,
+# tflint for the rule pack and gh for the pull requests the watcher opens.
 #
 # The fountain CLI is copied from bin/, built from a Fountain checkout because the runner
 # command is newer than the last released binary:
@@ -15,6 +16,10 @@ ARG TERRAFORM_VERSION=1.15.8
 # a sandbox lints without a network round trip on its first plan.
 ARG TFLINT_VERSION=0.59.1
 ARG TFLINT_OPA_VERSION=0.8.0
+# The watcher proposes with access/scripts/reconcile, which opens pull requests
+# through gh. It reads GITHUB_TOKEN from the environment, so the desk's vault is
+# the whole of its authorisation.
+ARG GH_VERSION=2.82.1
 RUN apt-get update && apt-get install -y --no-install-recommends \
       ca-certificates curl git jq unzip bash openssh-client less groff \
  && rm -rf /var/lib/apt/lists/* \
@@ -25,7 +30,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
  && curl -fsSL "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_${TARGETARCH:-amd64}.zip" -o /tmp/terraform.zip \
  && unzip -q /tmp/terraform.zip -d /usr/local/bin && rm /tmp/terraform.zip && chmod +x /usr/local/bin/terraform \
  && curl -fsSL "https://github.com/terraform-linters/tflint/releases/download/v${TFLINT_VERSION}/tflint_linux_${TARGETARCH:-amd64}.zip" -o /tmp/tflint.zip \
- && unzip -q /tmp/tflint.zip -d /usr/local/bin && rm /tmp/tflint.zip && chmod +x /usr/local/bin/tflint
+ && unzip -q /tmp/tflint.zip -d /usr/local/bin && rm /tmp/tflint.zip && chmod +x /usr/local/bin/tflint \
+ && curl -fsSL "https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_${TARGETARCH:-amd64}.tar.gz" -o /tmp/gh.tgz \
+ && tar -xzf /tmp/gh.tgz -C /tmp && install -m 0755 "/tmp/gh_${GH_VERSION}_linux_${TARGETARCH:-amd64}/bin/gh" /usr/local/bin/gh \
+ && rm -rf /tmp/gh.tgz "/tmp/gh_${GH_VERSION}_linux_${TARGETARCH:-amd64}"
 COPY bin/fountain-linux-${TARGETARCH:-amd64} /usr/local/bin/fountain
 RUN chmod +x /usr/local/bin/fountain && useradd -m -s /bin/bash runner && mkdir -p /sandboxes && chown runner:runner /sandboxes
 # The opa plugin goes somewhere every sandbox can see. A sandbox runs with its

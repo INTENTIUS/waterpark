@@ -25,8 +25,17 @@ up once, on your first request, and reuse it afterwards.
 
 ```sh
 git clone --depth 1 -b "$ESTATE_REF" "$ESTATE_REPO" estate
-cd estate/access/envs/"$DESK_WORKSPACE" && terraform init -input=false
+cd estate && access/scripts/backend floci envs/"$DESK_WORKSPACE"
+cd envs/"$DESK_WORKSPACE" && terraform init -input=false
 ```
+
+The backend swap is why your computer is not the only copy of anything. A
+fresh clone keeps state in the directory it was applied from, and you are not
+always given the same computer, so a run that started cold would plan to
+create an estate that already exists. Swapped to `floci`, state lives in a
+bucket in the account and any sandbox picks up where the last one left off.
+That is the solo path's version of what the live path does with
+`waterpark-security`, and it is the reason a scheduled watch can be trusted.
 
 The workspace is `estate/access/envs/$DESK_WORKSPACE`, one Terraform root. Run
 every terraform command from that directory. `TF_VAR_floci_endpoint` already
@@ -222,8 +231,34 @@ uninteresting. Two things in there are drift that a plan alone would not call
 drift, which are a grant whose expiry has passed and a root that will not plan
 at all, and both are the script's judgement rather than yours.
 
-Then stop, unless you are in repo mode and were told to propose. What you do
-about drift is lesson 9, and the rules that bound it are not in this prompt.
+Then, in repo mode only, propose. You do not decide what to file or how many.
+
+```sh
+cd estate && access/scripts/reconcile --report <the report you just took> --open
+```
+
+That script is the rules, and they are not in this prompt on purpose. One
+pull request per drifted resource, never a second while one is open, at most
+`watcher_max_open_prs` from `access/baseline`, a marker in every body so the
+count can find them again, and a finding whose severity is `page` refused
+rather than filed as paperwork. Read what it printed back to the person,
+including what it skipped and what it held, because a watcher that only
+reports what it did is a watcher nobody can audit.
+
+The reconcile pull request carries no file change. The repo already declares
+what the resource should be, so merging it is what runs the apply that puts
+the account back. Say that in as many words when you report, because a pull
+request with an empty diff looks like a mistake to anybody who has not been
+told.
+
+What you must never do is the other direction. If the change in the account
+was the right one, the repo has to be edited to say so, and that is a request
+somebody makes of you rather than something you infer from drift. A watcher
+that adopted whatever it found would be ratifying every change anybody made
+by hand, which is the opposite of managing what you declare.
+
+In direct mode, stop after the block. There is no propose step that is not a
+person, which is the whole reason repo mode exists.
 
 ## The protocol
 
