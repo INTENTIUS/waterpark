@@ -64,16 +64,17 @@ Lessons 1 to 11 built the estate and the pipeline. This one puts an agent in fro
    gh pr view <number> --json files --jq '[.files[].path]'
    ```
 
-   One file. The body opens by naming you and marking the claim.
+   One file. The body opens by naming you and marking the claim, in words close to these rather than exactly these, since the desk writes the sentence.
 
    ```
-   Requested by Dana, of the platform team (unverified claim), in this
-   conversation, in these words: "site-publisher needs list on
-   waterpark-artifacts, so the build can see which checkpoint bundles exist
-   before it picks one."
+   Dana, platform team, asked in this conversation, in these words: "…".
+   The requester's identity is an unverified claim; the desk checked no
+   credential behind it.
    ```
 
-   Nothing checked that you are Dana and nothing pretends otherwise. The words "unverified claim" are load bearing, and a desk that dropped them would be handing a reviewer a fact it does not have.
+   Nothing checked that you are Dana and nothing pretends otherwise.
+
+   The delta in that body is the desk's plan against the live account, so it carries anything else the account and the repo currently disagree about. It is not the delta the pipeline renders, which is computed from your diff against the base branch in a clean account. Step 6 compares job to job for exactly this reason. The words "unverified claim" are load bearing, and a desk that dropped them would be handing a reviewer a fact it does not have.
 
 4. Now ask as somebody the estate has never heard of.
 
@@ -91,20 +92,36 @@ Lessons 1 to 11 built the estate and the pipeline. This one puts an agent in fro
    git checkout -b same-edit-by-hand origin/main
    ```
 
-   Add the identical grant to `access/envs/prod/iam_role.site_publisher.tf`, with the same resource, access and reason, then commit and open a pull request.
+   If you are working on a branch rather than from a released copy of this course, that checkout takes this page with it. Open the lesson on the site for the rest of the steps, or keep a copy beside you.
+
+   Add the identical grant to `access/envs/prod/iam_role.site_publisher.tf`. Identical means identical, and the `reason` the desk wrote is its own sentence rather than yours, so read it off the desk's diff rather than guessing.
+
+   ```sh
+   gh pr diff <the desk's number>
+   ```
+
+   Then commit, push the branch, and open the pull request against `main`.
+
+   ```sh
+   git commit -am "access: site-publisher lists waterpark-artifacts"
+   git push -u origin same-edit-by-hand
+   gh pr create --base main --title "access: site-publisher lists waterpark-artifacts" --body "The same edit, by hand."
+   ```
 
 6. Put the two jobs side by side. This is the lesson.
+
+   The desk's pull request number is in the `aws-result` it emitted, and `gh pr list` has it too. The job id is the last path segment of the URL that `gh pr checks` prints beside the `pr` row.
 
    ```sh
    gh pr checks <the desk's number> | grep -E '^pr'
    gh pr checks <your number> | grep -E '^pr'
    ```
 
-   Both ran the same `pr` job. Now compare what each rendered.
+   Both ran the same `pr` job. Now compare what each rendered, job against job rather than job against the desk's pull request body.
 
    ```sh
-   gh run view --job=<the desk's job id> --log | grep -A8 'The access delta'
-   gh run view --job=<your job id> --log | grep -A8 'The access delta'
+   gh run view --job=<the desk's job id> --log | sed -n '/Access delta/,/Files changed/p'
+   gh run view --job=<your job id> --log | sed -n '/Access delta/,/Files changed/p'
    ```
 
    The same lines, from the same script, over the same plan. The pipeline did not know or care which pull request came from an agent, and that is prescription 13 holding rather than being asserted. Say out loud what would be true if it were not. An agent whose pull requests skipped a check would be a second path to prod, and lesson 6 exists to say there is one.
@@ -117,13 +134,27 @@ Lessons 1 to 11 built the estate and the pipeline. This one puts an agent in fro
    | CODEOWNERS | review rights on the files the principal routes to | approve, which is the merge |
    | the apply job | the apply role by OIDC, bounded | apply on `main`, and only a plan whose digest matches |
 
-   Then say which row you would have to compromise to get an unreviewed grant into the account, and notice that the desk's row is not one of them.
+   Then say which row you would have to compromise to get an unreviewed grant into the account. Two of them will do it. Compromise a CODEOWNERS reviewer and the approval is yours, and the approval is the merge. Compromise the apply job's role and you skip the repo entirely, because that credential is the only one in the table that can write to the account.
+
+   The desk's row is not one of them, because its token cannot approve, cannot merge and cannot reach AWS. The worst a stolen desk token buys is an open pull request containing a lie, which is the same object a reviewer already treats as an unreviewed proposal.
+
+   Now check whether that is true here, rather than believing it.
+
+   ```sh
+   gh api repos/<owner>/<repo>/branches/main/protection
+   ```
+
+   On this repository today that answers `Branch not protected`. Sit with what it means. With `main` unprotected, CODEOWNERS is advisory, and a token carrying contents write can push straight to `main`, where the apply job picks it up. The desk's row is a fourth path after all, and it goes around the reviewer entirely.
+
+   The estate has declared that gate since lesson 6. `access/github/branch_protection.main.tf` asks for the required check, required approving reviews and `require_code_owner_reviews`, and that root is applied against a real code host rather than from a laptop, so on this teaching copy it is a file rather than a fact. The whole of this lesson's last claim rests on it, which is the most useful thing in the lesson. A credential's blast radius is not what its scopes say, it is what its scopes say *plus* what the thing it writes to enforces.
 
 ## Self-paced
 
 Everything runs against the Start-here stack and your own copy of this repo. The one credential you mint is the desk's GitHub token, and the shape matters more here than anywhere else in the course. Fine-grained, one repository, contents and pull requests. A classic token with `repo` scope would work and would also hand the desk every repository you can reach, which turns a lesson about bounded blast radius into a demonstration of the opposite.
 
 What Floci cannot show. Access Analyzer answers none of the policy APIs, so `proofs` prints one named skip and the `CheckNoNewAccess` verdict a real reviewer would weigh is not there. The lesson records a real-account run rather than pretending the emulator produced one.
+
+The third gap is the gate itself, and it is the one the last step turns on. `access/github` declares branch protection with a required check and required code owner reviews, and that root is applied against a real code host rather than from a laptop, so on a teaching copy of this repo the gate is a file rather than a fact. Check yours before you believe the credential table, and read the last step again if it answers `Branch not protected`.
 
 The other gap is the one lesson 9 names. The apply that a merge triggers runs against the job's own emulator rather than the one on your laptop, so merging the desk's pull request does not change your local account. On a real estate those are the same account.
 

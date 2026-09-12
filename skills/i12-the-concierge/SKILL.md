@@ -72,6 +72,12 @@ jq -r '[.data[].blocks[]?|select(.kind=="text")|.body]|join("")' /tmp/ev.json | 
 
 ## 3. The request **confirm**
 
+Say one thing first, because it explains everything that follows. The desk
+works from its own fresh clone of `ESTATE_REPO` at `ESTATE_REF`, which is
+`main`, and not from the student's working tree. A grant already present in
+their checkout on a branch is still absent as far as the desk is concerned,
+and the request is real.
+
 Have them send it as themselves if they are on the platform team, or as Dana
 if they would rather not use their own name.
 
@@ -116,7 +122,11 @@ worth getting to is that access you can obtain by claiming a team name is
 access nobody reviewed, and every check downstream would be reviewing a
 sentence somebody invented.
 
-Confirm no pull request was opened for it.
+Confirm no pull request was opened for it, rather than assuming.
+
+```sh
+gh pr list --state open --json number,title --jq '.[]|"\(.number) \(.title)"'
+```
 
 ## 5. The same edit, by hand
 
@@ -124,13 +134,28 @@ Confirm no pull request was opened for it.
 git checkout -b same-edit-by-hand origin/main
 ```
 
-Have them add the identical grant to
-`access/envs/prod/iam_role.site_publisher.tf`, the same resource, access and
-reason as the desk's diff, then commit and open their own pull request. Let
-them type it rather than copying the desk's branch, because the point is that
-a person did it.
+Two warnings before they run that, both of which cost a student real time.
+
+That checkout takes this lesson with it when the course is on a branch rather
+than released, so tell them to open the page on the site or keep a copy. And
+the desk's `reason` string is its own sentence, not the words of the request,
+so identical means reading it off `gh pr diff <the desk's number>` rather than
+guessing at it.
+
+Then have them type the grant themselves, push the branch, and open the pull
+request against `main` explicitly, because `origin/HEAD` may not be `main`.
+
+```sh
+git commit -am "access: site-publisher lists waterpark-artifacts"
+git push -u origin same-edit-by-hand
+gh pr create --base main --title "access: site-publisher lists waterpark-artifacts" --body "The same edit, by hand."
+```
 
 ## 6. Side by side
+
+The desk's pull request number is in its `aws-result`, and `gh pr list` has it
+if the reply got truncated. The job id is the last path segment of the URL
+`gh pr checks` prints beside the `pr` row, which nothing else tells them.
 
 ```sh
 gh pr checks <the desk's number> | grep -E '^pr'
@@ -140,8 +165,13 @@ gh pr checks <their number> | grep -E '^pr'
 Both ran the `pr` job. Then the rendered delta from each.
 
 ```sh
-gh run view --job=<job id> --log | grep -A8 'The access delta'
+gh run view --job=<job id> --log | sed -n '/Access delta/,/Files changed/p'
 ```
+
+Compare job to job, never job to the desk's pull request body. The body's
+delta is the desk's plan against the live account, so it carries whatever else
+that account and the repo disagree about today, and a student comparing it to
+a job log finds differences that are nothing to do with this lesson.
 
 The same lines from the same script. Ask what the pipeline noticed about the
 difference between an agent and a person, and let them answer nothing.
@@ -154,8 +184,27 @@ estate would have two paths to prod and lesson 6 would be a lie.
 
 Have them add the concierge's rows to the table from Fountain lesson 4, then
 ask which row they would have to compromise to get an unreviewed grant into
-the account. The desk's row is not one of them, and noticing that is the
-outcome.
+the account. Two will do it, which are the reviewer and the apply role, and
+the desk's is not one of them, because its token cannot approve, cannot merge
+and cannot reach AWS.
+
+Then make them check it rather than agree with it.
+
+```sh
+gh api repos/<owner>/<repo>/branches/main/protection
+```
+
+If that answers `Branch not protected`, the answer they just gave is wrong for
+this repository, and that is the best thing in the lesson. With `main`
+unprotected, CODEOWNERS is advisory and a token with contents write can push
+straight to `main`, where the apply job picks it up, so the desk's row is a
+fourth path that goes around the reviewer. `access/github` has declared that
+gate since lesson 6 and applies it against a real code host rather than from a
+laptop, so on a teaching copy it is a file rather than a fact.
+
+Get them to say the general form themselves. A credential's blast radius is
+its scopes plus what the thing it writes to enforces, and a scope list read on
+its own is half an answer.
 
 ## 8. Done when
 
@@ -190,8 +239,13 @@ but it moves the estate that later lessons start from, so say that before they
 choose.
 
 ```sh
-gh pr close <numbers> --comment "Closed after the lesson."
+gh pr close <the desk's number> --comment "Closed after the lesson."
+gh pr close <their number> --comment "Closed after the lesson."
 git push origin --delete same-edit-by-hand
+git push origin --delete <the desk's branch>
 ```
+
+One number per call, because `gh pr close` takes one and prints usage for two.
+The desk's branch is named in its pull request and does not delete itself.
 
 The desk stays on the team. Lesson 13 puts it on a schedule.
