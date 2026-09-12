@@ -101,6 +101,13 @@ esac
 gh_ready=false
 if command -v gh >/dev/null 2>&1 && gh auth status >/dev/null 2>&1; then
 	gh_ready=true
+	# Teach git to push with the same credential gh authenticated with. A clone
+	# made over https has an origin nobody can write to, and without this the
+	# push fails and gh then reports "no commits between", which sends you
+	# looking at the wrong thing entirely. Storing the token in the remote URL
+	# would work and would also leave it in the clone's config, so borrow gh's
+	# credential helper instead and leave the remote as it was found.
+	gh auth setup-git >/dev/null 2>&1 || true
 fi
 
 open_prs=0
@@ -210,7 +217,15 @@ while IFS= read -r f; do
 			git switch -c "$branch" >/dev/null 2>&1 || git switch "$branch" >/dev/null 2>&1
 			git commit --allow-empty -m "reconcile: restore $address" \
 				-m "$(cat "$body")" >/dev/null
-			git push -u origin "$branch" >/dev/null 2>&1
+			if ! push_err="$(git push -u origin "$branch" 2>&1)"; then
+				# Loudly. A swallowed push is the failure that costs the most
+				# time, because the next command fails for a reason that has
+				# nothing to do with the cause.
+				echo "  FAIL   could not push $branch"
+				printf '         %s\n' "$push_err" | head -3
+				git switch - >/dev/null 2>&1
+				exit 1
+			fi
 			gh pr create --title "reconcile: restore $address" --body-file "$body" \
 				--head "$branch" --base main
 			git switch - >/dev/null 2>&1
