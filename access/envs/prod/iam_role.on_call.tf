@@ -21,15 +21,5 @@ module "on_call" {
   permissions_boundary = module.baseline.boundary_arn
   break_glass_approver = var.break_glass_approver
 
-  grants = [
-    # break-glass bg-on-call-20260912T0519Z. Written by access/scripts/break-glass, revoked by its sweep.
-    {
-      resource   = "waterpark-artifacts"
-      access     = "write"
-      granted_at = "2026-09-12T05:19:02Z"
-      expires    = "2026-09-12T07:19:02Z"
-      reason     = "Lesson 13: an incident grant nobody swept, left past its expiry on purpose."
-    },
-    # end break-glass bg-on-call-20260912T0519Z
-  ]
+  grants = []
 }
