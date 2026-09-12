@@ -122,6 +122,19 @@ act by somebody with write access, which a reopened branch is not.
 
 ## 7. Break the cap on purpose **confirm**
 
+Say what is about to happen before you do it. This step lowers a security
+constant and pushes it, which is what an attack looks like from the outside,
+so a person driving this will be asked to approve it and an agent driving it
+may be refused outright by its own permission layer. That is the right
+response to the shape of the action and the wrong response to this particular
+one, so the student decides rather than you. Nothing here leaves the emulator
+or the probe branch, and the cap goes back two steps later.
+
+If the refusal is absolute rather than a prompt, stop and say so. The lesson
+is still worth its last step, which is the table, and a run that skipped the
+cap probe should say which done-when it could not reach rather than claiming
+it.
+
 The watcher is told to hold at most five open. Find out what holds when it is
 not told, by lowering the cap below what is already open, on the branch of one
 of its own pull requests.
@@ -185,8 +198,20 @@ Merge into `.waterpark/profile.json`.
 
 Close any reconcile pull requests still open, and label each
 `desk:reconsider` before closing, or a later run treats those findings as
-declined and says nothing about them. Delete the schedule if they do not want
-it firing at six.
+declined and says nothing about them.
+
+Delete the branches too. A closed pull request leaves its `desk/drift/*`
+branch behind, and while the watcher now rewrites its own branches rather
+than failing on them, a repository full of abandoned ones is noise nobody
+reads.
+
+```sh
+for b in $(git ls-remote --heads origin 'refs/heads/desk/*' | awk '{print $2}' | sed 's|refs/heads/||'); do
+  git push origin --delete "$b"
+done
+```
+
+Delete the schedule if they do not want it firing at six.
 
 ```sh
 curl -s -X DELETE -H "Authorization: Bearer $KEY" \
