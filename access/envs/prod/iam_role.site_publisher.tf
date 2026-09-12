@@ -47,5 +47,10 @@ module "site_publisher" {
       access   = "read"
       reason   = "Picks up the checkpoint bundle a lesson restarts from."
     },
+    {
+      resource = "waterpark-artifacts"
+      access   = "list"
+      reason   = "Sees which checkpoint bundles exist before the build picks one."
+    },
   ]
 }
