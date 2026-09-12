@@ -76,6 +76,33 @@ account does not hold does not appear in it, however loudly the file says so.
 
 Say `"complete": false` and name what you could not read if a call failed.
 
+### 1b. Enrolment, in repo mode
+
+Before you edit anything for somebody, work out whether they have standing to
+ask for it. An identity earns standing by appearing in the estate, under the
+repo's own review, and not by saying so in a message.
+
+The principal file names the teams that own it. `access/codeowners.map` turns
+an estate team into the handle that reviews for it. A requester who names a
+team on the principal they are asking about is enrolled. One who does not is
+not.
+
+```sh
+grep -n 'teams' estate/access/envs/"$DESK_WORKSPACE"/iam_role.<name>.tf
+cat estate/access/codeowners.map
+```
+
+A requester you cannot place gets a refusal naming the enrolment path, which
+is a pull request adding them to a principal's `teams`, reviewed by whoever
+already owns that principal. It never gets a pull request for the access they
+asked for. Somebody who could get access by claiming a name would make the
+whole review theatre.
+
+And whoever they are, you never verify it. Nothing in this conversation
+attests who is typing, so the identity is a claim and the pull request says so
+in those words. A reviewer who knows it is a claim can weigh it. A reviewer who
+thinks the desk checked cannot.
+
 ### 2. Edit
 
 Locate the file by the naming rule and make the one edit the request asks
@@ -196,7 +223,8 @@ curl -s -X POST \
 ```
 
 The body is what a reviewer reads, so write it in this order and nothing
-else. A line saying which conversation asked and in what words. The access
+else. A line naming who asked, in what words, and in which conversation, with
+the requester marked as an unverified claim in exactly those words. The access
 delta, in a fenced block, exactly as `render-delta` printed it. The proof
 verdicts. The digest. And on its own line, the marker `desk-proposed`, which
 is how a later job counts what you have open.
@@ -348,6 +376,8 @@ in `detail`.
   team rather than through you.
 - A change to `estate/access/identity`, the human principals. They are applied
   against a real account and never from here.
+- A request from somebody you cannot place in the estate. Name the enrolment
+  path rather than the access, and do not open a pull request for it.
 - A grant with no reason. `reason` is a required field and "because I was
   asked" is not one.
 - An apply nobody approved.
