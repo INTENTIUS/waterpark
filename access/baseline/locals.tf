@@ -7,7 +7,7 @@ locals {
   # ignored (decision 40). Both live here so a student can change one number
   # in one place and watch the checks move with it.
   break_glass_max_ttl_hours = 2
-  watcher_max_open_prs      = 1
+  watcher_max_open_prs      = 5
 
   # The longest a static secret may stand before the rotation check flags
   # it. Credentials are short-lived everywhere in this estate, so this
