@@ -155,6 +155,7 @@ async function follow() {
 
 function render() {
   renderEstate();
+  renderDrift();
   renderActivity();
 }
 
@@ -210,6 +211,59 @@ function renderEstate() {
   });
 }
 
+// The newest watch. A finding is the script's own reading, copied through the
+// desk untouched, so this renders the fields it printed rather than a shape
+// of the page's own devising.
+function renderDrift() {
+  const pane = $("drift");
+  pane.replaceChildren();
+  const drift = latest("aws-drift");
+  if (!drift) {
+    pane.append(el("p", "empty", "No watch has run. Ask the desk to run the watch."));
+    return;
+  }
+
+  const head = el("div", "estate-head");
+  head.append(el("span", "workspace", drift.workspace || "?"));
+  head.append(el("span", "meta", `watched ${drift.detected_at || "?"}`));
+  pane.append(head);
+
+  const findings = drift.findings || [];
+  if (!findings.length) {
+    pane.append(el("p", "empty", "The estate matches what the repo declares."));
+    return;
+  }
+
+  const list = el("ul", "resources");
+  for (const finding of findings) {
+    const row = el("li", `resource finding ${finding.kind || ""}`);
+    row.append(el("div", "resource-name", finding.address || finding.root || "?"));
+    const kind = el("div", "finding-kind");
+    kind.append(el("span", `verdict ${finding.kind || ""}`, finding.kind || "?"));
+    if (finding.actions?.length) kind.append(el("span", "meta", finding.actions.join(", ")));
+    if (finding.severity) kind.append(el("span", "warn", finding.severity));
+    row.append(kind);
+    for (const attribute of finding.attributes || []) {
+      const line = el("div", "attribute");
+      line.append(el("span", "attr-name", attribute.attribute || "?"));
+      line.append(el("span", "declared", `declared ${format(attribute.declared)}`));
+      line.append(el("span", "live", `live ${format(attribute.live)}`));
+      row.append(line);
+    }
+    if (finding.detail) row.append(el("div", "grant", finding.detail));
+    list.append(row);
+  }
+  pane.append(list);
+}
+
+// An attribute's value is whatever Terraform had for it, which is a string
+// sometimes and a whole object other times.
+function format(value) {
+  if (value === null || value === undefined) return "nothing";
+  if (typeof value === "string") return value;
+  return JSON.stringify(value);
+}
+
 function renderActivity() {
   const pane = $("activity");
   pane.replaceChildren();
@@ -256,6 +310,14 @@ function renderBlock(block) {
   }
   if (block.name === "aws-plan") return renderPlan(block.data);
   if (block.name === "aws-result") return renderResult(block.data);
+  if (block.name === "aws-drift") {
+    const node = el("div", "block state-note");
+    const count = (block.data.findings || []).length;
+    node.append(
+      el("div", "block-head", count ? `the watch found ${count}` : "the watch found nothing"),
+    );
+    return node;
+  }
   if (block.name === "aws-state") {
     const node = el("div", "block state-note");
     node.append(
@@ -327,7 +389,20 @@ function renderResult(result) {
   // A refusal carries no plan id, because nothing was planned.
   const head = [result.plan_id, result.status].filter(Boolean).join(" ");
   node.append(el("div", "block-head", head || "a result"));
-  if (result.detail) node.append(el("div", "detail", result.detail));
+
+  // In repo mode the detail is where the change went, so make it a door.
+  const url = /^https?:\/\/\S+$/.test((result.detail || "").trim())
+    ? result.detail.trim()
+    : null;
+  if (url) {
+    const link = el("a", "detail", url);
+    link.href = url;
+    link.target = "_blank";
+    link.rel = "noreferrer";
+    node.append(link);
+  } else if (result.detail) {
+    node.append(el("div", "detail", result.detail));
+  }
   return node;
 }
 

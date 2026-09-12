@@ -12,6 +12,7 @@ export const BLOCKS = {
   "aws-state": "what the account holds, read from the account",
   "aws-plan": "one change, its access delta, its proofs and its digest",
   "aws-result": "what happened to a plan",
+  "aws-drift": "what the repo declares against what the account holds",
 };
 
 export const BLOCK_NAMES = Object.keys(BLOCKS);
@@ -84,4 +85,4 @@ export function approval(planId) {
   return `APPROVE ${planId}`;
 }
 
-export const STATUSES = ["applied", "stale", "refused", "failed"];
+export const STATUSES = ["applied", "pr-opened", "stale", "refused", "failed"];

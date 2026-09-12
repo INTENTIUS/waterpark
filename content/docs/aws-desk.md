@@ -112,10 +112,12 @@ aws-plan    {"id":"plan-7f3a","workspace":"prod","mode":"repo",
              "diff":"…unified diff of the file edit…","digest":"sha256:…"}
 aws-result  {"plan_id":"plan-7f3a","status":"pr-opened"|"applied"|"refused"|"stale",
              "detail":"https://github.com/…/pull/42"|"Apply complete"|"…"}
-aws-drift   {"workspace":"prod","detected_at":…,
-             "resources":[{"address":"aws_security_group.default_deny","status":"changed",
-                           "diff":[{"path":"ingress[0].cidr_blocks",
-                                    "declared":"10.0.0.0/8","live":"0.0.0.0/0"}]}]}
+aws-drift   {"workspace":"prod","detected_at":…,"exit":2,
+             "findings":[{"root":"envs/prod","kind":"drift","type":"aws_iam_role",
+                          "address":"module.on_call.aws_iam_role.this[0]",
+                          "actions":["update"],"severity":"pr",
+                          "attributes":[{"attribute":"description",
+                                         "declared":"…","live":"…"}]}]}
 ```
 
 One block carries one workspace, and a second workspace is a second block,
@@ -128,6 +130,11 @@ records, which is what keeps a printed credential out of the database, and it
 cannot tell a region from a token. So `us-east-1` and the Floci endpoint come
 back as `[REDACTED]` inside a block that carries them, and the blocks carry
 what the account said rather than how the desk reached it.
+
+`findings` is `access/scripts/drift --json` copied through, which is why the
+block carries that script's words, `kind` and `severity` and all, rather than
+a shape of the page's own. A desk that reshapes a finding is a desk that can
+drop one.
 
 `delta` and `proofs` are never model output. `render-delta` and `proofs`
 produce them and the desk copies them in (decision 14). `changes` is read
