@@ -15,6 +15,8 @@
 #   one PR per resource         the branch name is derived from the address
 #   never a second while one    an open PR on that branch is a skip
 #     is open
+#   a decline sticks            a PR closed unmerged is a no, and stays a no
+#                               until somebody labels it desk:reconsider
 #   capped in volume            the cap is watcher_max_open_prs in
 #                               access/baseline, read rather than restated
 #   a marker in the body        so the count above can find them again
@@ -181,6 +183,27 @@ while IFS= read -r f; do
 		continue
 	fi
 
+	# A decline sticks. Somebody closed this without merging it, which is an
+	# answer, and a watcher that files it again next cycle is a watcher that
+	# argues. The way back in is a label, because a label is a deliberate act
+	# by somebody with write access and a reopened branch is not.
+	if [ "$gh_ready" = true ]; then
+		declined="$(gh pr list --state closed --head "$branch" --limit 5 \
+			--json number,mergedAt,labels 2>/dev/null ||
+			echo '[]')"
+		declined="$(printf '%s' "$declined" |
+			jq -c '[.[] | select(.mergedAt == null)
+                   | select([.labels[].name] | index("desk:reconsider") | not)]' 2>/dev/null ||
+			echo '[]')"
+		if [ "$(printf '%s' "$declined" | jq 'length' 2>/dev/null || echo 0)" != "0" ]; then
+			say "  declined $address"
+			say "         closed unmerged as $(printf '%s' "$declined" | jq -r '.[0].number | "#" + tostring')"
+			say "         label it desk:reconsider to let this be filed again"
+			skipped=$((skipped + 1))
+			continue
+		fi
+	fi
+
 	if [ $((open_prs + planned)) -ge "$cap" ]; then
 		say "  hold   $address"
 		say "         the cap of $cap is reached, so this waits for the next cycle"
@@ -214,10 +237,36 @@ while IFS= read -r f; do
 	if [ "$do_open" = true ] && [ "$gh_ready" = true ]; then
 		(
 			cd "$repo_root" || exit 1
+			# Fetch it first so the lease below is taken against what is really
+			# there. Without this the tracking ref is stale or absent and the
+			# push refuses for a reason that has nothing to do with the case
+			# the lease exists to catch.
+			# The branch is derived from the address, so it is this resource's
+			# one proposal rather than a history. A closed PR leaves its branch
+			# behind, and a second cycle that tried to add to it would push a
+			# non-fast-forward and fail on the wrong thing. So start it again
+			# from the base every time, and say what the branch is for.
 			git switch -c "$branch" >/dev/null 2>&1 || git switch "$branch" >/dev/null 2>&1
 			git commit --allow-empty -m "reconcile: restore $address" \
 				-m "$(cat "$body")" >/dev/null
-			if ! push_err="$(git push -u origin "$branch" 2>&1)"; then
+			# Forced, and narrowly. A desk/drift branch holds one empty commit
+			# whose body is the finding, and rewriting it is the point when the
+			# same finding comes round again after its pull request was closed.
+			# Without this the second cycle pushes a non-fast-forward and fails
+			# on something that looks nothing like the cause.
+			#
+			# Plain --force rather than --force-with-lease, deliberately. The
+			# lease protects a branch somebody else might have moved, and it
+			# refuses with "stale info" unless the tracking ref was refreshed by
+			# a fetch in the same process, which makes it unreliable here for no
+			# gain. Nothing but this script writes under desk/drift, and the
+			# case below is what keeps that true.
+			case "$branch" in
+			desk/drift/*) push_args="--force" ;;
+			*) push_args="" ;;
+			esac
+			# shellcheck disable=SC2086
+			if ! push_err="$(git push -u $push_args origin "$branch" 2>&1)"; then
 				# Loudly. A swallowed push is the failure that costs the most
 				# time, because the next command fails for a reason that has
 				# nothing to do with the cause.
